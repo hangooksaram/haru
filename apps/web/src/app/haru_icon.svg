@@ -1,0 +1,23 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="softShadow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="16"/>
+    </filter>
+    <mask id="moonMask">
+      <rect x="0" y="0" width="512" height="512" fill="#FFFFFF"/>
+      <circle cx="374" cy="300" r="118" fill="#000000"/>
+    </mask>
+  </defs>
+
+  <!-- 배경: 토스 스타일의 납작한 단색 -->
+  <rect x="0" y="0" width="512" height="512" rx="124" ry="124" fill="#38BDF8"/>
+
+  <!-- 은은한 그림자로 살짝 입체감만 -->
+  <ellipse cx="258" cy="392" rx="150" ry="46" fill="#0369A1" opacity="0.22" filter="url(#softShadow)"/>
+
+  <!-- 해: 납작한 원 하나 -->
+  <circle cx="180" cy="180" r="140" fill="#FFFFFF"/>
+
+  <!-- 달: 납작한 초승달 하나 -->
+  <circle cx="336" cy="336" r="140" fill="#FFFFFF" mask="url(#moonMask)"/>
+</svg>
