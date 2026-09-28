@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "motion/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,7 @@ export function HeroSection() {
         </p>
         <div className="mt-7 flex flex-wrap gap-3">
           <Button asChild size="lg" className="rounded-full px-7">
-            <a href="#start">무료로 시안 만들기</a>
+            <Link href="/draft">무료로 시안 만들기</Link>
           </Button>
           <Button
             asChild

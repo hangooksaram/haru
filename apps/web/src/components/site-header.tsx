@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 const links = [
@@ -22,7 +23,7 @@ export function SiteHeader() {
         ))}
       </nav>
       <Button asChild size="lg" className="rounded-full">
-        <a href="#start">무료로 시작하기</a>
+        <Link href="/draft">무료로 시작하기</Link>
       </Button>
     </header>
   );
