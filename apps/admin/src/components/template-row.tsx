@@ -1,0 +1,93 @@
+"use client";
+
+import { useState } from "react";
+import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { ImportActionButton } from "@/components/import-action-button";
+import { TemplatePublishControls } from "@/components/template-publish-controls";
+import type { TemplateWithStatus } from "@/lib/template-sync";
+
+const STATUS_LABEL: Record<TemplateWithStatus["status"], string> = {
+  not_imported: "가져오지 않음",
+  imported: "가져옴",
+  changed: "외부 변경됨",
+};
+
+export function TemplateRow({ template }: { template: TemplateWithStatus }) {
+  const [expanded, setExpanded] = useState(false);
+  const canExpand = template.record !== null;
+
+  return (
+    <>
+      <TableRow>
+        <TableCell>
+          <button
+            type="button"
+            onClick={() => canExpand && setExpanded((prev) => !prev)}
+            disabled={!canExpand}
+            className="flex items-center gap-1 text-left disabled:opacity-60"
+          >
+            {canExpand ? (
+              expanded ? (
+                <ChevronDownIcon className="text-muted-foreground size-4 shrink-0" />
+              ) : (
+                <ChevronRightIcon className="text-muted-foreground size-4 shrink-0" />
+              )
+            ) : (
+              <span className="size-4 shrink-0" />
+            )}
+            {template.name}
+          </button>
+        </TableCell>
+        <TableCell>
+          {new Date(template.createdAt).toLocaleDateString("ko-KR")}
+        </TableCell>
+        <TableCell>
+          <Badge
+            variant={
+              template.status === "not_imported"
+                ? "outline"
+                : template.status === "changed"
+                  ? "secondary"
+                  : "default"
+            }
+          >
+            {STATUS_LABEL[template.status]}
+          </Badge>
+        </TableCell>
+        <TableCell>
+          {template.record ? (
+            <TemplatePublishControls
+              templateId={template.id}
+              price={template.price}
+              isActive={template.isActive}
+            />
+          ) : (
+            <span className="text-muted-foreground text-xs">
+              가져온 뒤 설정 가능
+            </span>
+          )}
+        </TableCell>
+        <TableCell>
+          {template.status !== "imported" ? (
+            <ImportActionButton
+              templateId={template.id}
+              mode={template.status === "not_imported" ? "import" : "update"}
+            />
+          ) : null}
+        </TableCell>
+      </TableRow>
+      {expanded && template.record ? (
+        <TableRow>
+          <TableCell colSpan={5}>
+            <pre className="bg-muted max-h-96 overflow-auto rounded-md p-3 text-xs">
+              {JSON.stringify(template.record, null, 2)}
+            </pre>
+          </TableCell>
+        </TableRow>
+      ) : null}
+    </>
+  );
+}

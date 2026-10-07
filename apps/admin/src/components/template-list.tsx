@@ -1,0 +1,83 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { RefreshCwIcon } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { TemplateRow } from "@/components/template-row";
+import { refreshTemplateList } from "@/app/templates/actions";
+import type { TemplateWithStatus } from "@/lib/template-sync";
+
+type Filter = "all" | "imported" | "not_imported";
+
+export function TemplateList({
+  templates,
+}: {
+  templates: TemplateWithStatus[];
+}) {
+  const [filter, setFilter] = useState<Filter>("all");
+  const [isRefreshing, startRefresh] = useTransition();
+  const router = useRouter();
+
+  const filtered = templates.filter((template) => {
+    if (filter === "all") return true;
+    if (filter === "imported") return template.status !== "not_imported";
+    return template.status === "not_imported";
+  });
+
+  function handleRefresh() {
+    startRefresh(async () => {
+      await refreshTemplateList();
+      router.refresh();
+    });
+  }
+
+  return (
+    <div className="mt-6 space-y-4">
+      <div className="flex items-center justify-between">
+        <Tabs value={filter} onValueChange={(value) => setFilter(value as Filter)}>
+          <TabsList>
+            <TabsTrigger value="all">전체</TabsTrigger>
+            <TabsTrigger value="imported">가져옴</TabsTrigger>
+            <TabsTrigger value="not_imported">미가져옴</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+        >
+          <RefreshCwIcon className={isRefreshing ? "animate-spin" : ""} />
+          새로고침
+        </Button>
+      </div>
+
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>이름</TableHead>
+            <TableHead>생성일</TableHead>
+            <TableHead>상태</TableHead>
+            <TableHead>공개 설정</TableHead>
+            <TableHead className="text-right">동작</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {filtered.map((template) => (
+            <TemplateRow key={template.id} template={template} />
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
