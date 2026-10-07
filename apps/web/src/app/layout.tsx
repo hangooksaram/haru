@@ -20,6 +20,14 @@ const pretendard = localFont({
 export const metadata: Metadata = {
   title: "하루",
   description: "사진 몇 장으로 완성되는 축하 영상",
+  openGraph: {
+    title: "하루",
+    description: "사진 몇 장으로 완성되는 축하 영상",
+    siteName: "하루",
+    locale: "ko_KR",
+    type: "website",
+    images: ["/icon.svg"],
+  },
 };
 
 export default function RootLayout({

@@ -1,0 +1,8 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- 배경 -->
+  <rect width="512" height="512" rx="120" fill="#38BDF8"/>
+  <!-- 달: 해와 같은 중심의 원(반지름 150)으로 파낸 초승달 -->
+  <path d="M 173.99 129.77 A 156 156 0 1 0 382.23 338.01 A 150 150 0 0 1 173.99 129.77 Z" fill="#FFFFFF"/>
+  <!-- 해: 반지름 128, 달과의 간격 22 -->
+  <circle cx="298.3" cy="213.7" r="128" fill="#FFFFFF"/>
+</svg>
