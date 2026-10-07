@@ -1,4 +1,4 @@
-import { importOrUpdateTemplate } from "@/lib/template-import";
+import { importOrUpdateTemplate } from "@/lib/template/template-import";
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);

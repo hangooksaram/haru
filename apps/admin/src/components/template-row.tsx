@@ -7,17 +7,17 @@ import { Badge } from "@/components/ui/badge";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { ImportActionButton } from "@/components/import-action-button";
 import { TemplatePublishControls } from "@/components/template-publish-controls";
-import type { TemplateWithStatus } from "@/lib/template-sync";
+import type { Template } from "@/lib/template/types";
 
-const STATUS_LABEL: Record<TemplateWithStatus["status"], string> = {
+const STATUS_LABEL: Record<Template["status"], string> = {
   not_imported: "가져오지 않음",
   imported: "가져옴",
   changed: "외부 변경됨",
 };
 
-export function TemplateRow({ template }: { template: TemplateWithStatus }) {
+export function TemplateRow({ template }: { template: Template }) {
   const [expanded, setExpanded] = useState(false);
-  const canExpand = template.record !== null;
+  const canExpand = template.status !== "not_imported";
 
   return (
     <>
@@ -58,7 +58,7 @@ export function TemplateRow({ template }: { template: TemplateWithStatus }) {
           </Badge>
         </TableCell>
         <TableCell>
-          {template.record ? (
+          {canExpand ? (
             <TemplatePublishControls
               templateId={template.id}
               price={template.price}
@@ -79,11 +79,19 @@ export function TemplateRow({ template }: { template: TemplateWithStatus }) {
           ) : null}
         </TableCell>
       </TableRow>
-      {expanded && template.record ? (
+      {expanded && canExpand ? (
         <TableRow>
           <TableCell colSpan={5}>
             <pre className="bg-muted max-h-96 overflow-auto rounded-md p-3 text-xs">
-              {JSON.stringify(template.record, null, 2)}
+              {JSON.stringify(
+                {
+                  tags: template.tags,
+                  updatedAt: template.updatedAt,
+                  source: template.source,
+                },
+                null,
+                2,
+              )}
             </pre>
           </TableCell>
         </TableRow>

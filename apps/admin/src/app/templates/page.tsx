@@ -1,5 +1,5 @@
 import { TemplateList } from "@/components/template-list";
-import { getTemplatesWithSyncStatus } from "@/lib/template-sync";
+import { getTemplatesWithSyncStatus } from "@/lib/template/template-sync";
 
 export default async function AdminTemplatesPage() {
   const templates = await getTemplatesWithSyncStatus();
