@@ -10,7 +10,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@haru/db": "workspace:*",
     "class-variance-authority": "catalog:",
     "cn": "catalog:",
     "lucide-react": "catalog:",
