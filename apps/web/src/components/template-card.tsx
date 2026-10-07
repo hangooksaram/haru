@@ -1,9 +1,6 @@
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
-import { parseTemplateTags } from "@haru/db";
-
-import type { CreatomateTemplate } from "@haru/db";
 
 // 썸네일이 API에 없어서, 템플릿 id로 색상을 정해 placeholder로 사용한다.
 const PLACEHOLDER_COLORS = ["#DCEFFB", "#FCE4E4", "#FFF3D6", "#E7E1F7"];
@@ -13,8 +10,37 @@ function getPlaceholderColor(id: string) {
   return PLACEHOLDER_COLORS[sum % PLACEHOLDER_COLORS.length];
 }
 
+// Creatomate 에디터에서 템플릿 태그를 `price:12000`, `category:결혼` 형식으로 입력한다.
+function parseTemplateTags(tags: string[]): {
+  price?: number;
+  category?: string;
+} {
+  const result: { price?: number; category?: string } = {};
+
+  for (const tag of tags) {
+    const [key, ...rest] = tag.split(":");
+    const value = rest.join(":").trim();
+    if (value === "") continue;
+
+    if (key.trim() === "price") {
+      const price = Number(value);
+      if (Number.isFinite(price)) result.price = price;
+    } else if (key.trim() === "category") {
+      result.category = value;
+    }
+  }
+
+  return result;
+}
+
+export type Template = {
+  id: string;
+  name: string;
+  tags: string[];
+};
+
 type Props = {
-  template: CreatomateTemplate;
+  template: Template;
 };
 
 export function TemplateCard({ template }: Props) {
