@@ -1,4 +1,6 @@
-import { getTemplates, prisma } from "@haru/db";
+import { prisma } from "@haru/db";
+
+import { getTemplates } from "@/lib/creatomate";
 
 export type TemplateSyncStatus = "not_imported" | "imported" | "changed";
 

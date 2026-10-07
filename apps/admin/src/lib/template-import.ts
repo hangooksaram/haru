@@ -1,4 +1,6 @@
-import { getTemplate, prisma } from "@haru/db";
+import { prisma } from "@haru/db";
+
+import { getTemplate } from "@/lib/creatomate";
 
 export type ImportResult =
   | { success: true; id: string; result: "imported" | "updated" }
