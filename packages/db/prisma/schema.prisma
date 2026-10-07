@@ -20,5 +20,10 @@ model Template {
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6)
   source    Json
 
+  // 가져오기 기능은 이 3개 필드를 채우지 않는다 (별도 "템플릿 공개 관리" 기능 담당).
+  price     Int?
+  isActive  Boolean @map("is_active") @default(false)
+  sortOrder Int?    @map("sort_order")
+
   @@map("templates")
 }

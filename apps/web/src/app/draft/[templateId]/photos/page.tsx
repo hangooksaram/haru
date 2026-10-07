@@ -1,5 +1,6 @@
 import { DraftStepNav } from "@/components/draft-step-nav";
 import { DraftStepper } from "@/components/draft-stepper";
+import { getTemplate } from "@haru/db";
 
 type Props = {
   params: Promise<{ templateId: string }>;
@@ -7,6 +8,8 @@ type Props = {
 
 export default async function DraftPhotosPage({ params }: Props) {
   const { templateId } = await params;
+
+  console.log("[template info]", await getTemplate(templateId));
 
   return (
     <div className="flex flex-col gap-10 py-10">

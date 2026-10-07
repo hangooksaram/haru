@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { getTemplate } from "@/lib/creatomate";
+import { getTemplate } from "@haru/db";
 
 type Props = {
   children: React.ReactNode;

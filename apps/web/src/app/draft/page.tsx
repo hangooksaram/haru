@@ -1,9 +1,11 @@
 import { DraftStepper } from "@/components/draft-stepper";
 import { TemplateCard } from "@/components/template-card";
-import { getTemplates } from "@/lib/creatomate";
+import { getTemplates } from "@haru/db";
 
 export default async function DraftPage() {
   const templates = await getTemplates();
+
+  console.log(templates);
 
   return (
     <div className="flex flex-col gap-10 py-10">

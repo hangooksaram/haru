@@ -1,9 +1,9 @@
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
-import { parseTemplateTags } from "@/lib/creatomate";
+import { parseTemplateTags } from "@haru/db";
 
-import type { CreatomateTemplate } from "@/lib/creatomate";
+import type { CreatomateTemplate } from "@haru/db";
 
 // 썸네일이 API에 없어서, 템플릿 id로 색상을 정해 placeholder로 사용한다.
 const PLACEHOLDER_COLORS = ["#DCEFFB", "#FCE4E4", "#FFF3D6", "#E7E1F7"];

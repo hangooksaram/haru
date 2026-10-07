@@ -24,20 +24,33 @@ export type CreatomateTemplateDetail = CreatomateTemplate & {
   };
 };
 
-async function requestCreatomate(path: string): Promise<Response> {
+// Next.js의 fetch 캐싱 확장(getTemplates에서 사용). Next 의존성 없이 여기서만 타입을 정의한다.
+type CreatomateFetchInit = RequestInit & {
+  next?: { revalidate?: number | false; tags?: string[] };
+};
+
+async function requestCreatomate(
+  path: string,
+  init: CreatomateFetchInit,
+): Promise<Response> {
   const apiKey = process.env.CREATOMATE_API_KEY;
   if (!apiKey) {
     throw new Error("CREATOMATE_API_KEY 환경변수가 설정되지 않았습니다.");
   }
 
   return fetch(`${CREATOMATE_API_URL}${path}`, {
+    ...init,
     headers: { Authorization: `Bearer ${apiKey}` },
-    cache: "no-store",
-  });
+  } as RequestInit);
 }
 
+// 어드민 템플릿 목록은 1시간 캐싱하고, "새로고침"에서 이 태그로 무효화한다.
+export const CREATOMATE_TEMPLATES_CACHE_TAG = "creatomate-templates";
+
 export async function getTemplates(): Promise<CreatomateTemplate[]> {
-  const response = await requestCreatomate("/templates");
+  const response = await requestCreatomate("/templates", {
+    next: { revalidate: 3600, tags: [CREATOMATE_TEMPLATES_CACHE_TAG] },
+  });
 
   if (!response.ok) {
     throw new Error(
@@ -53,6 +66,7 @@ export async function getTemplate(
 ): Promise<CreatomateTemplateDetail | null> {
   const response = await requestCreatomate(
     `/templates/${encodeURIComponent(id)}`,
+    { cache: "no-store" },
   );
 
   // 존재하지 않는 id는 404, UUID 형식이 아닌 id는 400으로 응답한다.
