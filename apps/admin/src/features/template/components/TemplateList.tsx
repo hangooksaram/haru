@@ -13,9 +13,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { TemplateRow } from "@/components/template-row";
+import { TemplateRow } from "@/features/template/components/TemplateRow";
 import { refreshTemplateList } from "@/app/templates/actions";
-import type { Template } from "@/lib/template/types";
+import type { Template } from "@/features/template/types";
 
 type Filter = "all" | "imported" | "not_imported";
 

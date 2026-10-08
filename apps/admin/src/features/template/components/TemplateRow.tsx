@@ -5,9 +5,9 @@ import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { ImportActionButton } from "@/components/import-action-button";
-import { TemplatePublishControls } from "@/components/template-publish-controls";
-import type { Template } from "@/lib/template/types";
+import { ImportActionButton } from "@/features/template/components/ImportActionButton";
+import { TemplatePublishControls } from "@/features/template/components/TemplatePublishControls";
+import type { Template } from "@/features/template/types";
 
 const STATUS_LABEL: Record<Template["status"], string> = {
   not_imported: "가져오지 않음",

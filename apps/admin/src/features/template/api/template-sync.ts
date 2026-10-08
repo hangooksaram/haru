@@ -2,7 +2,7 @@ import { prisma } from "@haru/db";
 
 import { getTemplates } from "@/lib/creatomate";
 
-import type { TemplateSyncStatus, Template } from "@/lib/template/types";
+import type { TemplateSyncStatus, Template } from "@/features/template/types";
 
 function getSyncStatus(
   externalUpdatedAt: string,
