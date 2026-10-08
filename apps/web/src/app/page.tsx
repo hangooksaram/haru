@@ -1,10 +1,10 @@
-import { SiteHeader } from "@/components/site-header";
-import { HeroSection } from "@/components/hero-section";
-import { TrustStrip } from "@/components/trust-strip";
-import { HowItWorksSection } from "@/components/how-it-works-section";
-import { TemplateSection } from "@/components/template-section";
-import { CtaSection } from "@/components/cta-section";
-import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/SiteHeader";
+import { HeroSection } from "@/components/HeroSection";
+import { TrustStrip } from "@/components/TrustStrip";
+import { HowItWorksSection } from "@/components/HowItWorksSection";
+import { TemplateSection } from "@/components/TemplateSection";
+import { CtaSection } from "@/components/CtaSection";
+import { SiteFooter } from "@/components/SiteFooter";
 
 export default function HomePage() {
   return (

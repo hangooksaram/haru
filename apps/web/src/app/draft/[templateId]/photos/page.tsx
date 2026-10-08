@@ -1,5 +1,5 @@
-import { DraftStepNav } from "@/components/draft-step-nav";
-import { DraftStepper } from "@/components/draft-stepper";
+import { DraftStepNav } from "@/components/DraftStepNav";
+import { DraftStepper } from "@/components/DraftStepper";
 
 type Props = {
   params: Promise<{ templateId: string }>;

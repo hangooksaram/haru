@@ -1,4 +1,4 @@
-import { Reveal } from "@/components/reveal";
+import { Reveal } from "@/components/Reveal";
 import { Card, CardContent } from "@/components/ui/card";
 
 const steps = [

@@ -1,4 +1,4 @@
-import { Reveal } from "@/components/reveal";
+import { Reveal } from "@/components/Reveal";
 import { Badge } from "@/components/ui/badge";
 
 const templates = [

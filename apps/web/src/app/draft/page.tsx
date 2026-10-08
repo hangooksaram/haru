@@ -1,7 +1,7 @@
-import { DraftStepper } from "@/components/draft-stepper";
-import { TemplateCard } from "@/components/template-card";
+import { DraftStepper } from "@/components/DraftStepper";
+import { TemplateCard } from "@/components/TemplateCard";
 
-import type { Template } from "@/components/template-card";
+import type { Template } from "@/components/TemplateCard";
 
 export default async function DraftPage() {
   // TODO: 템플릿 변환 기능(노션 "템플릿 변환" 문서) 구현 후 서비스 DB에서 조회하도록 교체

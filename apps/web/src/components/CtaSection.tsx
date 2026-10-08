@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Reveal } from "@/components/reveal";
+import { Reveal } from "@/components/Reveal";
 import { Button } from "@/components/ui/button";
 
 export function CtaSection() {
