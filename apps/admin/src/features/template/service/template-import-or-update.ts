@@ -1,6 +1,6 @@
 import { prisma } from "@haru/db";
 
-import { getTemplate } from "@/lib/creatomate";
+import { getCreatomateTemplate } from "@/lib/creatomate";
 
 export type ImportResult =
   | { success: true; id: string; result: "imported" | "updated" }
@@ -11,7 +11,7 @@ export async function importOrUpdateTemplate(
 ): Promise<ImportResult> {
   let detail;
   try {
-    detail = await getTemplate(id);
+    detail = await getCreatomateTemplate(id);
   } catch (error) {
     console.error("[템플릿 가져오기] 외부 조회 실패", error);
     return {

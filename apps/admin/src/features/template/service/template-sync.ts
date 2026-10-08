@@ -1,6 +1,6 @@
 import { prisma } from "@haru/db";
 
-import { getTemplates } from "@/lib/creatomate";
+import { getCreatomateTemplates } from "@/lib/creatomate";
 
 import type { TemplateSyncStatus, Template } from "@/features/template/types";
 
@@ -18,7 +18,7 @@ function getSyncStatus(
 // 외부 목록과 우리 DB를 대조해 템플릿별 가져오기 상태를 계산한다.
 export async function getTemplatesWithSyncStatus(): Promise<Template[]> {
   const [externalTemplates, importedTemplates] = await Promise.all([
-    getTemplates(),
+    getCreatomateTemplates(),
     prisma.template.findMany(),
   ]);
 

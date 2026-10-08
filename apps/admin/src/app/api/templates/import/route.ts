@@ -1,4 +1,4 @@
-import { importOrUpdateTemplate } from "@/features/template/service/template-import";
+import { importOrUpdateTemplate } from "@/features/template/service/template-import-or-update";
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);

@@ -47,7 +47,7 @@ async function requestCreatomate(
 // 어드민 템플릿 목록은 1시간 캐싱하고, "새로고침"에서 이 태그로 무효화한다.
 export const CREATOMATE_TEMPLATES_CACHE_TAG = "creatomate-templates";
 
-export async function getTemplates(): Promise<CreatomateTemplate[]> {
+export async function getCreatomateTemplates(): Promise<CreatomateTemplate[]> {
   const response = await requestCreatomate("/templates", {
     next: { revalidate: 3600, tags: [CREATOMATE_TEMPLATES_CACHE_TAG] },
   });
@@ -61,7 +61,7 @@ export async function getTemplates(): Promise<CreatomateTemplate[]> {
   return (await response.json()) as CreatomateTemplate[];
 }
 
-export async function getTemplate(
+export async function getCreatomateTemplate(
   id: string,
 ): Promise<CreatomateTemplateDetail | null> {
   const response = await requestCreatomate(
@@ -82,7 +82,7 @@ export async function getTemplate(
 }
 
 // Creatomate 에디터에서 템플릿 태그를 `price:12000`, `category:결혼` 형식으로 입력한다.
-export function parseTemplateTags(tags: string[]): {
+export function parseCreatomateTemplateTags(tags: string[]): {
   price?: number;
   category?: string;
 } {
