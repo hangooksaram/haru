@@ -9,9 +9,12 @@ export type CreatomateTemplate = {
 };
 
 export type CreatomateElement = {
+  id: string;
   type: string;
   name?: string;
   dynamic?: boolean;
+  source?: string;
+  text?: string;
   elements?: CreatomateElement[];
 };
 

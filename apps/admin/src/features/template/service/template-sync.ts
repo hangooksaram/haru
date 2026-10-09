@@ -39,7 +39,7 @@ export async function getTemplatesWithSyncStatus(): Promise<Template[]> {
       isActive: imported?.isActive ?? false,
       tags: imported?.tags ?? null,
       updatedAt: imported?.updatedAt.toISOString() ?? null,
-      source: imported?.source ?? null,
+      elements: (imported?.elements as Template["elements"]) ?? null,
     };
   });
 }

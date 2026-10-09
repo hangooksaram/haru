@@ -1,6 +1,7 @@
 import { prisma } from "@haru/db";
 
 import { getCreatomateTemplate } from "@/lib/creatomate";
+import { extractTemplateElements } from "@/features/template/service/extract-template-elements";
 
 export type ImportResult =
   | { success: true; id: string; result: "imported" | "updated" }
@@ -35,6 +36,8 @@ export async function importOrUpdateTemplate(
       select: { id: true },
     });
 
+    const elements = extractTemplateElements(detail.source.elements);
+
     await prisma.template.upsert({
       where: { id },
       create: {
@@ -43,13 +46,13 @@ export async function importOrUpdateTemplate(
         tags: detail.tags,
         createdAt: new Date(detail.created_at),
         updatedAt: new Date(detail.updated_at),
-        source: detail.source,
+        elements,
       },
       update: {
         name: detail.name,
         tags: detail.tags,
         updatedAt: new Date(detail.updated_at),
-        source: detail.source,
+        elements,
       },
     });
 
