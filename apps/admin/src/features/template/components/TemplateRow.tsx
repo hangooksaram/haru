@@ -6,12 +6,13 @@ import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { ImportActionButton } from "@/features/template/components/ImportActionButton";
-import { TemplatePublishControls } from "@/features/template/components/TemplatePublishControls";
+import { TemplateActiveToggle } from "@/features/template/components/TemplateActiveToggle";
+import { TemplatePriceInput } from "@/features/template/components/TemplatePriceInput";
 import type { Template } from "@/features/template/types";
 
 const STATUS_LABEL: Record<Template["status"], string> = {
   not_imported: "가져오지 않음",
-  imported: "가져옴",
+  imported: "최신",
   changed: "외부 변경됨",
 };
 
@@ -45,23 +46,21 @@ export function TemplateRow({ template }: { template: Template }) {
           {new Date(template.createdAt).toLocaleDateString("ko-KR")}
         </TableCell>
         <TableCell>
-          <Badge
-            variant={
-              template.status === "not_imported"
-                ? "outline"
-                : template.status === "changed"
-                  ? "secondary"
-                  : "default"
-            }
-          >
-            {STATUS_LABEL[template.status]}
-          </Badge>
+          {canExpand ? (
+            <TemplatePriceInput
+              templateId={template.id}
+              price={template.price}
+            />
+          ) : (
+            <span className="text-muted-foreground text-xs">
+              가져온 뒤 설정 가능
+            </span>
+          )}
         </TableCell>
         <TableCell>
           {canExpand ? (
-            <TemplatePublishControls
+            <TemplateActiveToggle
               templateId={template.id}
-              price={template.price}
               isActive={template.isActive}
             />
           ) : (
@@ -71,12 +70,25 @@ export function TemplateRow({ template }: { template: Template }) {
           )}
         </TableCell>
         <TableCell>
-          {template.status !== "imported" ? (
-            <ImportActionButton
-              templateId={template.id}
-              mode={template.status === "not_imported" ? "import" : "update"}
-            />
-          ) : null}
+          <div className="flex items-center justify-end gap-2">
+            <Badge
+              variant={
+                template.status === "not_imported"
+                  ? "outline"
+                  : template.status === "changed"
+                    ? "secondary"
+                    : "default"
+              }
+            >
+              {STATUS_LABEL[template.status]}
+            </Badge>
+            {template.status !== "imported" ? (
+              <ImportActionButton
+                templateId={template.id}
+                mode={template.status === "not_imported" ? "import" : "update"}
+              />
+            ) : null}
+          </div>
         </TableCell>
       </TableRow>
       {expanded && canExpand ? (
@@ -87,7 +99,7 @@ export function TemplateRow({ template }: { template: Template }) {
                 {
                   tags: template.tags,
                   updatedAt: template.updatedAt,
-                  source: template.source,
+                  elements: template.elements,
                 },
                 null,
                 2,
