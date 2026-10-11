@@ -47,12 +47,14 @@ export async function importOrUpdateTemplate(
         createdAt: new Date(detail.created_at),
         updatedAt: new Date(detail.updated_at),
         elements,
+        duration: detail.source.duration,
       },
       update: {
         name: detail.name,
         tags: detail.tags,
         updatedAt: new Date(detail.updated_at),
         elements,
+        duration: detail.source.duration,
       },
     });
 

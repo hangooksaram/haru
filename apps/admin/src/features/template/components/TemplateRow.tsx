@@ -100,6 +100,7 @@ export function TemplateRow({ template }: { template: Template }) {
                   tags: template.tags,
                   updatedAt: template.updatedAt,
                   elements: template.elements,
+                  duration: template.duration,
                 },
                 null,
                 2,

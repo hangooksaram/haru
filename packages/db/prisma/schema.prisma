@@ -19,6 +19,7 @@ model Template {
   createdAt DateTime @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @map("updated_at") @db.Timestamptz(6)
   elements  Json
+  duration  Float
 
   // 가져오기 기능은 이 3개 필드를 채우지 않는다 (별도 "템플릿 공개 관리" 기능 담당).
   price     Int?

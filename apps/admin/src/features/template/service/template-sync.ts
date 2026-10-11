@@ -40,6 +40,7 @@ export async function getTemplatesWithSyncStatus(): Promise<Template[]> {
       tags: imported?.tags ?? null,
       updatedAt: imported?.updatedAt.toISOString() ?? null,
       elements: (imported?.elements as Template["elements"]) ?? null,
+      duration: imported?.duration ?? null,
     };
   });
 }

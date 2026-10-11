@@ -14,4 +14,5 @@ export type Template = {
   tags: string[] | null;
   updatedAt: string | null;
   elements: TemplateElement[] | null;
+  duration: number | null;
 };
