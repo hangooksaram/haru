@@ -14,7 +14,10 @@ export default async function DraftPhotosPage({ params }: Props) {
       <h1 className="font-heading text-3xl font-extrabold tracking-tight">
         사진을 올려 주세요
       </h1>
-      <DraftStepNav prevHref="/draft" nextHref={`/draft/${templateId}/text`} />
+      <DraftStepNav
+        prevHref="/templates"
+        nextHref={`/draft/${templateId}/text`}
+      />
     </div>
   );
 }

@@ -12,7 +12,7 @@ export function CtaSection() {
           영상 한 편을 선물하세요
         </h2>
         <Button asChild size="lg" className="rounded-full px-9 text-base">
-          <Link href="/draft">무료로 시안 만들기</Link>
+          <Link href="/templates/tags">무료로 시안 만들기</Link>
         </Button>
       </Reveal>
     </section>

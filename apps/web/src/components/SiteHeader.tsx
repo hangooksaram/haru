@@ -23,7 +23,7 @@ export function SiteHeader() {
         ))}
       </nav>
       <Button asChild size="lg" className="rounded-full">
-        <Link href="/draft">무료로 시작하기</Link>
+        <Link href="/templates/tags">무료로 시작하기</Link>
       </Button>
     </header>
   );

@@ -27,7 +27,7 @@ export function HeroSection() {
         </p>
         <div className="mt-7 flex flex-wrap gap-3">
           <Button asChild size="lg" className="rounded-full px-7">
-            <Link href="/draft">무료로 시안 만들기</Link>
+            <Link href="/templates/tags">무료로 시안 만들기</Link>
           </Button>
           <Button
             asChild
