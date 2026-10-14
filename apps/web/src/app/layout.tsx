@@ -4,6 +4,8 @@ import { Gothic_A1 } from "next/font/google";
 import localFont from "next/font/local";
 import { cn } from "@/lib/utils";
 
+import { Providers } from "./providers";
+
 const gothicA1 = Gothic_A1({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800", "900"],
@@ -40,7 +42,9 @@ export default function RootLayout({
       lang="ko"
       className={cn("font-sans", gothicA1.variable, pretendard.variable)}
     >
-      <body>{children}</body>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
