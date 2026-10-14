@@ -1,17 +1,7 @@
 import { prisma } from "@haru/db";
 
+import { countPhotoElements } from "@/features/template/lib/countPhotoElements";
 import type { Template } from "@/features/template/types";
-
-function countPhotoElements(elements: unknown): number {
-  if (!Array.isArray(elements)) return 0;
-
-  return elements.filter(
-    (element) =>
-      typeof element === "object" &&
-      element !== null &&
-      (element as { type?: unknown }).type === "image",
-  ).length;
-}
 
 // 템플릿 선택(노션 "템플릿 선택" 문서) 화면에 노출할, 공개 처리된 템플릿만 조회한다.
 export async function getPublicTemplates(): Promise<Template[]> {
