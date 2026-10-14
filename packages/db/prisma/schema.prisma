@@ -26,5 +26,39 @@ model Template {
   isActive  Boolean @map("is_active") @default(false)
   sortOrder Int?    @map("sort_order")
 
+  drafts Draft[]
+
   @@map("templates")
+}
+
+enum DraftStatus {
+  editing
+  converting
+  converted
+}
+
+model Draft {
+  id         String      @id @default(cuid())
+  // 인증 기능이 아직 없어 users 테이블과의 관계는 연결하지 않음. 추후 인증 구현 시 FK로 연결.
+  userId     String?     @map("user_id")
+  templateId String      @map("template_id")
+  status     DraftStatus @default(editing)
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+
+  template Template     @relation(fields: [templateId], references: [id])
+  photos   DraftPhoto[]
+
+  @@map("drafts")
+}
+
+model DraftPhoto {
+  id          String @id @default(cuid())
+  draftId     String @map("draft_id")
+  storagePath String @map("storage_path")
+  position    Int
+
+  draft Draft @relation(fields: [draftId], references: [id], onDelete: Cascade)
+
+  @@map("draft_photos")
 }
