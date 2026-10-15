@@ -1,5 +1,6 @@
 import { DraftStepper } from "@/components/DraftStepper";
 import { TemplateListFilter } from "@/components/TemplateListFilter";
+import { extractUniqueTags } from "@/features/template/lib/extractUniqueTags";
 import { getPublicTemplates } from "@/features/template/service/get-public-templates";
 
 type Props = {
@@ -9,6 +10,7 @@ type Props = {
 export default async function TemplatesPage({ searchParams }: Props) {
   const { tag } = await searchParams;
   const templates = await getPublicTemplates();
+  const tagOptions = extractUniqueTags(templates.map((template) => template.tags));
 
   return (
     <div className="flex flex-col gap-10 py-10">
@@ -16,7 +18,11 @@ export default async function TemplatesPage({ searchParams }: Props) {
       <h1 className="font-heading text-3xl font-extrabold tracking-tight">
         템플릿을 선택해 주세요
       </h1>
-      <TemplateListFilter templates={templates} initialTag={tag} />
+      <TemplateListFilter
+        templates={templates}
+        tagOptions={tagOptions}
+        initialTag={tag}
+      />
     </div>
   );
 }

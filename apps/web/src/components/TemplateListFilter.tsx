@@ -5,7 +5,6 @@ import { useMemo, useState } from "react";
 import { TemplateCard } from "@/components/TemplateCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { TEMPLATE_TAG_OPTIONS } from "@/features/template/constants";
 import { filterTemplates } from "@/features/template/lib/filterTemplates";
 import { resolveInitialTag } from "@/features/template/lib/resolveInitialTag";
 
@@ -13,12 +12,13 @@ import type { Template } from "@/features/template/types";
 
 type Props = {
   templates: Template[];
+  tagOptions: string[];
   initialTag?: string;
 };
 
-export function TemplateListFilter({ templates, initialTag }: Props) {
+export function TemplateListFilter({ templates, tagOptions, initialTag }: Props) {
   const [selectedTag, setSelectedTag] = useState<string | null>(
-    resolveInitialTag(initialTag, TEMPLATE_TAG_OPTIONS),
+    resolveInitialTag(initialTag, tagOptions),
   );
   const [search, setSearch] = useState("");
 
@@ -37,7 +37,7 @@ export function TemplateListFilter({ templates, initialTag }: Props) {
         >
           전체
         </Button>
-        {TEMPLATE_TAG_OPTIONS.map((tag) => (
+        {tagOptions.map((tag) => (
           <Button
             key={tag}
             type="button"
