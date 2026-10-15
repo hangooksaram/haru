@@ -8,6 +8,7 @@ import {
 } from "@/features/draft/errors";
 import { assertValidPhotoFile } from "@/features/draft/lib/assertValidPhotoFile";
 import { getPhotoFileExtension } from "@/features/draft/lib/getPhotoFileExtension";
+import { selectAcceptablePhotos } from "@/features/draft/lib/selectAcceptablePhotos";
 import { countPhotoElements } from "@/features/template/lib/countPhotoElements";
 
 import {
@@ -41,9 +42,11 @@ export async function addDraftPhotos(
   if (draft.status !== "editing") throw new DraftNotEditableError(draftId);
 
   const slotCount = countPhotoElements(draft.template.elements);
-  const remaining = Math.max(0, slotCount - draft.photos.length);
-  const accepted = files.slice(0, remaining);
-  const rejectedCount = files.length - accepted.length;
+  const { accepted, rejectedCount } = selectAcceptablePhotos(
+    files,
+    slotCount,
+    draft.photos.length,
+  );
 
   const added: DraftPhoto[] = [];
 

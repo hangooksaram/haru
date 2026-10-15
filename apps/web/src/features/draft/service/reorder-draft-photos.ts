@@ -5,6 +5,7 @@ import {
   DraftNotFoundError,
   InvalidPhotoOrderError,
 } from "@/features/draft/errors";
+import { isValidPhotoOrder } from "@/features/draft/lib/isValidPhotoOrder";
 
 export async function reorderDraftPhotos(
   draftId: string,
@@ -18,12 +19,9 @@ export async function reorderDraftPhotos(
   if (!draft) throw new DraftNotFoundError(draftId);
   if (draft.status !== "editing") throw new DraftNotEditableError(draftId);
 
-  const existingIds = new Set(draft.photos.map((photo) => photo.id));
-  const sameSet =
-    photoIds.length === existingIds.size &&
-    photoIds.every((id) => existingIds.has(id));
+  const existingIds = draft.photos.map((photo) => photo.id);
 
-  if (!sameSet) {
+  if (!isValidPhotoOrder(existingIds, photoIds)) {
     throw new InvalidPhotoOrderError(
       "요청한 사진 목록이 시안의 사진 목록과 일치하지 않습니다.",
     );
