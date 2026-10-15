@@ -5,11 +5,11 @@ import { useMemo, useState } from "react";
 import { TemplateCard } from "@/components/TemplateCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TEMPLATE_TAG_OPTIONS } from "@/features/template/constants";
+import { filterTemplates } from "@/features/template/lib/filterTemplates";
+import { resolveInitialTag } from "@/features/template/lib/resolveInitialTag";
 
 import type { Template } from "@/features/template/types";
-
-// 노션 "템플릿 선택" 정책: 태그 필터는 일단 결혼·돌잔치만 둔다.
-const TAG_OPTIONS = ["결혼", "돌잔치"];
 
 type Props = {
   templates: Template[];
@@ -18,21 +18,14 @@ type Props = {
 
 export function TemplateListFilter({ templates, initialTag }: Props) {
   const [selectedTag, setSelectedTag] = useState<string | null>(
-    initialTag && TAG_OPTIONS.includes(initialTag) ? initialTag : null,
+    resolveInitialTag(initialTag, TEMPLATE_TAG_OPTIONS),
   );
   const [search, setSearch] = useState("");
 
-  const filteredTemplates = useMemo(() => {
-    const trimmedSearch = search.trim();
-
-    return templates.filter((template) => {
-      if (selectedTag && !template.tags.includes(selectedTag)) return false;
-      if (trimmedSearch && !template.name.includes(trimmedSearch)) {
-        return false;
-      }
-      return true;
-    });
-  }, [templates, selectedTag, search]);
+  const filteredTemplates = useMemo(
+    () => filterTemplates(templates, selectedTag, search),
+    [templates, selectedTag, search],
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -44,7 +37,7 @@ export function TemplateListFilter({ templates, initialTag }: Props) {
         >
           전체
         </Button>
-        {TAG_OPTIONS.map((tag) => (
+        {TEMPLATE_TAG_OPTIONS.map((tag) => (
           <Button
             key={tag}
             type="button"
