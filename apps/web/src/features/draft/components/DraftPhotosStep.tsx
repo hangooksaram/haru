@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { DraftPhotoGrid } from "@/features/draft/components/DraftPhotoGrid";
 import { DraftPhotoUploader } from "@/features/draft/components/DraftPhotoUploader";
+import { useCreateDraft } from "@/features/draft/hooks/useCreateDraft";
 import { useDraft } from "@/features/draft/hooks/useDraft";
-import { useDraftId } from "@/features/draft/hooks/useDraftId";
 import { useReorderDraftPhotos } from "@/features/draft/hooks/useReorderDraftPhotos";
 import { useReplaceDraftPhoto } from "@/features/draft/hooks/useReplaceDraftPhoto";
+import { useStoredDraftId } from "@/features/draft/hooks/useStoredDraftId";
 import { useUploadDraftPhotos } from "@/features/draft/hooks/useUploadDraftPhotos";
 
 type Props = {
@@ -15,14 +16,20 @@ type Props = {
 };
 
 export function DraftPhotosStep({ templateId }: Props) {
-  const { draftId } = useDraftId(templateId);
-  const { data: draft, isLoading } = useDraft(draftId);
+  const { draftId, setDraftId } = useStoredDraftId(templateId);
+  const { mutate: createDraft } = useCreateDraft();
+  const { data: draft, isLoading } = useDraft(draftId ?? null);
   const [message, setMessage] = useState<string | null>(null);
   const [replacingPhotoId, setReplacingPhotoId] = useState<string | null>(null);
 
   const upload = useUploadDraftPhotos(draftId ?? "");
   const replace = useReplaceDraftPhoto(draftId ?? "");
   const reorder = useReorderDraftPhotos(draftId ?? "");
+
+  useEffect(() => {
+    if (draftId === undefined || draftId) return;
+    createDraft(templateId, { onSuccess: (created) => setDraftId(created.id) });
+  }, [draftId, templateId, createDraft, setDraftId]);
 
   if (!draftId || isLoading || !draft) {
     return <p className="text-muted-foreground">불러오는 중...</p>;
