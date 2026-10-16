@@ -1,9 +1,9 @@
-import { createClient } from "@/lib/supabase/server";
 import { EmailAlreadyRegisteredError } from "@/features/auth/errors";
 import { upsertUserProfile } from "@/features/auth/service/upsert-user-profile";
+import { createServerClient } from "@/lib/supabase/server";
 
 export async function signUp(email: string, password: string): Promise<void> {
-  const supabase = await createClient();
+  const supabase = await createServerClient();
 
   const { data, error } = await supabase.auth.signUp({ email, password });
 
