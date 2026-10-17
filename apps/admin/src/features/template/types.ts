@@ -1,7 +1,7 @@
 export type TemplateSyncStatus = "not_imported" | "imported" | "changed";
 
 export type TemplateElement =
-  | { id: string; name: string; type: "image"; source: string }
+  | { id: string; name: string; type: "image"; source?: string }
   | { id: string; name: string; type: "text"; text: string };
 
 export type Template = {

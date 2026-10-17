@@ -12,8 +12,7 @@ export function extractTemplateElements(
     if (
       element.dynamic &&
       element.type === "image" &&
-      element.name !== undefined &&
-      element.source !== undefined
+      element.name !== undefined
     ) {
       result.push({
         id: element.id,
