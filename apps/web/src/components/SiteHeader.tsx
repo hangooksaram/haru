@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ProfileBadge } from "@/features/auth/components/ProfileBadge";
 
 const links = [
   { href: "#templates", label: "템플릿" },
@@ -22,9 +23,12 @@ export function SiteHeader() {
           </a>
         ))}
       </nav>
-      <Button asChild size="lg" className="rounded-full">
-        <Link href="/templates/tags">무료로 시작하기</Link>
-      </Button>
+      <div className="flex items-center gap-3">
+        <Button asChild size="lg" className="rounded-full">
+          <Link href="/templates/tags">무료로 시작하기</Link>
+        </Button>
+        <ProfileBadge />
+      </div>
     </header>
   );
 }
