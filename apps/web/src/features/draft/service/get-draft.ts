@@ -1,12 +1,16 @@
 import { prisma } from "@haru/db";
 
+import { DraftForbiddenError } from "@/features/draft/errors";
 import { countPhotoElements } from "@/features/template/lib/countPhotoElements";
 
 import { getDraftPhotoSignedUrl } from "./draft-photo-storage";
 
 import type { Draft } from "@/features/draft/types";
 
-export async function getDraft(draftId: string): Promise<Draft | null> {
+export async function getDraft(
+  draftId: string,
+  currentUserId: string | null,
+): Promise<Draft | null> {
   const draft = await prisma.draft.findUnique({
     where: { id: draftId },
     include: {
@@ -16,6 +20,10 @@ export async function getDraft(draftId: string): Promise<Draft | null> {
   });
 
   if (!draft) return null;
+
+  if (draft.userId && draft.userId !== currentUserId) {
+    throw new DraftForbiddenError(draftId);
+  }
 
   const photos = await Promise.all(
     draft.photos.map(async (photo) => ({

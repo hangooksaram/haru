@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { TemplateNotFoundError } from "@/features/draft/errors";
 import { createDraft } from "@/features/draft/service/create-draft";
+import { createServerClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
   const body = await request.json();
@@ -15,7 +16,9 @@ export async function POST(request: Request) {
   }
 
   try {
-    const draft = await createDraft(templateId);
+    const supabase = await createServerClient();
+    const { data } = await supabase.auth.getUser();
+    const draft = await createDraft(templateId, data.user?.id ?? null);
 
     return NextResponse.json(draft, { status: 201 });
   } catch (error) {
