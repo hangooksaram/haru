@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 
+import { useCurrentUserId } from "@/features/auth/hooks/useCurrentUserId";
 import { DraftPhotoGrid } from "@/features/draft/components/DraftPhotoGrid";
 import { DraftPhotoUploader } from "@/features/draft/components/DraftPhotoUploader";
+import { DraftForbiddenError } from "@/features/draft/errors";
 import { useCreateDraft } from "@/features/draft/hooks/useCreateDraft";
 import { useDraft } from "@/features/draft/hooks/useDraft";
 import { useReorderDraftPhotos } from "@/features/draft/hooks/useReorderDraftPhotos";
@@ -16,9 +18,13 @@ type Props = {
 };
 
 export function DraftPhotosStep({ templateId }: Props) {
-  const { draftId, setDraftId } = useStoredDraftId(templateId);
+  const currentUserId = useCurrentUserId();
+  const { draftId, setDraftId, clearDraftId } = useStoredDraftId(
+    templateId,
+    currentUserId,
+  );
   const { mutate: createDraft } = useCreateDraft();
-  const { data: draft, isLoading } = useDraft(draftId ?? null);
+  const { data: draft, isLoading, error } = useDraft(draftId ?? null);
   const [message, setMessage] = useState<string | null>(null);
   const [replacingPhotoId, setReplacingPhotoId] = useState<string | null>(null);
 
@@ -28,8 +34,15 @@ export function DraftPhotosStep({ templateId }: Props) {
 
   useEffect(() => {
     if (draftId === undefined || draftId) return;
-    createDraft(templateId, { onSuccess: (created) => setDraftId(created.id) });
+    createDraft(templateId, {
+      onSuccess: (created) => setDraftId(created.id),
+    });
   }, [draftId, templateId, createDraft, setDraftId]);
+
+  // 소유자가 아닌 시안을 조회하다 403을 받으면 이어하기를 노출하지 않고, 저장된 draftId를 지워 새 시안을 생성한다.
+  useEffect(() => {
+    if (error instanceof DraftForbiddenError) clearDraftId();
+  }, [error, clearDraftId]);
 
   if (!draftId || isLoading || !draft) {
     return <p className="text-muted-foreground">불러오는 중...</p>;
