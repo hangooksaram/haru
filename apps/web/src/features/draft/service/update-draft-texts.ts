@@ -6,7 +6,8 @@ import {
   DraftNotFoundError,
   InvalidDraftTextError,
 } from "@/features/draft/errors";
-import { resolveDraftTextElementName } from "@/features/draft/lib/resolveDraftTextElementName";
+import { resolveDraftTextElement } from "@/features/draft/lib/resolveDraftTextElement";
+import { trimBlankText } from "@/features/draft/lib/trimBlankText";
 import { extractSortedTextElements } from "@/features/template/lib/extractSortedTextElements";
 
 import type { DraftTextInput } from "@/features/draft/types";
@@ -32,17 +33,23 @@ export async function updateDraftTexts(
   );
 
   const resolved = texts.map((item) => {
-    const name = resolveDraftTextElementName(
+    const matched = resolveDraftTextElement(
       item.type,
       item.name,
       templateTextElements,
     );
 
-    if (!name) {
+    if (!matched) {
       throw new InvalidDraftTextError("시안 템플릿에 없는 텍스트 요소입니다.");
     }
 
-    return { name, text: item.text.trim() };
+    const trimmed = trimBlankText(item.text);
+
+    if (matched.type === "기본정보" && trimmed === "") {
+      throw new InvalidDraftTextError("기본정보는 빈 값으로 저장할 수 없습니다.");
+    }
+
+    return { name: matched.name, text: trimmed };
   });
 
   await prisma.$transaction(
