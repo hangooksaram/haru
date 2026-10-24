@@ -11,3 +11,9 @@ export type Draft = {
   photoSlotCount: number;
   photos: DraftPhoto[];
 };
+
+export type DraftTextInput = {
+  type: string;
+  name: string;
+  text: string;
+};

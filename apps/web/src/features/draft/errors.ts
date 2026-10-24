@@ -5,3 +5,4 @@ export class DraftNotEditableError extends Error {}
 export class DraftPhotoNotFoundError extends Error {}
 export class InvalidPhotoFileError extends Error {}
 export class InvalidPhotoOrderError extends Error {}
+export class InvalidDraftTextError extends Error {}

@@ -59,6 +59,7 @@ model Draft {
 
   template Template     @relation(fields: [templateId], references: [id])
   photos   DraftPhoto[]
+  texts    DraftText[]
 
   @@map("drafts")
 }
@@ -72,4 +73,16 @@ model DraftPhoto {
   draft Draft @relation(fields: [draftId], references: [id], onDelete: Cascade)
 
   @@map("draft_photos")
+}
+
+model DraftText {
+  id      String @id @default(cuid())
+  draftId String @map("draft_id")
+  name    String
+  text    String
+
+  draft Draft @relation(fields: [draftId], references: [id], onDelete: Cascade)
+
+  @@unique([draftId, name])
+  @@map("draft_texts")
 }
