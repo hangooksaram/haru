@@ -11,5 +11,7 @@ dist
 next-env.d.ts
 .vercel
 coverage
+.vitest
 .vscode
 .claude
+
