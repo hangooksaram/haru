@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { DraftForbiddenError } from "@/features/draft/errors";
+import { deleteDraft } from "@/features/draft/service/delete-draft";
 import { getDraft } from "@/features/draft/service/get-draft";
 import { createServerClient } from "@/lib/supabase/server";
 
@@ -24,6 +25,34 @@ export async function GET(_request: Request, { params }: Params) {
     }
 
     return NextResponse.json(draft);
+  } catch (error) {
+    if (error instanceof DraftForbiddenError) {
+      return NextResponse.json(
+        { error: "이 시안에 접근할 권한이 없습니다." },
+        { status: 403 },
+      );
+    }
+
+    throw error;
+  }
+}
+
+export async function DELETE(_request: Request, { params }: Params) {
+  const { draftId } = await params;
+  const supabase = await createServerClient();
+  const { data } = await supabase.auth.getUser();
+
+  try {
+    const deleted = await deleteDraft(draftId, data.user?.id ?? null);
+
+    if (!deleted) {
+      return NextResponse.json(
+        { error: "시안을 찾을 수 없습니다." },
+        { status: 404 },
+      );
+    }
+
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
     if (error instanceof DraftForbiddenError) {
       return NextResponse.json(
