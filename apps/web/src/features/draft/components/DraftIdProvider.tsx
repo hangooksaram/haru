@@ -9,6 +9,7 @@ type DraftIdContextValue = {
   draftId: string | null | undefined;
   setDraftId: (id: string) => void;
   clearDraftId: () => void;
+  isFreshlyCreated: boolean;
 };
 
 const DraftIdContext = createContext<DraftIdContextValue | null>(null);

@@ -30,12 +30,14 @@ const TITLE = "작성 중이던 시안이 있어요";
 function setup({
   draftId = "draft-1",
   draft = { id: "draft-1" },
+  isFreshlyCreated = false,
   mutate = vi.fn(),
   isPending = false,
   error = null,
 }: Partial<{
   draftId: string | null;
   draft: unknown;
+  isFreshlyCreated: boolean;
   mutate: ReturnType<typeof vi.fn>;
   isPending: boolean;
   error: Error | null;
@@ -45,7 +47,7 @@ function setup({
   const removeQueries = vi.fn();
 
   useQueryClient.mockReturnValue({ removeQueries });
-  useDraftId.mockReturnValue({ draftId, clearDraftId });
+  useDraftId.mockReturnValue({ draftId, clearDraftId, isFreshlyCreated });
   useDraft.mockReturnValue({ data: draft });
   useStoredDraftTexts.mockReturnValue({ clear: clearTexts });
   useDeleteDraft.mockReturnValue({ mutate, isPending, error });
@@ -70,6 +72,14 @@ describe("DraftResumeDialog", () => {
 
   it("저장된 시안이 없으면 모달을 보여주지 않는다", () => {
     setup({ draftId: null, draft: undefined });
+
+    render(<DraftResumeDialog />);
+
+    expect(screen.queryByText(TITLE)).not.toBeInTheDocument();
+  });
+
+  it("이번 방문에서 막 새로 만든 시안이면 모달을 보여주지 않는다", () => {
+    setup({ isFreshlyCreated: true });
 
     render(<DraftResumeDialog />);
 

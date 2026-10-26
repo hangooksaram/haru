@@ -18,14 +18,14 @@ import { useDraft } from "@/features/draft/hooks/useDraft";
 import { useStoredDraftTexts } from "@/features/draft/hooks/useStoredDraftTexts";
 
 export function DraftResumeDialog() {
-  const { draftId, clearDraftId } = useDraftId();
+  const { draftId, clearDraftId, isFreshlyCreated } = useDraftId();
   const { data: draft } = useDraft(draftId ?? null);
   const { clear: clearTexts } = useStoredDraftTexts(draftId ?? null);
   const { mutate: deleteDraft, isPending, error } = useDeleteDraft();
   const queryClient = useQueryClient();
   const [acknowledged, setAcknowledged] = useState(false);
 
-  const open = Boolean(draftId && draft) && !acknowledged;
+  const open = Boolean(draftId && draft) && !isFreshlyCreated && !acknowledged;
 
   function handleResume() {
     setAcknowledged(true);
