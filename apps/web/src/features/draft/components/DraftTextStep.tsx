@@ -4,9 +4,8 @@ import { useEffect, useState } from "react";
 
 import { DraftStepNav } from "@/components/DraftStepNav";
 import { Input } from "@/components/ui/input";
-import { useCurrentUserId } from "@/features/auth/hooks/useCurrentUserId";
+import { useDraftId } from "@/features/draft/components/DraftIdProvider";
 import { useCreateDraft } from "@/features/draft/hooks/useCreateDraft";
-import { useStoredDraftId } from "@/features/draft/hooks/useStoredDraftId";
 import { useStoredDraftTexts } from "@/features/draft/hooks/useStoredDraftTexts";
 import { useUpdateDraftTexts } from "@/features/draft/hooks/useUpdateDraftTexts";
 import { removeHyphens } from "@/features/draft/lib/removeHyphens";
@@ -27,8 +26,7 @@ function elementKey(element: TemplateTextElement): string {
 }
 
 export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
-  const currentUserId = useCurrentUserId();
-  const { draftId, setDraftId } = useStoredDraftId(templateId, currentUserId);
+  const { draftId, setDraftId } = useDraftId();
   const { mutate: createDraft } = useCreateDraft();
   const { data: elements, isLoading } = useTemplateTextElements(templateId);
   const {

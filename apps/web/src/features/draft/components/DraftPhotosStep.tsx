@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { useCurrentUserId } from "@/features/auth/hooks/useCurrentUserId";
+import { useDraftId } from "@/features/draft/components/DraftIdProvider";
 import { DraftPhotoGrid } from "@/features/draft/components/DraftPhotoGrid";
 import { DraftPhotoUploader } from "@/features/draft/components/DraftPhotoUploader";
 import { DraftForbiddenError } from "@/features/draft/errors";
@@ -10,7 +10,6 @@ import { useCreateDraft } from "@/features/draft/hooks/useCreateDraft";
 import { useDraft } from "@/features/draft/hooks/useDraft";
 import { useReorderDraftPhotos } from "@/features/draft/hooks/useReorderDraftPhotos";
 import { useReplaceDraftPhoto } from "@/features/draft/hooks/useReplaceDraftPhoto";
-import { useStoredDraftId } from "@/features/draft/hooks/useStoredDraftId";
 import { useUploadDraftPhotos } from "@/features/draft/hooks/useUploadDraftPhotos";
 
 type Props = {
@@ -18,11 +17,7 @@ type Props = {
 };
 
 export function DraftPhotosStep({ templateId }: Props) {
-  const currentUserId = useCurrentUserId();
-  const { draftId, setDraftId, clearDraftId } = useStoredDraftId(
-    templateId,
-    currentUserId,
-  );
+  const { draftId, setDraftId, clearDraftId } = useDraftId();
   const { mutate: createDraft } = useCreateDraft();
   const { data: draft, isLoading, error } = useDraft(draftId ?? null);
   const [message, setMessage] = useState<string | null>(null);
