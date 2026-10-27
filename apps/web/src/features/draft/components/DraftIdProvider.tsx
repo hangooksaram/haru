@@ -3,6 +3,7 @@
 import { createContext, useContext } from "react";
 
 import { useCurrentUserId } from "@/features/auth/hooks/useCurrentUserId";
+import { useDraftAcknowledged } from "@/features/draft/components/DraftAcknowledgedProvider";
 import { useStoredDraftId } from "@/features/draft/hooks/useStoredDraftId";
 
 type DraftIdContextValue = {
@@ -10,6 +11,7 @@ type DraftIdContextValue = {
   setDraftId: (id: string) => void;
   clearDraftId: () => void;
   isFreshlyCreated: boolean;
+  acknowledgeResume: () => void;
 };
 
 const DraftIdContext = createContext<DraftIdContextValue | null>(null);
@@ -21,7 +23,26 @@ type Props = {
 
 export function DraftIdProvider({ templateId, children }: Props) {
   const currentUserId = useCurrentUserId();
-  const value = useStoredDraftId(templateId, currentUserId);
+  const { draftId, setDraftId: setStoredDraftId, clearDraftId } =
+    useStoredDraftId(templateId, currentUserId);
+  const { isAcknowledged, acknowledge } = useDraftAcknowledged();
+
+  function setDraftId(id: string) {
+    acknowledge(id);
+    setStoredDraftId(id);
+  }
+
+  function acknowledgeResume() {
+    if (draftId) acknowledge(draftId);
+  }
+
+  const value: DraftIdContextValue = {
+    draftId,
+    setDraftId,
+    clearDraftId,
+    isFreshlyCreated: draftId ? isAcknowledged(draftId) : false,
+    acknowledgeResume,
+  };
 
   return (
     <DraftIdContext.Provider value={value}>{children}</DraftIdContext.Provider>

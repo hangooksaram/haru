@@ -45,14 +45,20 @@ function setup({
   const clearDraftId = vi.fn();
   const clearTexts = vi.fn();
   const removeQueries = vi.fn();
+  const acknowledgeResume = vi.fn();
 
   useQueryClient.mockReturnValue({ removeQueries });
-  useDraftId.mockReturnValue({ draftId, clearDraftId, isFreshlyCreated });
+  useDraftId.mockReturnValue({
+    draftId,
+    clearDraftId,
+    isFreshlyCreated,
+    acknowledgeResume,
+  });
   useDraft.mockReturnValue({ data: draft });
   useStoredDraftTexts.mockReturnValue({ clear: clearTexts });
   useDeleteDraft.mockReturnValue({ mutate, isPending, error });
 
-  return { clearDraftId, clearTexts, removeQueries, mutate };
+  return { clearDraftId, clearTexts, removeQueries, mutate, acknowledgeResume };
 }
 
 describe("DraftResumeDialog", () => {
@@ -86,14 +92,14 @@ describe("DraftResumeDialog", () => {
     expect(screen.queryByText(TITLE)).not.toBeInTheDocument();
   });
 
-  it("'이어서 작성'을 선택하면 모달이 닫힌다", async () => {
-    setup();
+  it("'이어서 작성'을 선택하면 acknowledgeResume을 호출한다", async () => {
+    const { acknowledgeResume } = setup();
     const user = userEvent.setup();
 
     render(<DraftResumeDialog />);
     await user.click(screen.getByRole("button", { name: "이어서 작성" }));
 
-    expect(screen.queryByText(TITLE)).not.toBeInTheDocument();
+    expect(acknowledgeResume).toHaveBeenCalled();
   });
 
   it("'새로 시작'을 선택하면 시안을 삭제하고 캐시·로컬 데이터를 정리한다", async () => {

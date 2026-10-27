@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 function getStorageKey(
   templateId: string,
@@ -17,15 +17,12 @@ export function useStoredDraftId(
     undefined,
   );
 
-  const isFreshlyCreated = useRef(false);
-
   useEffect(() => {
     if (currentUserId === undefined) {
       setDraftIdState(undefined);
       return;
     }
     const raw = localStorage.getItem(getStorageKey(templateId, currentUserId));
-    isFreshlyCreated.current = false;
     setDraftIdState(raw);
   }, [templateId, currentUserId]);
 
@@ -33,7 +30,6 @@ export function useStoredDraftId(
     (id: string) => {
       if (currentUserId === undefined) return;
       localStorage.setItem(getStorageKey(templateId, currentUserId), id);
-      isFreshlyCreated.current = true;
       setDraftIdState(id);
     },
     [templateId, currentUserId],
@@ -45,10 +41,5 @@ export function useStoredDraftId(
     setDraftIdState(null);
   }, [templateId, currentUserId]);
 
-  return {
-    draftId,
-    setDraftId,
-    clearDraftId,
-    isFreshlyCreated: isFreshlyCreated.current,
-  };
+  return { draftId, setDraftId, clearDraftId };
 }

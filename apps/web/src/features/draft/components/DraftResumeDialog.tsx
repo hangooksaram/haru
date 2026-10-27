@@ -1,7 +1,6 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,17 +17,17 @@ import { useDraft } from "@/features/draft/hooks/useDraft";
 import { useStoredDraftTexts } from "@/features/draft/hooks/useStoredDraftTexts";
 
 export function DraftResumeDialog() {
-  const { draftId, clearDraftId, isFreshlyCreated } = useDraftId();
+  const { draftId, clearDraftId, isFreshlyCreated, acknowledgeResume } =
+    useDraftId();
   const { data: draft } = useDraft(draftId ?? null);
   const { clear: clearTexts } = useStoredDraftTexts(draftId ?? null);
   const { mutate: deleteDraft, isPending, error } = useDeleteDraft();
   const queryClient = useQueryClient();
-  const [acknowledged, setAcknowledged] = useState(false);
 
-  const open = Boolean(draftId && draft) && !isFreshlyCreated && !acknowledged;
+  const open = Boolean(draftId && draft) && !isFreshlyCreated;
 
   function handleResume() {
-    setAcknowledged(true);
+    acknowledgeResume();
   }
 
   function handleRestart() {
