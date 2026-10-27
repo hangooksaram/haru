@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
 import { DraftPhotoGrid } from "@/features/draft/components/DraftPhotoGrid";
-import { DraftPhotoUploader } from "@/features/draft/components/DraftPhotoUploader";
 import { DraftForbiddenError } from "@/features/draft/errors";
 import { useCreateDraft } from "@/features/draft/hooks/useCreateDraft";
 import { useDraft } from "@/features/draft/hooks/useDraft";
-import { useReorderDraftPhotos } from "@/features/draft/hooks/useReorderDraftPhotos";
 import { useReplaceDraftPhoto } from "@/features/draft/hooks/useReplaceDraftPhoto";
+import { useSwapDraftPhotos } from "@/features/draft/hooks/useSwapDraftPhotos";
 import { useUploadDraftPhotos } from "@/features/draft/hooks/useUploadDraftPhotos";
+import { useTemplatePhotoElements } from "@/features/template/hooks/useTemplatePhotoElements";
 
 type Props = {
   templateId: string;
@@ -19,13 +19,21 @@ type Props = {
 export function DraftPhotosStep({ templateId }: Props) {
   const { draftId, setDraftId, clearDraftId } = useDraftId();
   const { mutate: createDraft } = useCreateDraft();
-  const { data: draft, isLoading, error } = useDraft(draftId ?? null);
+  const {
+    data: draft,
+    isLoading: isDraftLoading,
+    error,
+  } = useDraft(draftId ?? null);
+  const { data: labels, isLoading: isLabelsLoading } =
+    useTemplatePhotoElements(templateId);
   const [message, setMessage] = useState<string | null>(null);
-  const [replacingPhotoId, setReplacingPhotoId] = useState<string | null>(null);
+  const [replacingPhotoId, setReplacingPhotoId] = useState<string | null>(
+    null,
+  );
 
   const upload = useUploadDraftPhotos(draftId ?? "");
   const replace = useReplaceDraftPhoto(draftId ?? "");
-  const reorder = useReorderDraftPhotos(draftId ?? "");
+  const swap = useSwapDraftPhotos(draftId ?? "");
 
   useEffect(() => {
     if (draftId === undefined || draftId) return;
@@ -39,15 +47,13 @@ export function DraftPhotosStep({ templateId }: Props) {
     if (error instanceof DraftForbiddenError) clearDraftId();
   }, [error, clearDraftId]);
 
-  if (!draftId || isLoading || !draft) {
+  if (!draftId || isDraftLoading || isLabelsLoading || !draft || !labels) {
     return <p className="text-muted-foreground">불러오는 중...</p>;
   }
 
-  const remaining = draft.photoSlotCount - draft.photos.length;
-
-  function handleSelect(files: File[]) {
+  function handleUpload(label: string, files: File[]) {
     setMessage(null);
-    upload.mutate(files, {
+    upload.mutate({ label, files }, {
       onSuccess: (result) => {
         const notes: string[] = [];
         if (result.rejectedCount > 0) {
@@ -93,27 +99,34 @@ export function DraftPhotosStep({ templateId }: Props) {
     );
   }
 
+  function handleSwap(from: string, to: string) {
+    setMessage(null);
+    swap.mutate({ from, to });
+  }
+
+  const photoByLabel = new Map(
+    draft.photos.map((photo) => [photo.name, photo]),
+  );
+  const slots = labels.map((label) => ({
+    label,
+    photo: photoByLabel.get(label) ?? null,
+  }));
+
   return (
     <div className="flex flex-col gap-4">
       <p className="text-muted-foreground text-sm">
-        {draft.photos.length} / {draft.photoSlotCount}장
+        {draft.photos.length} / {labels.length}장
       </p>
       {message && (
         <p className="text-sm font-medium text-amber-600">{message}</p>
       )}
       <DraftPhotoGrid
-        photos={draft.photos}
-        onReorder={(photoIds) => reorder.mutate(photoIds)}
+        slots={slots}
+        onSwap={handleSwap}
+        onUpload={handleUpload}
         onReplace={handleReplace}
         replacingPhotoId={replacingPhotoId}
-        trailing={
-          remaining > 0 && (
-            <DraftPhotoUploader
-              onSelect={handleSelect}
-              disabled={upload.isPending}
-            />
-          )
-        }
+        uploadDisabled={upload.isPending}
       />
     </div>
   );

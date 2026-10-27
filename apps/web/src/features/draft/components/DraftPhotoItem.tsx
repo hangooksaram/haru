@@ -1,62 +1,81 @@
 "use client";
 
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import { useDraggable, useDroppable } from "@dnd-kit/core";
 import { useRef } from "react";
 
+import { DraftPhotoUploader } from "@/features/draft/components/DraftPhotoUploader";
+import { removeHyphens } from "@/features/draft/lib/removeHyphens";
 import { cn } from "@/lib/utils";
 
 import type { DraftPhoto } from "@/features/draft/types";
 
 type Props = {
-  photo: DraftPhoto;
-  index: number;
+  label: string;
+  photo: DraftPhoto | null;
   onReplace: (file: File) => void;
+  onUpload: (files: File[]) => void;
   isReplacing: boolean;
+  uploadDisabled: boolean;
+  registerNode: (label: string, node: HTMLElement | null) => void;
 };
 
 export function DraftPhotoItem({
+  label,
   photo,
-  index,
   onReplace,
+  onUpload,
   isReplacing,
+  uploadDisabled,
+  registerNode,
 }: Props) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: photo.id });
   const inputRef = useRef<HTMLInputElement>(null);
+  const draggable = useDraggable({ id: label, disabled: !photo });
+  const droppable = useDroppable({ id: label });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
+  function setNodeRef(node: HTMLElement | null) {
+    draggable.setNodeRef(node);
+    droppable.setNodeRef(node);
+    registerNode(label, node);
+  }
+
+  if (!photo) {
+    return (
+      <div
+        ref={setNodeRef}
+        className={cn(
+          "relative aspect-square rounded-xl",
+          droppable.isOver && "ring-2 ring-primary",
+        )}
+      >
+        <DraftPhotoUploader onSelect={onUpload} disabled={uploadDisabled} />
+        <span className="pointer-events-none absolute inset-x-0 top-0 truncate px-2 py-1 text-xs font-medium text-muted-foreground">
+          {removeHyphens(label)}
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div
       ref={setNodeRef}
-      style={style}
       className={cn(
         "group relative aspect-square overflow-hidden rounded-xl border",
-        isDragging && "opacity-50",
+        draggable.isDragging && "opacity-50",
+        droppable.isOver && "ring-2 ring-primary",
       )}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={photo.url}
-        alt={`사진 ${index + 1}`}
+        alt={removeHyphens(label)}
         className="h-full w-full object-cover"
       />
       <div
-        {...attributes}
-        {...listeners}
+        {...draggable.attributes}
+        {...draggable.listeners}
         className="absolute inset-x-0 top-0 flex items-center justify-between bg-black/50 px-2 py-1 text-xs font-medium text-white"
       >
-        <span>{index + 1}</span>
+        <span className="truncate">{removeHyphens(label)}</span>
         <span className="cursor-grab active:cursor-grabbing">⠿</span>
       </div>
       <button

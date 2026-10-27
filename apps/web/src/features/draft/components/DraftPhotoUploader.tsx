@@ -32,7 +32,7 @@ export function DraftPhotoUploader({ onSelect, disabled }: Props) {
         if (files.length > 0) onSelect(files);
       }}
       className={cn(
-        "text-muted-foreground flex aspect-square items-center justify-center rounded-xl border-2 border-dashed text-sm font-medium transition-colors",
+        "text-muted-foreground absolute inset-0 flex items-center justify-center rounded-xl border-2 border-dashed text-sm font-medium transition-colors",
         disabled
           ? "cursor-not-allowed opacity-50"
           : "hover:border-primary hover:text-primary",
