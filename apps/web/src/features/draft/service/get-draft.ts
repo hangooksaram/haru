@@ -16,6 +16,7 @@ export async function getDraft(
     include: {
       template: { select: { elements: true } },
       photos: { orderBy: { position: "asc" } },
+      texts: true,
     },
   });
 
@@ -39,5 +40,6 @@ export async function getDraft(
     status: draft.status,
     photoSlotCount: countPhotoElements(draft.template.elements),
     photos,
+    texts: draft.texts.map((text) => ({ name: text.name, text: text.text })),
   };
 }

@@ -1,5 +1,5 @@
-import { DraftStepNav } from "@/components/DraftStepNav";
 import { DraftStepper } from "@/components/DraftStepper";
+import { DraftPreviewStep } from "@/features/draft/components/DraftPreviewStep";
 
 type Props = {
   params: Promise<{ templateId: string }>;
@@ -14,10 +14,7 @@ export default async function DraftPreviewPage({ params }: Props) {
       <h1 className="font-heading text-3xl font-extrabold tracking-tight">
         미리보기
       </h1>
-      <DraftStepNav
-        prevHref={`/draft/${templateId}/text`}
-        nextHref={`/draft/${templateId}/payment`}
-      />
+      <DraftPreviewStep templateId={templateId} />
     </div>
   );
 }
