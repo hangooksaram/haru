@@ -8,8 +8,9 @@ import {
 } from "@/features/draft/errors";
 import { assertValidPhotoFile } from "@/features/draft/lib/assertValidPhotoFile";
 import { getPhotoFileExtension } from "@/features/draft/lib/getPhotoFileExtension";
+import { resolveEmptyPhotoLabels } from "@/features/draft/lib/resolveEmptyPhotoLabels";
 import { selectAcceptablePhotos } from "@/features/draft/lib/selectAcceptablePhotos";
-import { countPhotoElements } from "@/features/template/lib/countPhotoElements";
+import { extractSortedPhotoElements } from "@/features/template/lib/extractSortedPhotoElements";
 
 import {
   getDraftPhotoSignedUrl,
@@ -27,6 +28,7 @@ type PhotoFileInput = {
 export async function addDraftPhotos(
   draftId: string,
   files: PhotoFileInput[],
+  targetLabel?: string,
 ): Promise<{ added: DraftPhoto[]; rejectedCount: number }> {
   files.forEach(assertValidPhotoFile);
 
@@ -34,23 +36,29 @@ export async function addDraftPhotos(
     where: { id: draftId },
     include: {
       template: { select: { elements: true } },
-      photos: { select: { id: true } },
+      photos: { select: { name: true } },
     },
   });
 
   if (!draft) throw new DraftNotFoundError(draftId);
   if (draft.status !== "editing") throw new DraftNotEditableError(draftId);
 
-  const slotCount = countPhotoElements(draft.template.elements);
+  const labels = extractSortedPhotoElements(draft.template.elements);
+  const emptyLabels = resolveEmptyPhotoLabels(
+    labels,
+    draft.photos.map((photo) => photo.name),
+    targetLabel,
+  );
   const { accepted, rejectedCount } = selectAcceptablePhotos(
     files,
-    slotCount,
+    labels.length,
     draft.photos.length,
   );
 
   const added: DraftPhoto[] = [];
 
   for (const [index, file] of accepted.entries()) {
+    const name = emptyLabels[index];
     const path = `${draftId}/${randomUUID()}.${getPhotoFileExtension(file.contentType)}`;
 
     await uploadDraftPhoto(path, file.buffer, file.contentType);
@@ -59,12 +67,14 @@ export async function addDraftPhotos(
       data: {
         draftId,
         storagePath: path,
-        position: draft.photos.length + index,
+        name,
+        position: labels.indexOf(name),
       },
     });
 
     added.push({
       id: photo.id,
+      name: photo.name,
       position: photo.position,
       url: await getDraftPhotoSignedUrl(path),
     });

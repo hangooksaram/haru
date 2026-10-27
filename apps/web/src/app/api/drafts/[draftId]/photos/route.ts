@@ -17,6 +17,7 @@ export async function POST(request: Request, { params }: Params) {
   const fileEntries = formData
     .getAll("files")
     .filter((entry): entry is File => entry instanceof File);
+  const label = formData.get("label");
 
   if (fileEntries.length === 0) {
     return NextResponse.json(
@@ -34,7 +35,11 @@ export async function POST(request: Request, { params }: Params) {
   );
 
   try {
-    const result = await addDraftPhotos(draftId, files);
+    const result = await addDraftPhotos(
+      draftId,
+      files,
+      typeof label === "string" ? label : undefined,
+    );
 
     return NextResponse.json(result, { status: 201 });
   } catch (error) {

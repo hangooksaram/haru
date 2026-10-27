@@ -50,6 +50,7 @@ export async function replaceDraftPhoto(
 
   return {
     id: updated.id,
+    name: updated.name,
     position: updated.position,
     url: await getDraftPhotoSignedUrl(path),
   };

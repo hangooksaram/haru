@@ -1,5 +1,6 @@
 export type DraftPhoto = {
   id: string;
+  name: string;
   position: number;
   url: string;
 };
@@ -13,7 +14,6 @@ export type Draft = {
   id: string;
   templateId: string;
   status: "editing" | "converting" | "converted";
-  photoSlotCount: number;
   photos: DraftPhoto[];
   texts: DraftSavedText[];
 };

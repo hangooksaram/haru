@@ -12,14 +12,23 @@ type UploadResult = {
   blurryWarningCount: number;
 };
 
+type UploadDraftPhotosInput = {
+  label: string;
+  files: File[];
+};
+
 export function useUploadDraftPhotos(draftId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (files: File[]): Promise<UploadResult> => {
+    mutationFn: async ({
+      label,
+      files,
+    }: UploadDraftPhotosInput): Promise<UploadResult> => {
       const processed = await Promise.all(files.map(processPhotoFile));
 
       const formData = new FormData();
+      formData.append("label", label);
       processed.forEach(({ file }) => formData.append("files", file));
 
       const response = await fetch(`/api/drafts/${draftId}/photos`, {
