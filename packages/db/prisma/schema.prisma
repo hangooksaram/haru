@@ -69,9 +69,11 @@ model DraftPhoto {
   draftId     String @map("draft_id")
   storagePath String @map("storage_path")
   position    Int
+  name        String
 
   draft Draft @relation(fields: [draftId], references: [id], onDelete: Cascade)
 
+  @@unique([draftId, name])
   @@map("draft_photos")
 }
 
