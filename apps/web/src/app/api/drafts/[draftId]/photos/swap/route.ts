@@ -3,9 +3,9 @@ import { NextResponse } from "next/server";
 import {
   DraftNotEditableError,
   DraftNotFoundError,
-  InvalidPhotoOrderError,
+  InvalidPhotoSwapError,
 } from "@/features/draft/errors";
-import { reorderDraftPhotos } from "@/features/draft/service/reorder-draft-photos";
+import { swapDraftPhotos } from "@/features/draft/service/swap-draft-photos";
 
 type Params = {
   params: Promise<{ draftId: string }>;
@@ -14,20 +14,17 @@ type Params = {
 export async function PATCH(request: Request, { params }: Params) {
   const { draftId } = await params;
   const body = await request.json();
-  const photoIds = body?.photoIds;
+  const { from, to } = body ?? {};
 
-  if (
-    !Array.isArray(photoIds) ||
-    photoIds.some((id) => typeof id !== "string")
-  ) {
+  if (typeof from !== "string" || typeof to !== "string") {
     return NextResponse.json(
-      { error: "photoIds가 필요합니다." },
+      { error: "from, to가 필요합니다." },
       { status: 400 },
     );
   }
 
   try {
-    await reorderDraftPhotos(draftId, photoIds);
+    await swapDraftPhotos(draftId, from, to);
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
@@ -43,7 +40,7 @@ export async function PATCH(request: Request, { params }: Params) {
         { status: 409 },
       );
     }
-    if (error instanceof InvalidPhotoOrderError) {
+    if (error instanceof InvalidPhotoSwapError) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
