@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
 import { useCreateDraft } from "@/features/draft/hooks/useCreateDraft";
 import { useStoredDraftTexts } from "@/features/draft/hooks/useStoredDraftTexts";
-import { useUpdateDraftTexts } from "@/features/draft/hooks/useUpdateDraftTexts";
+import { elementKey } from "@/features/draft/lib/elementKey";
 import { removeHyphens } from "@/features/draft/lib/removeHyphens";
 import { removeLineBreaks } from "@/features/draft/lib/removeLineBreaks";
 import { trimBlankText } from "@/features/draft/lib/trimBlankText";
@@ -21,20 +21,12 @@ type Props = {
   nextHref: string;
 };
 
-function elementKey(element: TemplateTextElement): string {
-  return `${element.type}_${element.name}`;
-}
-
 export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
   const { draftId, setDraftId } = useDraftId();
   const { mutate: createDraft } = useCreateDraft();
   const { data: elements, isLoading } = useTemplateTextElements(templateId);
-  const {
-    values: storedValues,
-    setValue: setStoredValue,
-    clear: clearStoredValues,
-  } = useStoredDraftTexts(draftId ?? null);
-  const update = useUpdateDraftTexts(draftId ?? "");
+  const { values: storedValues, setValue: setStoredValue } =
+    useStoredDraftTexts(draftId ?? null);
   const [values, setValues] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
 
@@ -67,8 +59,7 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
 
   function isBasicInfoEmpty(element: TemplateTextElement): boolean {
     return (
-      element.type === "기본정보" &&
-      trimBlankText(getValue(element)) === ""
+      element.type === "기본정보" && trimBlankText(getValue(element)) === ""
     );
   }
 
@@ -83,22 +74,7 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
       return false;
     }
 
-    const texts = textElements.map((element) => ({
-      type: element.type,
-      name: element.name,
-      text: getValue(element),
-    }));
-
-    try {
-      await update.mutateAsync(texts);
-      clearStoredValues();
-
-      return true;
-    } catch {
-      setError("텍스트 저장에 실패했습니다. 다시 시도해 주세요.");
-
-      return false;
-    }
+    return true;
   }
 
   const basicInfoElements = textElements.filter(
@@ -163,7 +139,6 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
         prevHref={prevHref}
         nextHref={nextHref}
         onNext={handleNext}
-        nextPending={update.isPending}
       />
     </div>
   );

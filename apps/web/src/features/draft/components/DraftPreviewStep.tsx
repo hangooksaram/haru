@@ -7,6 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
 import { useDraft } from "@/features/draft/hooks/useDraft";
+import { useStoredDraftTexts } from "@/features/draft/hooks/useStoredDraftTexts";
+import { elementKey } from "@/features/draft/lib/elementKey";
+import { removeHyphens } from "@/features/draft/lib/removeHyphens";
+import { useTemplateTextElements } from "@/features/template/hooks/useTemplateTextElements";
 
 type Props = {
   templateId: string;
@@ -19,10 +23,19 @@ type EditItem = {
 
 export function DraftPreviewStep({ templateId }: Props) {
   const { draftId } = useDraftId();
-  const { data: draft, isLoading } = useDraft(draftId ?? null);
+  const { data: draft, isLoading: isDraftLoading } = useDraft(draftId ?? null);
+  const { data: textElements, isLoading: isTextElementsLoading } =
+    useTemplateTextElements(templateId);
+  const { values: storedTexts } = useStoredDraftTexts(draftId ?? null);
   const [isEditPanelOpen, setIsEditPanelOpen] = useState(false);
 
-  if (!draftId || isLoading || !draft) {
+  if (
+    !draftId ||
+    isDraftLoading ||
+    isTextElementsLoading ||
+    !draft ||
+    !textElements
+  ) {
     return <p className="text-muted-foreground">불러오는 중...</p>;
   }
 
@@ -35,16 +48,17 @@ export function DraftPreviewStep({ templateId }: Props) {
   return (
     <div className="flex flex-col gap-6">
       <Card>
-        <CardContent className="flex aspect-video items-center justify-center text-muted-foreground">
+        <CardContent className="text-muted-foreground flex aspect-video items-center justify-center">
           미리보기는 준비 중입니다
         </CardContent>
       </Card>
 
       <div className="text-muted-foreground flex flex-col gap-1 text-sm">
         <p>사진 {draft.photos.length}장</p>
-        {draft.texts.map((text) => (
-          <p key={text.name}>
-            {text.name}: {text.text}
+        {textElements.map((element) => (
+          <p key={elementKey(element)}>
+            {removeHyphens(element.name)}:{" "}
+            {storedTexts[elementKey(element)] ?? ""}
           </p>
         ))}
       </div>

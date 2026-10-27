@@ -6,9 +6,21 @@ import { DraftPreviewStep } from "./DraftPreviewStep";
 
 const { useDraftId } = vi.hoisted(() => ({ useDraftId: vi.fn() }));
 const { useDraft } = vi.hoisted(() => ({ useDraft: vi.fn() }));
+const { useTemplateTextElements } = vi.hoisted(() => ({
+  useTemplateTextElements: vi.fn(),
+}));
+const { useStoredDraftTexts } = vi.hoisted(() => ({
+  useStoredDraftTexts: vi.fn(),
+}));
 
 vi.mock("@/features/draft/components/DraftIdProvider", () => ({ useDraftId }));
 vi.mock("@/features/draft/hooks/useDraft", () => ({ useDraft }));
+vi.mock("@/features/template/hooks/useTemplateTextElements", () => ({
+  useTemplateTextElements,
+}));
+vi.mock("@/features/draft/hooks/useStoredDraftTexts", () => ({
+  useStoredDraftTexts,
+}));
 
 function setup() {
   useDraftId.mockReturnValue({ draftId: "draft-1" });
@@ -17,11 +29,21 @@ function setup() {
       id: "draft-1",
       templateId: "template-1",
       status: "editing",
-      photoSlotCount: 3,
-      photos: [{ id: "p1", position: 0, url: "https://example.com/p1.jpg" }],
-      texts: [{ name: "신랑", text: "철수" }],
+      photos: [
+        { id: "p1", name: "사진1", position: 0, url: "https://example.com/p1.jpg" },
+      ],
+      texts: [],
     },
     isLoading: false,
+  });
+  useTemplateTextElements.mockReturnValue({
+    data: [{ type: "기본정보", name: "신랑", text: "" }],
+    isLoading: false,
+  });
+  useStoredDraftTexts.mockReturnValue({
+    values: { 기본정보_신랑: "철수" },
+    setValue: vi.fn(),
+    clear: vi.fn(),
   });
 }
 
@@ -31,7 +53,9 @@ describe("DraftPreviewStep", () => {
 
     render(<DraftPreviewStep templateId="template-1" />);
 
-    expect(screen.queryByRole("link", { name: "사진" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "사진" }),
+    ).not.toBeInTheDocument();
   });
 
   it("수정하기를 누르면 템플릿·사진·텍스트로 이동하는 링크가 나타난다", async () => {
