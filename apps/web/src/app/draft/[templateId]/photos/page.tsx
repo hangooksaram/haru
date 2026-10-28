@@ -1,4 +1,3 @@
-import { DraftStepNav } from "@/components/DraftStepNav";
 import { DraftStepper } from "@/components/DraftStepper";
 import { DraftPhotosStep } from "@/features/draft/components/DraftPhotosStep";
 import { resolveDraftStepReturnHref } from "@/features/draft/lib/resolveDraftStepReturnHref";
@@ -24,8 +23,11 @@ export default async function DraftPhotosPage({ params, searchParams }: Props) {
       <h1 className="font-heading text-3xl font-extrabold tracking-tight">
         사진을 올려 주세요
       </h1>
-      <DraftPhotosStep templateId={templateId} />
-      <DraftStepNav prevHref="/templates" nextHref={nextHref} />
+      <DraftPhotosStep
+        templateId={templateId}
+        prevHref="/templates"
+        nextHref={nextHref}
+      />
     </div>
   );
 }

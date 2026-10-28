@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import { DraftStepNav } from "@/components/DraftStepNav";
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
 import { DraftPhotoGrid } from "@/features/draft/components/DraftPhotoGrid";
 import { DraftForbiddenError } from "@/features/draft/errors";
@@ -14,9 +15,11 @@ import { useTemplatePhotoElements } from "@/features/template/hooks/useTemplateP
 
 type Props = {
   templateId: string;
+  prevHref: string;
+  nextHref: string;
 };
 
-export function DraftPhotosStep({ templateId }: Props) {
+export function DraftPhotosStep({ templateId, prevHref, nextHref }: Props) {
   const { draftId, setDraftId, clearDraftId } = useDraftId();
   const { mutate: createDraft } = useCreateDraft();
   const {
@@ -27,6 +30,7 @@ export function DraftPhotosStep({ templateId }: Props) {
   const { data: labels, isLoading: isLabelsLoading } =
     useTemplatePhotoElements(templateId);
   const [message, setMessage] = useState<string | null>(null);
+  const [navError, setNavError] = useState<string | null>(null);
   const [replacingPhotoId, setReplacingPhotoId] = useState<string | null>(
     null,
   );
@@ -50,6 +54,9 @@ export function DraftPhotosStep({ templateId }: Props) {
   if (!draftId || isDraftLoading || isLabelsLoading || !draft || !labels) {
     return <p className="text-muted-foreground">불러오는 중...</p>;
   }
+
+  const photoCount = draft.photos.length;
+  const labelCount = labels.length;
 
   function handleUpload(label: string, files: File[]) {
     setMessage(null);
@@ -104,6 +111,18 @@ export function DraftPhotosStep({ templateId }: Props) {
     swap.mutate({ from, to });
   }
 
+  async function handleNext(): Promise<boolean> {
+    setNavError(null);
+
+    if (photoCount < labelCount) {
+      setNavError("사진을 모두 업로드해 주세요.");
+
+      return false;
+    }
+
+    return true;
+  }
+
   const photoByLabel = new Map(
     draft.photos.map((photo) => [photo.name, photo]),
   );
@@ -115,10 +134,13 @@ export function DraftPhotosStep({ templateId }: Props) {
   return (
     <div className="flex flex-col gap-4">
       <p className="text-muted-foreground text-sm">
-        {draft.photos.length} / {labels.length}장
+        {photoCount} / {labelCount}장
       </p>
       {message && (
         <p className="text-sm font-medium text-amber-600">{message}</p>
+      )}
+      {navError && (
+        <p className="text-destructive text-sm font-medium">{navError}</p>
       )}
       <DraftPhotoGrid
         slots={slots}
@@ -127,6 +149,11 @@ export function DraftPhotosStep({ templateId }: Props) {
         onReplace={handleReplace}
         replacingPhotoId={replacingPhotoId}
         uploadDisabled={upload.isPending}
+      />
+      <DraftStepNav
+        prevHref={prevHref}
+        nextHref={nextHref}
+        onNext={handleNext}
       />
     </div>
   );
