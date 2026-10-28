@@ -9,17 +9,11 @@ const { useDraft } = vi.hoisted(() => ({ useDraft: vi.fn() }));
 const { useTemplateTextElements } = vi.hoisted(() => ({
   useTemplateTextElements: vi.fn(),
 }));
-const { useStoredDraftTexts } = vi.hoisted(() => ({
-  useStoredDraftTexts: vi.fn(),
-}));
 
 vi.mock("@/features/draft/components/DraftIdProvider", () => ({ useDraftId }));
 vi.mock("@/features/draft/hooks/useDraft", () => ({ useDraft }));
 vi.mock("@/features/template/hooks/useTemplateTextElements", () => ({
   useTemplateTextElements,
-}));
-vi.mock("@/features/draft/hooks/useStoredDraftTexts", () => ({
-  useStoredDraftTexts,
 }));
 
 function setup() {
@@ -32,18 +26,13 @@ function setup() {
       photos: [
         { id: "p1", name: "사진1", position: 0, url: "https://example.com/p1.jpg" },
       ],
-      texts: [],
+      texts: [{ name: "기본정보_신랑", text: "철수" }],
     },
     isLoading: false,
   });
   useTemplateTextElements.mockReturnValue({
     data: [{ type: "기본정보", name: "신랑", text: "" }],
     isLoading: false,
-  });
-  useStoredDraftTexts.mockReturnValue({
-    values: { 기본정보_신랑: "철수" },
-    setValue: vi.fn(),
-    clear: vi.fn(),
   });
 }
 

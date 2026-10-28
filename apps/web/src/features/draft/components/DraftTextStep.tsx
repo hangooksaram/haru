@@ -1,19 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { DraftStepNav } from "@/components/DraftStepNav";
 import { Input } from "@/components/ui/input";
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
 import { useCreateDraft } from "@/features/draft/hooks/useCreateDraft";
-import { useStoredDraftTexts } from "@/features/draft/hooks/useStoredDraftTexts";
+import { useDraft } from "@/features/draft/hooks/useDraft";
+import { useUpdateDraftTexts } from "@/features/draft/hooks/useUpdateDraftTexts";
 import { elementKey } from "@/features/draft/lib/elementKey";
 import { removeHyphens } from "@/features/draft/lib/removeHyphens";
 import { removeLineBreaks } from "@/features/draft/lib/removeLineBreaks";
 import { trimBlankText } from "@/features/draft/lib/trimBlankText";
 import { useTemplateTextElements } from "@/features/template/hooks/useTemplateTextElements";
+import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
 
+import type { DraftTextInput } from "@/features/draft/types";
 import type { TemplateTextElement } from "@/features/template/types";
+
+const AUTOSAVE_DEBOUNCE_MS = 500;
 
 type Props = {
   templateId: string;
@@ -24,11 +29,13 @@ type Props = {
 export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
   const { draftId, setDraftId } = useDraftId();
   const { mutate: createDraft } = useCreateDraft();
-  const { data: elements, isLoading } = useTemplateTextElements(templateId);
-  const { values: storedValues, setValue: setStoredValue } =
-    useStoredDraftTexts(draftId ?? null);
+  const { data: elements, isLoading: isElementsLoading } =
+    useTemplateTextElements(templateId);
+  const { data: draft, isLoading: isDraftLoading } = useDraft(draftId ?? null);
+  const { mutate: updateTexts } = useUpdateDraftTexts(draftId ?? "");
   const [values, setValues] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
+  const hydratedDraftId = useRef<string | null>(null);
 
   useEffect(() => {
     if (draftId === undefined || draftId) return;
@@ -38,10 +45,34 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
   }, [draftId, templateId, createDraft, setDraftId]);
 
   useEffect(() => {
-    setValues(storedValues);
-  }, [storedValues]);
+    if (!draftId || !draft || hydratedDraftId.current === draftId) return;
+    hydratedDraftId.current = draftId;
+    // 템플릿의 텍스트 요소가 바뀌었을 수 있으므로 복원한 값도 입력 검증을 거친다.
+    setValues(
+      Object.fromEntries(
+        draft.texts.map(({ name, text }) => [name, removeLineBreaks(text)]),
+      ),
+    );
+  }, [draftId, draft]);
 
-  if (!draftId || isLoading || !elements) {
+  const saveTexts = useDebouncedCallback(
+    (
+      textElements: TemplateTextElement[],
+      nextValues: Record<string, string>,
+    ) => {
+      const payload: DraftTextInput[] = textElements.flatMap((element) => {
+        const text = nextValues[elementKey(element)] ?? "";
+        if (element.type === "기본정보" && trimBlankText(text) === "") {
+          return [];
+        }
+        return [{ type: element.type, name: element.name, text }];
+      });
+      updateTexts(payload);
+    },
+    AUTOSAVE_DEBOUNCE_MS,
+  );
+
+  if (!draftId || isElementsLoading || isDraftLoading || !elements) {
     return <p className="text-muted-foreground">불러오는 중...</p>;
   }
 
@@ -49,8 +80,9 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
 
   function handleChange(key: string, raw: string) {
     const value = removeLineBreaks(raw);
-    setValues((prev) => ({ ...prev, [key]: value }));
-    setStoredValue(key, value);
+    const next = { ...values, [key]: value };
+    setValues(next);
+    saveTexts(textElements, next);
   }
 
   function getValue(element: TemplateTextElement): string {

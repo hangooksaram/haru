@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
 import { useDraft } from "@/features/draft/hooks/useDraft";
-import { useStoredDraftTexts } from "@/features/draft/hooks/useStoredDraftTexts";
 import { elementKey } from "@/features/draft/lib/elementKey";
 import { removeHyphens } from "@/features/draft/lib/removeHyphens";
 import { useTemplateTextElements } from "@/features/template/hooks/useTemplateTextElements";
@@ -31,7 +30,6 @@ export function DraftPreviewStep({ templateId }: Props) {
   const { data: draft, isLoading: isDraftLoading } = useDraft(draftId ?? null);
   const { data: textElements, isLoading: isTextElementsLoading } =
     useTemplateTextElements(templateId);
-  const { values: storedTexts } = useStoredDraftTexts(draftId ?? null);
 
   if (
     !draftId ||
@@ -49,6 +47,10 @@ export function DraftPreviewStep({ templateId }: Props) {
     { label: "텍스트", href: `/draft/${templateId}/text?return=preview` },
   ];
 
+  const texts = Object.fromEntries(
+    draft.texts.map(({ name, text }) => [name, text]),
+  );
+
   return (
     <div className="flex flex-col gap-6">
       <Card className="max-w-[200px]">
@@ -62,7 +64,7 @@ export function DraftPreviewStep({ templateId }: Props) {
         {textElements.map((element) => (
           <p key={elementKey(element)}>
             {removeHyphens(element.name)}:{" "}
-            {storedTexts[elementKey(element)] ?? ""}
+            {texts[elementKey(element)] ?? ""}
           </p>
         ))}
       </div>

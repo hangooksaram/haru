@@ -14,13 +14,11 @@ import {
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
 import { useDeleteDraft } from "@/features/draft/hooks/useDeleteDraft";
 import { useDraft } from "@/features/draft/hooks/useDraft";
-import { useStoredDraftTexts } from "@/features/draft/hooks/useStoredDraftTexts";
 
 export function DraftResumeDialog() {
   const { draftId, clearDraftId, isFreshlyCreated, acknowledgeResume } =
     useDraftId();
   const { data: draft } = useDraft(draftId ?? null);
-  const { clear: clearTexts } = useStoredDraftTexts(draftId ?? null);
   const { mutate: deleteDraft, isPending, error } = useDeleteDraft();
   const queryClient = useQueryClient();
 
@@ -35,7 +33,6 @@ export function DraftResumeDialog() {
     deleteDraft(draftId, {
       onSuccess: () => {
         queryClient.removeQueries({ queryKey: ["draft", draftId] });
-        clearTexts();
         clearDraftId();
       },
     });

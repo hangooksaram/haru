@@ -7,9 +7,6 @@ import { DraftResumeDialog } from "./DraftResumeDialog";
 const { useQueryClient } = vi.hoisted(() => ({ useQueryClient: vi.fn() }));
 const { useDraftId } = vi.hoisted(() => ({ useDraftId: vi.fn() }));
 const { useDraft } = vi.hoisted(() => ({ useDraft: vi.fn() }));
-const { useStoredDraftTexts } = vi.hoisted(() => ({
-  useStoredDraftTexts: vi.fn(),
-}));
 const { useDeleteDraft } = vi.hoisted(() => ({ useDeleteDraft: vi.fn() }));
 
 vi.mock("@tanstack/react-query", async (importOriginal) => ({
@@ -20,9 +17,6 @@ vi.mock("@/features/draft/components/DraftIdProvider", () => ({
   useDraftId,
 }));
 vi.mock("@/features/draft/hooks/useDraft", () => ({ useDraft }));
-vi.mock("@/features/draft/hooks/useStoredDraftTexts", () => ({
-  useStoredDraftTexts,
-}));
 vi.mock("@/features/draft/hooks/useDeleteDraft", () => ({ useDeleteDraft }));
 
 const TITLE = "작성 중이던 시안이 있어요";
@@ -43,7 +37,6 @@ function setup({
   error: Error | null;
 }> = {}) {
   const clearDraftId = vi.fn();
-  const clearTexts = vi.fn();
   const removeQueries = vi.fn();
   const acknowledgeResume = vi.fn();
 
@@ -55,10 +48,9 @@ function setup({
     acknowledgeResume,
   });
   useDraft.mockReturnValue({ data: draft });
-  useStoredDraftTexts.mockReturnValue({ clear: clearTexts });
   useDeleteDraft.mockReturnValue({ mutate, isPending, error });
 
-  return { clearDraftId, clearTexts, removeQueries, mutate, acknowledgeResume };
+  return { clearDraftId, removeQueries, mutate, acknowledgeResume };
 }
 
 describe("DraftResumeDialog", () => {
@@ -102,12 +94,12 @@ describe("DraftResumeDialog", () => {
     expect(acknowledgeResume).toHaveBeenCalled();
   });
 
-  it("'새로 시작'을 선택하면 시안을 삭제하고 캐시·로컬 데이터를 정리한다", async () => {
+  it("'새로 시작'을 선택하면 시안을 삭제하고 캐시를 정리한다", async () => {
     const mutate = vi.fn(
       (_draftId: string, options?: { onSuccess?: () => void }) =>
         options?.onSuccess?.(),
     );
-    const { clearDraftId, clearTexts, removeQueries } = setup({ mutate });
+    const { clearDraftId, removeQueries } = setup({ mutate });
     const user = userEvent.setup();
 
     render(<DraftResumeDialog />);
@@ -117,7 +109,6 @@ describe("DraftResumeDialog", () => {
     expect(removeQueries).toHaveBeenCalledWith({
       queryKey: ["draft", "draft-1"],
     });
-    expect(clearTexts).toHaveBeenCalled();
     expect(clearDraftId).toHaveBeenCalled();
   });
 
