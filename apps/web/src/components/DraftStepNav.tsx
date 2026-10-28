@@ -5,11 +5,14 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 
+import type { ReactNode } from "react";
+
 type Props = {
   prevHref: string;
   nextHref?: string;
   onNext?: () => Promise<boolean>;
   nextPending?: boolean;
+  extra?: ReactNode;
 };
 
 export function DraftStepNav({
@@ -17,6 +20,7 @@ export function DraftStepNav({
   nextHref,
   onNext,
   nextPending,
+  extra,
 }: Props) {
   const router = useRouter();
 
@@ -42,6 +46,7 @@ export function DraftStepNav({
             <Link href={nextHref}>다음</Link>
           </Button>
         ))}
+      {extra}
     </div>
   );
 }

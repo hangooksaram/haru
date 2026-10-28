@@ -1,8 +1,10 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { DraftStepNav } from "@/components/DraftStepNav";
+import { Button } from "@/components/ui/button";
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
 import { DraftPhotoGrid } from "@/features/draft/components/DraftPhotoGrid";
 import { DraftForbiddenError } from "@/features/draft/errors";
@@ -17,9 +19,16 @@ type Props = {
   templateId: string;
   prevHref: string;
   nextHref: string;
+  showPreviewShortcut?: boolean;
 };
 
-export function DraftPhotosStep({ templateId, prevHref, nextHref }: Props) {
+export function DraftPhotosStep({
+  templateId,
+  prevHref,
+  nextHref,
+  showPreviewShortcut,
+}: Props) {
+  const router = useRouter();
   const { draftId, setDraftId, clearDraftId } = useDraftId();
   const { mutate: createDraft } = useCreateDraft();
   const {
@@ -111,7 +120,7 @@ export function DraftPhotosStep({ templateId, prevHref, nextHref }: Props) {
     swap.mutate({ from, to });
   }
 
-  async function handleNext(): Promise<boolean> {
+  function validatePhotoCount(): boolean {
     setNavError(null);
 
     if (photoCount < labelCount) {
@@ -121,6 +130,16 @@ export function DraftPhotosStep({ templateId, prevHref, nextHref }: Props) {
     }
 
     return true;
+  }
+
+  async function handleNext(): Promise<boolean> {
+    return validatePhotoCount();
+  }
+
+  function handleGoToPreview() {
+    if (!validatePhotoCount()) return;
+
+    router.push(`/draft/${templateId}/preview`);
   }
 
   const photoByLabel = new Map(
@@ -154,6 +173,13 @@ export function DraftPhotosStep({ templateId, prevHref, nextHref }: Props) {
         prevHref={prevHref}
         nextHref={nextHref}
         onNext={handleNext}
+        extra={
+          showPreviewShortcut ? (
+            <Button variant="outline" size="lg" onClick={handleGoToPreview}>
+              미리보기로 이동
+            </Button>
+          ) : undefined
+        }
       />
     </div>
   );

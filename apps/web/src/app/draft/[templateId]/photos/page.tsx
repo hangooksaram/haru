@@ -1,6 +1,5 @@
 import { DraftStepper } from "@/components/DraftStepper";
 import { DraftPhotosStep } from "@/features/draft/components/DraftPhotosStep";
-import { resolveDraftStepReturnHref } from "@/features/draft/lib/resolveDraftStepReturnHref";
 
 type Props = {
   params: Promise<{ templateId: string }>;
@@ -11,12 +10,6 @@ export default async function DraftPhotosPage({ params, searchParams }: Props) {
   const { templateId } = await params;
   const { return: returnParam } = await searchParams;
 
-  const nextHref = resolveDraftStepReturnHref(
-    templateId,
-    `/draft/${templateId}/text`,
-    returnParam,
-  );
-
   return (
     <div className="flex flex-col gap-10 py-10">
       <DraftStepper current={1} />
@@ -26,7 +19,8 @@ export default async function DraftPhotosPage({ params, searchParams }: Props) {
       <DraftPhotosStep
         templateId={templateId}
         prevHref="/templates"
-        nextHref={nextHref}
+        nextHref={`/draft/${templateId}/text`}
+        showPreviewShortcut={returnParam === "preview"}
       />
     </div>
   );
