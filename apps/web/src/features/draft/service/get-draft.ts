@@ -4,7 +4,7 @@ import { DraftForbiddenError } from "@/features/draft/errors";
 
 import { getDraftPhotoSignedUrl } from "./draft-photo-storage";
 
-import type { Draft } from "@/features/draft/types";
+import type { Draft, DraftSavedText } from "@/features/draft/types";
 
 export async function getDraft(
   draftId: string,
@@ -14,7 +14,6 @@ export async function getDraft(
     where: { id: draftId },
     include: {
       photos: { orderBy: { position: "asc" } },
-      texts: true,
     },
   });
 
@@ -38,6 +37,6 @@ export async function getDraft(
     templateId: draft.templateId,
     status: draft.status,
     photos,
-    texts: draft.texts.map((text) => ({ name: text.name, text: text.text })),
+    texts: draft.texts as DraftSavedText[],
   };
 }

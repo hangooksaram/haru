@@ -52,13 +52,8 @@ export async function updateDraftTexts(
     return { name: matched.name, text: trimmed };
   });
 
-  await prisma.$transaction(
-    resolved.map(({ name, text }) =>
-      prisma.draftText.upsert({
-        where: { draftId_name: { draftId, name } },
-        create: { draftId, name, text },
-        update: { text },
-      }),
-    ),
-  );
+  await prisma.draft.update({
+    where: { id: draftId },
+    data: { texts: resolved },
+  });
 }

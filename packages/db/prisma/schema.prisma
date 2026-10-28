@@ -56,10 +56,11 @@ model Draft {
   status     DraftStatus @default(editing)
   createdAt  DateTime    @default(now()) @map("created_at")
   updatedAt  DateTime    @updatedAt @map("updated_at")
+  // 시안 텍스트 전체 배열. 요소는 { name, text }이며 name은 요소 전체 이름(Creatomate modifications key).
+  texts      Json        @default("[]")
 
   template Template     @relation(fields: [templateId], references: [id])
   photos   DraftPhoto[]
-  texts    DraftText[]
 
   @@map("drafts")
 }
@@ -75,16 +76,4 @@ model DraftPhoto {
 
   @@unique([draftId, name])
   @@map("draft_photos")
-}
-
-model DraftText {
-  id      String @id @default(cuid())
-  draftId String @map("draft_id")
-  name    String
-  text    String
-
-  draft Draft @relation(fields: [draftId], references: [id], onDelete: Cascade)
-
-  @@unique([draftId, name])
-  @@map("draft_texts")
 }
