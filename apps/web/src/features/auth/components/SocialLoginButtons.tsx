@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { sanitizeNextPath } from "@/features/auth/lib/sanitizeNextPath";
 import { createClient } from "@/lib/supabase/client";
 
 const PROVIDERS = [
@@ -8,12 +9,19 @@ const PROVIDERS = [
   { id: "kakao", label: "카카오로 가입하기" },
 ] as const;
 
-export function SocialLoginButtons() {
+type Props = {
+  next?: string;
+};
+
+export function SocialLoginButtons({ next }: Props) {
   async function handleClick(provider: "google" | "kakao") {
     const supabase = createClient();
+    const callbackUrl = new URL("/auth/callback", window.location.origin);
+    callbackUrl.searchParams.set("next", sanitizeNextPath(next));
+
     await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: callbackUrl.toString() },
     });
   }
 

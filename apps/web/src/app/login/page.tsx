@@ -3,7 +3,13 @@ import { Separator } from "@/components/ui/separator";
 import { LoginForm } from "@/features/auth/components/LoginForm";
 import { SocialLoginButtons } from "@/features/auth/components/SocialLoginButtons";
 
-export default function LoginPage() {
+type Props = {
+  searchParams: Promise<{ next?: string }>;
+};
+
+export default async function LoginPage({ searchParams }: Props) {
+  const { next } = await searchParams;
+
   return (
     <div className="mx-auto flex max-w-md flex-col gap-10 px-6 py-16">
       <Card>
@@ -11,9 +17,9 @@ export default function LoginPage() {
           <CardTitle>로그인</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
-          <LoginForm />
+          <LoginForm next={next} />
           <Separator />
-          <SocialLoginButtons />
+          <SocialLoginButtons next={next} />
         </CardContent>
       </Card>
     </div>

@@ -6,8 +6,13 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLogin } from "@/features/auth/hooks/useLogin";
+import { sanitizeNextPath } from "@/features/auth/lib/sanitizeNextPath";
 
-export function LoginForm() {
+type Props = {
+  next?: string;
+};
+
+export function LoginForm({ next }: Props) {
   const router = useRouter();
   const login = useLogin();
   const [email, setEmail] = useState("");
@@ -15,7 +20,10 @@ export function LoginForm() {
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    login.mutate({ email, password }, { onSuccess: () => router.push("/") });
+    login.mutate(
+      { email, password },
+      { onSuccess: () => router.push(sanitizeNextPath(next)) },
+    );
   }
 
   return (

@@ -1,22 +1,31 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import { DraftPreviewStep } from "./DraftPreviewStep";
 
+const { useRouter } = vi.hoisted(() => ({ useRouter: vi.fn() }));
 const { useDraftId } = vi.hoisted(() => ({ useDraftId: vi.fn() }));
 const { useDraft } = vi.hoisted(() => ({ useDraft: vi.fn() }));
 const { useTemplateTextElements } = vi.hoisted(() => ({
   useTemplateTextElements: vi.fn(),
 }));
+const { getUser } = vi.hoisted(() => ({ getUser: vi.fn() }));
 
+vi.mock("next/navigation", () => ({ useRouter }));
 vi.mock("@/features/draft/components/DraftIdProvider", () => ({ useDraftId }));
 vi.mock("@/features/draft/hooks/useDraft", () => ({ useDraft }));
 vi.mock("@/features/template/hooks/useTemplateTextElements", () => ({
   useTemplateTextElements,
 }));
+vi.mock("@/lib/supabase/client", () => ({
+  createClient: () => ({ auth: { getUser } }),
+}));
 
-function setup() {
+function setup({ isAnonymous = false }: { isAnonymous?: boolean } = {}) {
+  const push = vi.fn();
+  useRouter.mockReturnValue({ push });
+  getUser.mockResolvedValue({ data: { user: { is_anonymous: isAnonymous } } });
   useDraftId.mockReturnValue({ draftId: "draft-1" });
   useDraft.mockReturnValue({
     data: {
@@ -34,6 +43,8 @@ function setup() {
     data: [{ type: "기본정보", name: "신랑", text: "" }],
     isLoading: false,
   });
+
+  return { push };
 }
 
 describe("DraftPreviewStep", () => {
@@ -78,13 +89,29 @@ describe("DraftPreviewStep", () => {
     expect(screen.queryAllByRole("textbox")).toHaveLength(0);
   });
 
-  it("이 시안으로 주문 버튼은 결제 단계로 이동한다", () => {
-    setup();
+  it("로그인한 유저가 이 시안으로 주문을 누르면 결제 단계로 이동한다", async () => {
+    const { push } = setup({ isAnonymous: false });
+    const user = userEvent.setup();
 
     render(<DraftPreviewStep templateId="template-1" />);
+    await user.click(screen.getByRole("button", { name: "이 시안으로 주문" }));
 
-    expect(
-      screen.getByRole("link", { name: "이 시안으로 주문" }),
-    ).toHaveAttribute("href", "/draft/template-1/payment");
+    await waitFor(() =>
+      expect(push).toHaveBeenCalledWith("/draft/template-1/payment"),
+    );
+  });
+
+  it("익명 유저가 이 시안으로 주문을 누르면 결제 단계로 돌아올 로그인 화면으로 이동한다", async () => {
+    const { push } = setup({ isAnonymous: true });
+    const user = userEvent.setup();
+
+    render(<DraftPreviewStep templateId="template-1" />);
+    await user.click(screen.getByRole("button", { name: "이 시안으로 주문" }));
+
+    await waitFor(() =>
+      expect(push).toHaveBeenCalledWith(
+        `/login?next=${encodeURIComponent("/draft/template-1/payment")}`,
+      ),
+    );
   });
 });

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,6 +16,7 @@ import { useDraft } from "@/features/draft/hooks/useDraft";
 import { elementKey } from "@/features/draft/lib/elementKey";
 import { removeHyphens } from "@/features/draft/lib/removeHyphens";
 import { useTemplateTextElements } from "@/features/template/hooks/useTemplateTextElements";
+import { createClient } from "@/lib/supabase/client";
 
 type Props = {
   templateId: string;
@@ -26,6 +28,7 @@ type EditItem = {
 };
 
 export function DraftPreviewStep({ templateId }: Props) {
+  const router = useRouter();
   const { draftId } = useDraftId();
   const { data: draft, isLoading: isDraftLoading } = useDraft(draftId ?? null);
   const { data: textElements, isLoading: isTextElementsLoading } =
@@ -50,6 +53,19 @@ export function DraftPreviewStep({ templateId }: Props) {
   const texts = Object.fromEntries(
     draft.texts.map(({ name, text }) => [name, text]),
   );
+
+  async function handleOrderClick() {
+    const paymentPath = `/draft/${templateId}/payment`;
+    const supabase = createClient();
+    const { data } = await supabase.auth.getUser();
+
+    if (data.user?.is_anonymous) {
+      router.push(`/login?next=${encodeURIComponent(paymentPath)}`);
+      return;
+    }
+
+    router.push(paymentPath);
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -84,8 +100,8 @@ export function DraftPreviewStep({ templateId }: Props) {
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
-        <Button asChild size="lg">
-          <Link href={`/draft/${templateId}/payment`}>이 시안으로 주문</Link>
+        <Button size="lg" onClick={handleOrderClick}>
+          이 시안으로 주문
         </Button>
       </div>
     </div>

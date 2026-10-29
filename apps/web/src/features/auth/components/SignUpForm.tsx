@@ -6,8 +6,13 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSignUp } from "@/features/auth/hooks/useSignUp";
+import { sanitizeNextPath } from "@/features/auth/lib/sanitizeNextPath";
 
-export function SignUpForm() {
+type Props = {
+  next?: string;
+};
+
+export function SignUpForm({ next }: Props) {
   const router = useRouter();
   const signUp = useSignUp();
   const [email, setEmail] = useState("");
@@ -15,7 +20,10 @@ export function SignUpForm() {
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    signUp.mutate({ email, password }, { onSuccess: () => router.push("/") });
+    signUp.mutate(
+      { email, password },
+      { onSuccess: () => router.push(sanitizeNextPath(next)) },
+    );
   }
 
   return (
