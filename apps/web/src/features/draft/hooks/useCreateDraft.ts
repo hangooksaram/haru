@@ -2,9 +2,18 @@
 
 import { useMutation } from "@tanstack/react-query";
 
+import { createClient } from "@/lib/supabase/client";
+
 export function useCreateDraft() {
   return useMutation({
     mutationFn: async (templateId: string) => {
+      const supabase = createClient();
+      const { data } = await supabase.auth.getUser();
+      if (!data.user) {
+        const { error } = await supabase.auth.signInAnonymously();
+        if (error) throw error;
+      }
+
       const response = await fetch("/api/drafts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
