@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { DraftStepNav } from "@/components/DraftStepNav";
 import { Button } from "@/components/ui/button";
@@ -48,10 +48,17 @@ export function DraftPhotosStep({
   const replace = useReplaceDraftPhoto(draftId ?? "");
   const swap = useSwapDraftPhotos(draftId ?? "");
 
+  const hasRequestedDraft = useRef(false);
+
   useEffect(() => {
     if (draftId === undefined || draftId) return;
+    if (hasRequestedDraft.current) return;
+    hasRequestedDraft.current = true;
     createDraft(templateId, {
       onSuccess: (created) => setDraftId(created.id),
+      onError: () => {
+        hasRequestedDraft.current = false;
+      },
     });
   }, [draftId, templateId, createDraft, setDraftId]);
 
