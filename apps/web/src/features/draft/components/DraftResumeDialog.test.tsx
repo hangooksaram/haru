@@ -4,11 +4,13 @@ import { describe, expect, it, vi } from "vitest";
 
 import { DraftResumeDialog } from "./DraftResumeDialog";
 
+const { usePathname } = vi.hoisted(() => ({ usePathname: vi.fn() }));
 const { useQueryClient } = vi.hoisted(() => ({ useQueryClient: vi.fn() }));
 const { useDraftId } = vi.hoisted(() => ({ useDraftId: vi.fn() }));
 const { useDraft } = vi.hoisted(() => ({ useDraft: vi.fn() }));
 const { useDeleteDraft } = vi.hoisted(() => ({ useDeleteDraft: vi.fn() }));
 
+vi.mock("next/navigation", () => ({ usePathname }));
 vi.mock("@tanstack/react-query", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@tanstack/react-query")>()),
   useQueryClient,
@@ -25,6 +27,7 @@ function setup({
   draftId = "draft-1",
   draft = { id: "draft-1" },
   isFreshlyCreated = false,
+  pathname = "/draft/template-1/photos",
   mutate = vi.fn(),
   isPending = false,
   error = null,
@@ -32,6 +35,7 @@ function setup({
   draftId: string | null;
   draft: unknown;
   isFreshlyCreated: boolean;
+  pathname: string;
   mutate: ReturnType<typeof vi.fn>;
   isPending: boolean;
   error: Error | null;
@@ -40,6 +44,7 @@ function setup({
   const removeQueries = vi.fn();
   const acknowledgeResume = vi.fn();
 
+  usePathname.mockReturnValue(pathname);
   useQueryClient.mockReturnValue({ removeQueries });
   useDraftId.mockReturnValue({
     draftId,
@@ -78,6 +83,14 @@ describe("DraftResumeDialog", () => {
 
   it("이번 방문에서 막 새로 만든 시안이면 모달을 보여주지 않는다", () => {
     setup({ isFreshlyCreated: true });
+
+    render(<DraftResumeDialog />);
+
+    expect(screen.queryByText(TITLE)).not.toBeInTheDocument();
+  });
+
+  it("결제 단계에서는 모달을 보여주지 않는다", () => {
+    setup({ pathname: "/draft/template-1/payment" });
 
     render(<DraftResumeDialog />);
 
