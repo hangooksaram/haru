@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { SignUpForm } from "@/features/auth/components/SignUpForm";
@@ -20,6 +22,15 @@ export default async function SignUpPage({ searchParams }: Props) {
           <SignUpForm next={next} />
           <Separator />
           <SocialLoginButtons next={next} />
+          <p className="text-muted-foreground text-center text-sm">
+            이미 계정이 있으신가요?{" "}
+            <Link
+              href={`/login${next ? `?next=${encodeURIComponent(next)}` : ""}`}
+              className="text-foreground font-medium underline"
+            >
+              로그인
+            </Link>
+          </p>
         </CardContent>
       </Card>
     </div>
