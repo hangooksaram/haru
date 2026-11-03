@@ -15,8 +15,8 @@ const { getUser, signUpMock, updateUser, signInWithPassword } = vi.hoisted(
 const { upsertUserProfile } = vi.hoisted(() => ({
   upsertUserProfile: vi.fn(),
 }));
-const { migrateAnonymousDrafts } = vi.hoisted(() => ({
-  migrateAnonymousDrafts: vi.fn(),
+const { mergeAnonymousAccount } = vi.hoisted(() => ({
+  mergeAnonymousAccount: vi.fn(),
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -32,8 +32,8 @@ vi.mock("@/lib/supabase/server", () => ({
 vi.mock("@/features/auth/service/upsert-user-profile", () => ({
   upsertUserProfile,
 }));
-vi.mock("@/features/auth/service/migrate-anonymous-drafts", () => ({
-  migrateAnonymousDrafts,
+vi.mock("@/features/auth/service/merge-anonymous-account", () => ({
+  mergeAnonymousAccount,
 }));
 
 function mockNotAnonymous() {
@@ -81,7 +81,7 @@ describe("signUp", () => {
     await signUp("new@test.com", "password1!");
 
     expect(upsertUserProfile).toHaveBeenCalledWith("anon-1", "new@test.com");
-    expect(migrateAnonymousDrafts).not.toHaveBeenCalled();
+    expect(mergeAnonymousAccount).not.toHaveBeenCalled();
   });
 
   it("익명 유저가 이미 가입된 이메일로 연결하고 비밀번호가 맞으면 draft를 이전한다", async () => {
@@ -97,7 +97,7 @@ describe("signUp", () => {
 
     await signUp("existing@test.com", "password1!");
 
-    expect(migrateAnonymousDrafts).toHaveBeenCalledWith("anon-1", "real-1");
+    expect(mergeAnonymousAccount).toHaveBeenCalledWith("anon-1", "real-1");
   });
 
   it("익명 유저가 이미 가입된 이메일로 연결했는데 비밀번호가 틀리면 EmailAlreadyRegisteredError를 던지고 draft를 이전하지 않는다", async () => {
@@ -114,6 +114,6 @@ describe("signUp", () => {
     await expect(signUp("existing@test.com", "wrong-password")).rejects.toThrow(
       EmailAlreadyRegisteredError,
     );
-    expect(migrateAnonymousDrafts).not.toHaveBeenCalled();
+    expect(mergeAnonymousAccount).not.toHaveBeenCalled();
   });
 });

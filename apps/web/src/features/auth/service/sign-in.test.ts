@@ -8,8 +8,8 @@ const { getUser, signInWithPassword } = vi.hoisted(() => ({
   getUser: vi.fn(),
   signInWithPassword: vi.fn(),
 }));
-const { migrateAnonymousDrafts } = vi.hoisted(() => ({
-  migrateAnonymousDrafts: vi.fn(),
+const { mergeAnonymousAccount } = vi.hoisted(() => ({
+  mergeAnonymousAccount: vi.fn(),
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -17,8 +17,8 @@ vi.mock("@/lib/supabase/server", () => ({
     auth: { getUser, signInWithPassword },
   }),
 }));
-vi.mock("@/features/auth/service/migrate-anonymous-drafts", () => ({
-  migrateAnonymousDrafts,
+vi.mock("@/features/auth/service/merge-anonymous-account", () => ({
+  mergeAnonymousAccount,
 }));
 
 function mockNotAnonymous() {
@@ -41,7 +41,7 @@ describe("signIn", () => {
 
     await signIn("a@test.com", "password1!");
 
-    expect(migrateAnonymousDrafts).not.toHaveBeenCalled();
+    expect(mergeAnonymousAccount).not.toHaveBeenCalled();
   });
 
   it("비로그인 상태에서 로그인에 실패하면 InvalidCredentialsError를 던진다", async () => {
@@ -54,7 +54,7 @@ describe("signIn", () => {
     await expect(signIn("a@test.com", "wrong")).rejects.toThrow(
       InvalidCredentialsError,
     );
-    expect(migrateAnonymousDrafts).not.toHaveBeenCalled();
+    expect(mergeAnonymousAccount).not.toHaveBeenCalled();
   });
 
   it("익명 유저가 기존 계정으로 로그인에 성공하면 draft를 이전한다", async () => {
@@ -66,7 +66,7 @@ describe("signIn", () => {
 
     await signIn("existing@test.com", "password1!");
 
-    expect(migrateAnonymousDrafts).toHaveBeenCalledWith("anon-1", "real-1");
+    expect(mergeAnonymousAccount).toHaveBeenCalledWith("anon-1", "real-1");
   });
 
   it("익명 유저가 로그인에 실패하면 draft를 이전하지 않는다", async () => {
@@ -79,6 +79,6 @@ describe("signIn", () => {
     await expect(signIn("existing@test.com", "wrong")).rejects.toThrow(
       InvalidCredentialsError,
     );
-    expect(migrateAnonymousDrafts).not.toHaveBeenCalled();
+    expect(mergeAnonymousAccount).not.toHaveBeenCalled();
   });
 });

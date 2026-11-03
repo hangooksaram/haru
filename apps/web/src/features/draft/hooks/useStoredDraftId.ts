@@ -9,6 +9,27 @@ function getStorageKey(
   return `haru:draft:${templateId}:${currentUserId ?? "guest"}`;
 }
 
+export function findMigratableDraftId(
+  templateId: string,
+  ownKey: string,
+): { key: string; draftId: string } | null {
+  const prefix = `haru:draft:${templateId}:`;
+  let found: { key: string; draftId: string } | null = null;
+
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (!key || key === ownKey || !key.startsWith(prefix)) continue;
+
+    const draftId = localStorage.getItem(key);
+    if (!draftId) continue;
+
+    if (found) return null;
+    found = { key, draftId };
+  }
+
+  return found;
+}
+
 export function useStoredDraftId(
   templateId: string,
   currentUserId: string | null | undefined,
@@ -22,8 +43,24 @@ export function useStoredDraftId(
       setDraftIdState(undefined);
       return;
     }
-    const raw = localStorage.getItem(getStorageKey(templateId, currentUserId));
-    setDraftIdState(raw);
+
+    const ownKey = getStorageKey(templateId, currentUserId);
+    const raw = localStorage.getItem(ownKey);
+
+    if (raw) {
+      setDraftIdState(raw);
+      return;
+    }
+
+    const migratable = findMigratableDraftId(templateId, ownKey);
+    if (migratable) {
+      localStorage.setItem(ownKey, migratable.draftId);
+      localStorage.removeItem(migratable.key);
+      setDraftIdState(migratable.draftId);
+      return;
+    }
+
+    setDraftIdState(null);
   }, [templateId, currentUserId]);
 
   const setDraftId = useCallback(

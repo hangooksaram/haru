@@ -1,5 +1,5 @@
 import { InvalidCredentialsError } from "@/features/auth/errors";
-import { migrateAnonymousDrafts } from "@/features/auth/service/migrate-anonymous-drafts";
+import { mergeAnonymousAccount } from "@/features/auth/service/merge-anonymous-account";
 import { createServerClient } from "@/lib/supabase/server";
 
 export async function signIn(email: string, password: string): Promise<void> {
@@ -23,6 +23,6 @@ export async function signIn(email: string, password: string): Promise<void> {
   }
 
   if (anonUserId) {
-    await migrateAnonymousDrafts(anonUserId, data.user.id);
+    await mergeAnonymousAccount(anonUserId, data.user.id);
   }
 }

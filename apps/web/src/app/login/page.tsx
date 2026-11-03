@@ -6,11 +6,11 @@ import { LoginForm } from "@/features/auth/components/LoginForm";
 import { SocialLoginButtons } from "@/features/auth/components/SocialLoginButtons";
 
 type Props = {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; socialConflict?: string }>;
 };
 
 export default async function LoginPage({ searchParams }: Props) {
-  const { next } = await searchParams;
+  const { next, socialConflict } = await searchParams;
 
   return (
     <div className="mx-auto flex max-w-md flex-col gap-10 px-6 py-16">
@@ -21,7 +21,7 @@ export default async function LoginPage({ searchParams }: Props) {
         <CardContent className="flex flex-col gap-6">
           <LoginForm next={next} />
           <Separator />
-          <SocialLoginButtons next={next} />
+          <SocialLoginButtons next={next} socialConflict={socialConflict} />
           <p className="text-muted-foreground text-center text-sm">
             계정이 없으신가요?{" "}
             <Link

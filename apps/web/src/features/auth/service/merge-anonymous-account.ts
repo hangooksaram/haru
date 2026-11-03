@@ -2,7 +2,7 @@ import { prisma } from "@haru/db";
 
 import { getSupabaseAdminClient } from "@/lib/supabase";
 
-export async function migrateAnonymousDrafts(
+export async function mergeAnonymousAccount(
   anonUserId: string,
   newUserId: string,
 ): Promise<void> {

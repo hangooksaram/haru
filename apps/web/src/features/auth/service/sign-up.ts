@@ -1,5 +1,5 @@
 import { EmailAlreadyRegisteredError } from "@/features/auth/errors";
-import { migrateAnonymousDrafts } from "@/features/auth/service/migrate-anonymous-drafts";
+import { mergeAnonymousAccount } from "@/features/auth/service/merge-anonymous-account";
 import { upsertUserProfile } from "@/features/auth/service/upsert-user-profile";
 import { createServerClient } from "@/lib/supabase/server";
 
@@ -56,5 +56,5 @@ async function linkAnonymousAccount(
     throw new EmailAlreadyRegisteredError();
   }
 
-  await migrateAnonymousDrafts(anonUserId, signInData.user.id);
+  await mergeAnonymousAccount(anonUserId, signInData.user.id);
 }
