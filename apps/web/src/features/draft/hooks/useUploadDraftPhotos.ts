@@ -52,22 +52,30 @@ export function useUploadDraftPhotos(draftId: string) {
         rejectedCount: number;
       };
 
+      // 네트워크 단절 등은 uploadToSignedUrl이 { error }가 아니라 예외로 던지므로,
+      // Promise.all을 쓰면 한 장만 실패해도 나머지 성공한 업로드까지 전부 버려진다.
+      // allSettled로 각 업로드를 독립적으로 처리해 실패한 것만 걸러낸다.
       const supabase = createClient();
-      const uploadResults = await Promise.all(
+      const uploadSettlements = await Promise.allSettled(
         uploads.map(async (slot, index) => {
           const { error } = await supabase.storage
             .from(DRAFT_PHOTOS_BUCKET)
             .uploadToSignedUrl(slot.path, slot.token, processed[index].file);
 
-          return error
-            ? null
-            : { ...slot, isBlurryWarning: processed[index].isBlurryWarning };
+          if (error) throw error;
+
+          return { ...slot, isBlurryWarning: processed[index].isBlurryWarning };
         }),
       );
-      const succeeded = uploadResults.filter(
-        (item): item is UploadSlot & { isBlurryWarning: boolean } =>
-          item !== null,
-      );
+      const succeeded = uploadSettlements
+        .filter(
+          (
+            result,
+          ): result is PromiseFulfilledResult<
+            UploadSlot & { isBlurryWarning: boolean }
+          > => result.status === "fulfilled",
+        )
+        .map((result) => result.value);
 
       const confirmResponse = await fetch(`/api/drafts/${draftId}/photos`, {
         method: "POST",
