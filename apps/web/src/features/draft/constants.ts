@@ -1,3 +1,5 @@
+export const DRAFT_PHOTOS_BUCKET = "draft-photos";
+
 export const ALLOWED_PHOTO_MIME_TYPES = [
   "image/jpeg",
   "image/png",

@@ -11,26 +11,25 @@ import { assertValidPhotoFile } from "@/features/draft/lib/assertValidPhotoFile"
 import { getPhotoFileExtension } from "@/features/draft/lib/getPhotoFileExtension";
 
 import {
+  createDraftPhotoUploadUrl,
   deleteDraftPhoto,
   getDraftPhotoSignedUrl,
-  uploadDraftPhoto,
 } from "./draft-photo-storage";
 
 import type { DraftPhoto } from "@/features/draft/types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-type PhotoFileInput = {
-  buffer: Buffer;
+type PhotoFileMeta = {
   contentType: string;
   size: number;
 };
 
-export async function replaceDraftPhoto(
+export async function createReplaceDraftPhotoUploadUrl(
   supabase: SupabaseClient,
   photoId: string,
-  file: PhotoFileInput,
+  file: PhotoFileMeta,
   currentUserId: string | null,
-): Promise<DraftPhoto> {
+): Promise<{ path: string; token: string }> {
   assertValidPhotoFile(file);
 
   const photo = await prisma.draftPhoto.findUnique({
@@ -44,8 +43,27 @@ export async function replaceDraftPhoto(
     throw new DraftNotEditableError(photoId);
 
   const path = `${photo.draftId}/${randomUUID()}.${getPhotoFileExtension(file.contentType)}`;
+  const { token } = await createDraftPhotoUploadUrl(supabase, path);
 
-  await uploadDraftPhoto(supabase, path, file.buffer, file.contentType);
+  return { path, token };
+}
+
+export async function confirmReplaceDraftPhoto(
+  supabase: SupabaseClient,
+  photoId: string,
+  path: string,
+  currentUserId: string | null,
+): Promise<DraftPhoto> {
+  const photo = await prisma.draftPhoto.findUnique({
+    where: { id: photoId },
+    include: { draft: { select: { status: true, userId: true } } },
+  });
+
+  if (!photo) throw new DraftPhotoNotFoundError(photoId);
+  assertDraftOwner(photo.draftId, photo.draft.userId, currentUserId);
+  if (photo.draft.status !== "editing")
+    throw new DraftNotEditableError(photoId);
+
   await deleteDraftPhoto(supabase, photo.storagePath);
 
   const updated = await prisma.draftPhoto.update({

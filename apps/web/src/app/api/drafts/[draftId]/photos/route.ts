@@ -4,48 +4,39 @@ import {
   DraftForbiddenError,
   DraftNotEditableError,
   DraftNotFoundError,
-  InvalidPhotoFileError,
 } from "@/features/draft/errors";
-import { addDraftPhotos } from "@/features/draft/service/add-draft-photos";
+import { confirmDraftPhotos } from "@/features/draft/service/add-draft-photos";
 import { createServerClient } from "@/lib/supabase/server";
 
 type Params = {
   params: Promise<{ draftId: string }>;
 };
 
+type ConfirmItemInput = {
+  path: string;
+  label: string;
+};
+
 export async function POST(request: Request, { params }: Params) {
   const { draftId } = await params;
-  const formData = await request.formData();
-  const fileEntries = formData
-    .getAll("files")
-    .filter((entry): entry is File => entry instanceof File);
-  const label = formData.get("label");
+  const body = (await request.json()) as { items?: ConfirmItemInput[] };
 
-  if (fileEntries.length === 0) {
+  if (!body.items || body.items.length === 0) {
     return NextResponse.json(
-      { error: "업로드할 파일이 없습니다." },
+      { error: "확정할 사진이 없습니다." },
       { status: 400 },
     );
   }
-
-  const files = await Promise.all(
-    fileEntries.map(async (file) => ({
-      buffer: Buffer.from(await file.arrayBuffer()),
-      contentType: file.type,
-      size: file.size,
-    })),
-  );
 
   try {
     const supabase = await createServerClient();
     const { data } = await supabase.auth.getUser();
 
-    const result = await addDraftPhotos(
+    const result = await confirmDraftPhotos(
       supabase,
       draftId,
-      files,
+      body.items,
       data.user?.id ?? null,
-      typeof label === "string" ? label : undefined,
     );
 
     return NextResponse.json(result, { status: 201 });
@@ -64,9 +55,6 @@ export async function POST(request: Request, { params }: Params) {
         { error: "더 이상 수정할 수 없는 시안입니다." },
         { status: 409 },
       );
-    }
-    if (error instanceof InvalidPhotoFileError) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
     throw error;

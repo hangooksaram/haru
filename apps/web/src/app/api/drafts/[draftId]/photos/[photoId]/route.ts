@@ -4,9 +4,8 @@ import {
   DraftForbiddenError,
   DraftNotEditableError,
   DraftPhotoNotFoundError,
-  InvalidPhotoFileError,
 } from "@/features/draft/errors";
-import { replaceDraftPhoto } from "@/features/draft/service/replace-draft-photo";
+import { confirmReplaceDraftPhoto } from "@/features/draft/service/replace-draft-photo";
 import { createServerClient } from "@/lib/supabase/server";
 
 type Params = {
@@ -15,12 +14,11 @@ type Params = {
 
 export async function PUT(request: Request, { params }: Params) {
   const { photoId } = await params;
-  const formData = await request.formData();
-  const file = formData.get("file");
+  const body = (await request.json()) as { path?: string };
 
-  if (!(file instanceof File)) {
+  if (!body.path) {
     return NextResponse.json(
-      { error: "업로드할 파일이 없습니다." },
+      { error: "확정할 사진이 없습니다." },
       { status: 400 },
     );
   }
@@ -29,14 +27,10 @@ export async function PUT(request: Request, { params }: Params) {
     const supabase = await createServerClient();
     const { data } = await supabase.auth.getUser();
 
-    const photo = await replaceDraftPhoto(
+    const photo = await confirmReplaceDraftPhoto(
       supabase,
       photoId,
-      {
-        buffer: Buffer.from(await file.arrayBuffer()),
-        contentType: file.type,
-        size: file.size,
-      },
+      body.path,
       data.user?.id ?? null,
     );
 
@@ -56,9 +50,6 @@ export async function PUT(request: Request, { params }: Params) {
         { error: "더 이상 수정할 수 없는 시안입니다." },
         { status: 409 },
       );
-    }
-    if (error instanceof InvalidPhotoFileError) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
     throw error;

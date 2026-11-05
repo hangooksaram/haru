@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 
-import { prisma } from "@haru/db";
+import { Prisma, prisma } from "@haru/db";
 
 import {
   DraftNotEditableError,
@@ -14,26 +14,31 @@ import { selectAcceptablePhotos } from "@/features/draft/lib/selectAcceptablePho
 import { extractSortedPhotoElements } from "@/features/template/lib/extractSortedPhotoElements";
 
 import {
+  createDraftPhotoUploadUrl,
   getDraftPhotoSignedUrl,
-  uploadDraftPhoto,
 } from "./draft-photo-storage";
 
 import type { DraftPhoto } from "@/features/draft/types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-type PhotoFileInput = {
-  buffer: Buffer;
+type PhotoFileMeta = {
   contentType: string;
   size: number;
 };
 
-export async function addDraftPhotos(
+type PhotoUpload = {
+  path: string;
+  token: string;
+  label: string;
+};
+
+export async function createDraftPhotoUploadUrls(
   supabase: SupabaseClient,
   draftId: string,
-  files: PhotoFileInput[],
+  files: PhotoFileMeta[],
   currentUserId: string | null,
   targetLabel?: string,
-): Promise<{ added: DraftPhoto[]; rejectedCount: number }> {
+): Promise<{ uploads: PhotoUpload[]; rejectedCount: number }> {
   files.forEach(assertValidPhotoFile);
 
   const draft = await prisma.draft.findUnique({
@@ -60,30 +65,67 @@ export async function addDraftPhotos(
     draft.photos.length,
   );
 
-  const added: DraftPhoto[] = [];
+  const uploads: PhotoUpload[] = [];
 
   for (const [index, file] of accepted.entries()) {
-    const name = emptyLabels[index];
+    const label = emptyLabels[index];
     const path = `${draftId}/${randomUUID()}.${getPhotoFileExtension(file.contentType)}`;
+    const { token } = await createDraftPhotoUploadUrl(supabase, path);
 
-    await uploadDraftPhoto(supabase, path, file.buffer, file.contentType);
-
-    const photo = await prisma.draftPhoto.create({
-      data: {
-        draftId,
-        storagePath: path,
-        name,
-        position: labels.indexOf(name),
-      },
-    });
-
-    added.push({
-      id: photo.id,
-      name: photo.name,
-      position: photo.position,
-      url: await getDraftPhotoSignedUrl(supabase, path),
-    });
+    uploads.push({ path, token, label });
   }
 
-  return { added, rejectedCount };
+  return { uploads, rejectedCount };
+}
+
+export async function confirmDraftPhotos(
+  supabase: SupabaseClient,
+  draftId: string,
+  items: { path: string; label: string }[],
+  currentUserId: string | null,
+): Promise<{ added: DraftPhoto[] }> {
+  const draft = await prisma.draft.findUnique({
+    where: { id: draftId },
+    include: { template: { select: { elements: true } } },
+  });
+
+  if (!draft) throw new DraftNotFoundError(draftId);
+  assertDraftOwner(draftId, draft.userId, currentUserId);
+  if (draft.status !== "editing") throw new DraftNotEditableError(draftId);
+
+  const labels = extractSortedPhotoElements(draft.template.elements);
+  const added: DraftPhoto[] = [];
+
+  for (const item of items) {
+    try {
+      const photo = await prisma.draftPhoto.create({
+        data: {
+          draftId,
+          storagePath: item.path,
+          name: item.label,
+          position: labels.indexOf(item.label),
+        },
+      });
+
+      added.push({
+        id: photo.id,
+        name: photo.name,
+        position: photo.position,
+        url: await getDraftPhotoSignedUrl(supabase, item.path),
+      });
+    } catch (error) {
+      // 정책: URL 발급 시점과 확정 시점 사이에 같은 라벨이 먼저 채워지면(동시 작업 등)
+      // unique 제약 충돌이 나는데, 이 경우 그 사진만 조용히 건너뛰고 나머지는 계속 처리한다.
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        continue;
+      }
+
+      throw error;
+    }
+  }
+
+  return { added };
 }
