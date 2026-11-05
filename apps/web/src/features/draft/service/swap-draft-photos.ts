@@ -5,6 +5,7 @@ import {
   DraftNotFoundError,
   InvalidPhotoSwapError,
 } from "@/features/draft/errors";
+import { assertDraftOwner } from "@/features/draft/lib/assertDraftOwner";
 import { computePhotoSwap } from "@/features/draft/lib/computePhotoSwap";
 import { extractSortedPhotoElements } from "@/features/template/lib/extractSortedPhotoElements";
 
@@ -12,6 +13,7 @@ export async function swapDraftPhotos(
   draftId: string,
   labelA: string,
   labelB: string,
+  currentUserId: string | null,
 ): Promise<void> {
   const draft = await prisma.draft.findUnique({
     where: { id: draftId },
@@ -22,6 +24,7 @@ export async function swapDraftPhotos(
   });
 
   if (!draft) throw new DraftNotFoundError(draftId);
+  assertDraftOwner(draftId, draft.userId, currentUserId);
   if (draft.status !== "editing") throw new DraftNotEditableError(draftId);
 
   const labels = extractSortedPhotoElements(draft.template.elements);

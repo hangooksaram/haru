@@ -15,7 +15,7 @@ export async function GET(_request: Request, { params }: Params) {
   const { data } = await supabase.auth.getUser();
 
   try {
-    const draft = await getDraft(draftId, data.user?.id ?? null);
+    const draft = await getDraft(supabase, draftId, data.user?.id ?? null);
 
     if (!draft) {
       return NextResponse.json(
@@ -28,8 +28,8 @@ export async function GET(_request: Request, { params }: Params) {
   } catch (error) {
     if (error instanceof DraftForbiddenError) {
       return NextResponse.json(
-        { error: "이 시안에 접근할 권한이 없습니다." },
-        { status: 403 },
+        { error: "시안을 찾을 수 없습니다." },
+        { status: 404 },
       );
     }
 
@@ -43,7 +43,7 @@ export async function DELETE(_request: Request, { params }: Params) {
   const { data } = await supabase.auth.getUser();
 
   try {
-    const deleted = await deleteDraft(draftId, data.user?.id ?? null);
+    const deleted = await deleteDraft(supabase, draftId, data.user?.id ?? null);
 
     if (!deleted) {
       return NextResponse.json(
@@ -56,8 +56,8 @@ export async function DELETE(_request: Request, { params }: Params) {
   } catch (error) {
     if (error instanceof DraftForbiddenError) {
       return NextResponse.json(
-        { error: "이 시안에 접근할 권한이 없습니다." },
-        { status: 403 },
+        { error: "시안을 찾을 수 없습니다." },
+        { status: 404 },
       );
     }
 

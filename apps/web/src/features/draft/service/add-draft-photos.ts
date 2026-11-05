@@ -6,6 +6,7 @@ import {
   DraftNotEditableError,
   DraftNotFoundError,
 } from "@/features/draft/errors";
+import { assertDraftOwner } from "@/features/draft/lib/assertDraftOwner";
 import { assertValidPhotoFile } from "@/features/draft/lib/assertValidPhotoFile";
 import { getPhotoFileExtension } from "@/features/draft/lib/getPhotoFileExtension";
 import { resolveEmptyPhotoLabels } from "@/features/draft/lib/resolveEmptyPhotoLabels";
@@ -18,6 +19,7 @@ import {
 } from "./draft-photo-storage";
 
 import type { DraftPhoto } from "@/features/draft/types";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 type PhotoFileInput = {
   buffer: Buffer;
@@ -26,8 +28,10 @@ type PhotoFileInput = {
 };
 
 export async function addDraftPhotos(
+  supabase: SupabaseClient,
   draftId: string,
   files: PhotoFileInput[],
+  currentUserId: string | null,
   targetLabel?: string,
 ): Promise<{ added: DraftPhoto[]; rejectedCount: number }> {
   files.forEach(assertValidPhotoFile);
@@ -41,6 +45,7 @@ export async function addDraftPhotos(
   });
 
   if (!draft) throw new DraftNotFoundError(draftId);
+  assertDraftOwner(draftId, draft.userId, currentUserId);
   if (draft.status !== "editing") throw new DraftNotEditableError(draftId);
 
   const labels = extractSortedPhotoElements(draft.template.elements);
@@ -61,7 +66,7 @@ export async function addDraftPhotos(
     const name = emptyLabels[index];
     const path = `${draftId}/${randomUUID()}.${getPhotoFileExtension(file.contentType)}`;
 
-    await uploadDraftPhoto(path, file.buffer, file.contentType);
+    await uploadDraftPhoto(supabase, path, file.buffer, file.contentType);
 
     const photo = await prisma.draftPhoto.create({
       data: {
@@ -76,7 +81,7 @@ export async function addDraftPhotos(
       id: photo.id,
       name: photo.name,
       position: photo.position,
-      url: await getDraftPhotoSignedUrl(path),
+      url: await getDraftPhotoSignedUrl(supabase, path),
     });
   }
 

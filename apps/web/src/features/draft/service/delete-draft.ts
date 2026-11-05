@@ -1,10 +1,13 @@
 import { prisma } from "@haru/db";
 
-import { DraftForbiddenError } from "@/features/draft/errors";
+import { assertDraftOwner } from "@/features/draft/lib/assertDraftOwner";
 
 import { deleteDraftPhoto } from "./draft-photo-storage";
 
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 export async function deleteDraft(
+  supabase: SupabaseClient,
   draftId: string,
   currentUserId: string | null,
 ): Promise<boolean> {
@@ -15,12 +18,10 @@ export async function deleteDraft(
 
   if (!draft) return false;
 
-  if (draft.userId && draft.userId !== currentUserId) {
-    throw new DraftForbiddenError(draftId);
-  }
+  assertDraftOwner(draftId, draft.userId, currentUserId);
 
   await Promise.all(
-    draft.photos.map((photo) => deleteDraftPhoto(photo.storagePath)),
+    draft.photos.map((photo) => deleteDraftPhoto(supabase, photo.storagePath)),
   );
   await prisma.draft.delete({ where: { id: draftId } });
 

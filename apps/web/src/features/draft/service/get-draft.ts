@@ -1,12 +1,14 @@
 import { prisma } from "@haru/db";
 
-import { DraftForbiddenError } from "@/features/draft/errors";
+import { assertDraftOwner } from "@/features/draft/lib/assertDraftOwner";
 
 import { getDraftPhotoSignedUrl } from "./draft-photo-storage";
 
 import type { Draft, DraftSavedText } from "@/features/draft/types";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export async function getDraft(
+  supabase: SupabaseClient,
   draftId: string,
   currentUserId: string | null,
 ): Promise<Draft | null> {
@@ -19,16 +21,14 @@ export async function getDraft(
 
   if (!draft) return null;
 
-  if (draft.userId && draft.userId !== currentUserId) {
-    throw new DraftForbiddenError(draftId);
-  }
+  assertDraftOwner(draftId, draft.userId, currentUserId);
 
   const photos = await Promise.all(
     draft.photos.map(async (photo) => ({
       id: photo.id,
       name: photo.name,
       position: photo.position,
-      url: await getDraftPhotoSignedUrl(photo.storagePath),
+      url: await getDraftPhotoSignedUrl(supabase, photo.storagePath),
     })),
   );
 

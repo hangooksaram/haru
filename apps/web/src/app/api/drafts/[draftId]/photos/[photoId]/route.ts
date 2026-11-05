@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 
 import {
+  DraftForbiddenError,
   DraftNotEditableError,
   DraftPhotoNotFoundError,
   InvalidPhotoFileError,
 } from "@/features/draft/errors";
 import { replaceDraftPhoto } from "@/features/draft/service/replace-draft-photo";
+import { createServerClient } from "@/lib/supabase/server";
 
 type Params = {
   params: Promise<{ draftId: string; photoId: string }>;
@@ -24,15 +26,26 @@ export async function PUT(request: Request, { params }: Params) {
   }
 
   try {
-    const photo = await replaceDraftPhoto(photoId, {
-      buffer: Buffer.from(await file.arrayBuffer()),
-      contentType: file.type,
-      size: file.size,
-    });
+    const supabase = await createServerClient();
+    const { data } = await supabase.auth.getUser();
+
+    const photo = await replaceDraftPhoto(
+      supabase,
+      photoId,
+      {
+        buffer: Buffer.from(await file.arrayBuffer()),
+        contentType: file.type,
+        size: file.size,
+      },
+      data.user?.id ?? null,
+    );
 
     return NextResponse.json(photo);
   } catch (error) {
-    if (error instanceof DraftPhotoNotFoundError) {
+    if (
+      error instanceof DraftPhotoNotFoundError ||
+      error instanceof DraftForbiddenError
+    ) {
       return NextResponse.json(
         { error: "사진을 찾을 수 없습니다." },
         { status: 404 },

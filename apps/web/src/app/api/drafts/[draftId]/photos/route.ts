@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 
 import {
+  DraftForbiddenError,
   DraftNotEditableError,
   DraftNotFoundError,
   InvalidPhotoFileError,
 } from "@/features/draft/errors";
 import { addDraftPhotos } from "@/features/draft/service/add-draft-photos";
+import { createServerClient } from "@/lib/supabase/server";
 
 type Params = {
   params: Promise<{ draftId: string }>;
@@ -35,15 +37,23 @@ export async function POST(request: Request, { params }: Params) {
   );
 
   try {
+    const supabase = await createServerClient();
+    const { data } = await supabase.auth.getUser();
+
     const result = await addDraftPhotos(
+      supabase,
       draftId,
       files,
+      data.user?.id ?? null,
       typeof label === "string" ? label : undefined,
     );
 
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
-    if (error instanceof DraftNotFoundError) {
+    if (
+      error instanceof DraftNotFoundError ||
+      error instanceof DraftForbiddenError
+    ) {
       return NextResponse.json(
         { error: "시안을 찾을 수 없습니다." },
         { status: 404 },

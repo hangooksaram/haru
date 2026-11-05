@@ -63,8 +63,8 @@ export async function PUT(request: Request, { params }: Params) {
     }
     if (error instanceof DraftForbiddenError) {
       return NextResponse.json(
-        { error: "이 시안에 접근할 권한이 없습니다." },
-        { status: 403 },
+        { error: "시안을 찾을 수 없습니다." },
+        { status: 404 },
       );
     }
     if (error instanceof DraftNotEditableError) {

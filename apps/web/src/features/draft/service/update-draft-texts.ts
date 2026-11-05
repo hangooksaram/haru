@@ -1,11 +1,11 @@
 import { prisma } from "@haru/db";
 
 import {
-  DraftForbiddenError,
   DraftNotEditableError,
   DraftNotFoundError,
   InvalidDraftTextError,
 } from "@/features/draft/errors";
+import { assertDraftOwner } from "@/features/draft/lib/assertDraftOwner";
 import { resolveDraftTextElement } from "@/features/draft/lib/resolveDraftTextElement";
 import { trimBlankText } from "@/features/draft/lib/trimBlankText";
 import { extractSortedTextElements } from "@/features/template/lib/extractSortedTextElements";
@@ -23,9 +23,7 @@ export async function updateDraftTexts(
   });
 
   if (!draft) throw new DraftNotFoundError(draftId);
-  if (draft.userId && draft.userId !== currentUserId) {
-    throw new DraftForbiddenError(draftId);
-  }
+  assertDraftOwner(draftId, draft.userId, currentUserId);
   if (draft.status !== "editing") throw new DraftNotEditableError(draftId);
 
   const templateTextElements = extractSortedTextElements(
