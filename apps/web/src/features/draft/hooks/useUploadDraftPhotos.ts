@@ -20,6 +20,87 @@ type UploadDraftPhotosInput = {
 };
 
 type UploadSlot = { path: string; token: string; label: string };
+type ProcessedPhoto = { file: File; isBlurryWarning: boolean };
+type UploadedSlot = UploadSlot & { isBlurryWarning: boolean };
+
+async function requestUploadUrls(
+  draftId: string,
+  label: string,
+  processed: ProcessedPhoto[],
+): Promise<{ uploads: UploadSlot[]; rejectedCount: number }> {
+  const response = await fetch(`/api/drafts/${draftId}/photos/upload-urls`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      label,
+      files: processed.map(({ file }) => ({
+        contentType: file.type,
+        size: file.size,
+      })),
+    }),
+  });
+  if (!response.ok) throw new Error("사진 업로드에 실패했습니다.");
+
+  return response.json() as Promise<{
+    uploads: UploadSlot[];
+    rejectedCount: number;
+  }>;
+}
+
+// 네트워크 단절 등은 uploadToSignedUrl이 { error }가 아니라 예외로 던지므로,
+// Promise.all을 쓰면 한 장만 실패해도 나머지 성공한 업로드까지 전부 버려진다.
+// allSettled로 각 업로드를 독립적으로 처리해 실패한 것만 걸러낸다.
+async function uploadToStorage(
+  uploads: UploadSlot[],
+  processed: ProcessedPhoto[],
+): Promise<UploadedSlot[]> {
+  const supabase = createClient();
+  const settlements = await Promise.allSettled(
+    uploads.map(async (slot, index) => {
+      const { error } = await supabase.storage
+        .from(DRAFT_PHOTOS_BUCKET)
+        .uploadToSignedUrl(slot.path, slot.token, processed[index].file);
+
+      if (error) throw error;
+
+      return { ...slot, isBlurryWarning: processed[index].isBlurryWarning };
+    }),
+  );
+
+  return settlements
+    .filter(
+      (result): result is PromiseFulfilledResult<UploadedSlot> =>
+        result.status === "fulfilled",
+    )
+    .map((result) => result.value);
+}
+
+async function confirmUploads(
+  draftId: string,
+  succeeded: UploadedSlot[],
+): Promise<DraftPhoto[]> {
+  const response = await fetch(`/api/drafts/${draftId}/photos`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      items: succeeded.map(({ path, label }) => ({ path, label })),
+    }),
+  });
+  if (!response.ok) throw new Error("사진 업로드에 실패했습니다.");
+
+  const { added } = (await response.json()) as { added: DraftPhoto[] };
+  return added;
+}
+
+function countBlurryWarnings(
+  added: DraftPhoto[],
+  succeeded: UploadedSlot[],
+): number {
+  return added.filter(
+    (photo) =>
+      succeeded.find((item) => item.label === photo.name)?.isBlurryWarning,
+  ).length;
+}
 
 export function useUploadDraftPhotos(draftId: string) {
   const queryClient = useQueryClient();
@@ -30,75 +111,18 @@ export function useUploadDraftPhotos(draftId: string) {
       files,
     }: UploadDraftPhotosInput): Promise<UploadResult> => {
       const processed = await Promise.all(files.map(processPhotoFile));
-
-      const urlResponse = await fetch(
-        `/api/drafts/${draftId}/photos/upload-urls`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            label,
-            files: processed.map(({ file }) => ({
-              contentType: file.type,
-              size: file.size,
-            })),
-          }),
-        },
+      const { uploads, rejectedCount } = await requestUploadUrls(
+        draftId,
+        label,
+        processed,
       );
-      if (!urlResponse.ok) throw new Error("사진 업로드에 실패했습니다.");
-
-      const { uploads, rejectedCount } = (await urlResponse.json()) as {
-        uploads: UploadSlot[];
-        rejectedCount: number;
-      };
-
-      // 네트워크 단절 등은 uploadToSignedUrl이 { error }가 아니라 예외로 던지므로,
-      // Promise.all을 쓰면 한 장만 실패해도 나머지 성공한 업로드까지 전부 버려진다.
-      // allSettled로 각 업로드를 독립적으로 처리해 실패한 것만 걸러낸다.
-      const supabase = createClient();
-      const uploadSettlements = await Promise.allSettled(
-        uploads.map(async (slot, index) => {
-          const { error } = await supabase.storage
-            .from(DRAFT_PHOTOS_BUCKET)
-            .uploadToSignedUrl(slot.path, slot.token, processed[index].file);
-
-          if (error) throw error;
-
-          return { ...slot, isBlurryWarning: processed[index].isBlurryWarning };
-        }),
-      );
-      const succeeded = uploadSettlements
-        .filter(
-          (
-            result,
-          ): result is PromiseFulfilledResult<
-            UploadSlot & { isBlurryWarning: boolean }
-          > => result.status === "fulfilled",
-        )
-        .map((result) => result.value);
-
-      const confirmResponse = await fetch(`/api/drafts/${draftId}/photos`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: succeeded.map(({ path, label }) => ({ path, label })),
-        }),
-      });
-      if (!confirmResponse.ok) throw new Error("사진 업로드에 실패했습니다.");
-
-      const { added } = (await confirmResponse.json()) as {
-        added: DraftPhoto[];
-      };
-
-      const blurryWarningCount = added.filter(
-        (photo) =>
-          succeeded.find((item) => item.label === photo.name)?.isBlurryWarning,
-      ).length;
+      const succeeded = await uploadToStorage(uploads, processed);
+      const added = await confirmUploads(draftId, succeeded);
 
       return {
         added,
         rejectedCount: rejectedCount + (uploads.length - succeeded.length),
-        blurryWarningCount,
+        blurryWarningCount: countBlurryWarnings(added, succeeded),
       };
     },
     onSuccess: () => {
