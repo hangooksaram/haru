@@ -27,6 +27,7 @@ model Template {
   sortOrder Int?    @map("sort_order")
 
   drafts Draft[]
+  orders Order[]
 
   @@map("templates")
 }
@@ -61,6 +62,9 @@ model Draft {
 
   template Template     @relation(fields: [templateId], references: [id])
   photos   DraftPhoto[]
+  // 하나의 시안에 여러 주문이 생길 수 있다(결제완료/취소 후 재생성 등).
+  // "대기" 주문은 동시에 최대 1건이라는 제약은 orders 테이블의 부분 유니크 인덱스가 강제한다.
+  orders   Order[]
 
   @@map("drafts")
 }
@@ -76,4 +80,58 @@ model DraftPhoto {
 
   @@unique([draftId, name])
   @@map("draft_photos")
+}
+
+// 정책: 대기(pending_payment) 상태는 시안 하나당 동시에 최대 1건만 존재할 수 있다
+// (orders 마이그레이션의 부분 유니크 인덱스로 강제). paid/canceled 등 종결된 주문은
+// 같은 시안에 여러 건 쌓일 수 있다 (재구매, 취소 후 재생성).
+enum OrderStatus {
+  pending_payment
+  paid
+  canceled
+  rendering
+  completed
+  failed
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  userId      String?     @map("user_id")
+  draftId     String      @map("draft_id")
+  templateId  String      @map("template_id")
+  orderNumber String      @unique @map("order_number")
+  status      OrderStatus @default(pending_payment)
+  // 결제 확정 금액. 주문 생성 시점의 template.price를 복사해 고정한다.
+  price       Int
+  // 시안 텍스트 전체 배열(JSON). 전환 시 drafts.texts를 그대로 복사하며 이후 불변.
+  texts       Json        @default("[]")
+
+  creatomateRenderId String?   @map("creatomate_render_id")
+  renderRequestedAt  DateTime? @map("render_requested_at")
+  renderAttemptCount Int       @default(0) @map("render_attempt_count")
+  completedAt        DateTime? @map("completed_at")
+  finalVideoUrl      String?   @map("final_video_url")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  draft    Draft        @relation(fields: [draftId], references: [id])
+  template Template     @relation(fields: [templateId], references: [id])
+  photos   OrderPhoto[]
+
+  @@index([draftId])
+  @@map("orders")
+}
+
+model OrderPhoto {
+  id          String @id @default(cuid())
+  orderId     String @map("order_id")
+  storagePath String @map("storage_path")
+  position    Int
+  name        String
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@unique([orderId, name])
+  @@map("order_photos")
 }
