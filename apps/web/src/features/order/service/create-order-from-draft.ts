@@ -11,19 +11,84 @@ import {
   OrderCreationConflictError,
   TemplatePriceNotSetError,
 } from "../errors";
-
 import { copyDraftPhotoToOrderPhoto } from "./order-photo-storage";
-
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-// 정책(주문 생성):
-// - 서버는 주문에 포함된 시안이 주문하는 유저의 것인지 검증한다.
-// - 서버는 결제 시작 시점에 주문을 생성하고, 시안의 사진·텍스트를 주문으로 복사한다. 주문의 사진·텍스트는 불변이다.
-// - 복사 시작 시 drafts.status를 즉시 converting으로 바꿔 잠근다 (클린업 삭제와의 레이스 방지).
-// - 스토리지 파일은 같은 버킷 내 copy로 복사한다 (재업로드 아님, storage_path만 복사하면 안 됨).
-// - orders/order_photos insert는 하나의 DB 트랜잭션으로 묶는다.
-// - 전환이 끝나면 drafts.status를 converted로 표시한다.
-// - 재사용/취소/신규 생성 분기는 decideOrderCreationAction을 따른다.
+type DraftPhotoInput = { storagePath: string; position: number; name: string };
+
+async function copyDraftPhotosToOrder(
+  supabase: SupabaseClient,
+  orderId: string,
+  photos: DraftPhotoInput[],
+): Promise<DraftPhotoInput[]> {
+  return Promise.all(
+    photos.map(async (photo) => {
+      const extension = photo.storagePath.split(".").pop();
+      const storagePath = `${orderId}/${randomUUID()}${extension ? `.${extension}` : ""}`;
+
+      await copyDraftPhotoToOrderPhoto(
+        supabase,
+        photo.storagePath,
+        storagePath,
+      );
+
+      return { storagePath, position: photo.position, name: photo.name };
+    }),
+  );
+}
+
+// draft를 "converting"으로 잠근다. 잠그기 성공하면 true, 이미 누가 선점했으면 false.
+async function lockDraft(
+  draftId: string,
+  currentStatus: "editing" | "converted",
+): Promise<boolean> {
+  const result = await prisma.draft.updateMany({
+    where: { id: draftId, status: currentStatus },
+    data: { status: "converting" },
+  });
+  return result.count > 0;
+}
+
+// 복사/주문 생성이 실패했을 때, draft 상태를 잠그기 전 상태로 되돌려 락을 푼다.
+async function unlockDraftAfterFailure(
+  draftId: string,
+  statusBeforeLock: "editing" | "converted",
+): Promise<void> {
+  await prisma.draft.updateMany({
+    where: { id: draftId, status: "converting" },
+    data: { status: statusBeforeLock },
+  });
+}
+
+async function createOrderAndConvertDraft(params: {
+  orderId: string;
+  draftId: string;
+  userId: string | null;
+  templateId: string;
+  price: number;
+  texts: Prisma.InputJsonValue;
+  photos: DraftPhotoInput[];
+}): Promise<void> {
+  await prisma.$transaction([
+    prisma.order.create({
+      data: {
+        id: params.orderId,
+        userId: params.userId,
+        draftId: params.draftId,
+        templateId: params.templateId,
+        orderNumber: generateOrderNumber(),
+        price: params.price,
+        texts: params.texts,
+        photos: { create: params.photos },
+      },
+    }),
+    prisma.draft.update({
+      where: { id: params.draftId },
+      data: { status: "converted" },
+    }),
+  ]);
+}
+
 export async function createOrderFromDraft(
   supabase: SupabaseClient,
   draftId: string,
@@ -64,11 +129,8 @@ export async function createOrderFromDraft(
     return { id: existingOrder!.id };
   }
 
-  const locked = await prisma.draft.updateMany({
-    where: { id: draftId, status: draft.status },
-    data: { status: "converting" },
-  });
-  if (locked.count === 0) {
+  const isLocked = await lockDraft(draftId, draft.status);
+  if (!isLocked) {
     throw new OrderCreationConflictError(draftId);
   }
 
@@ -82,46 +144,24 @@ export async function createOrderFromDraft(
       });
     }
 
-    const copiedPhotos = await Promise.all(
-      draft.photos.map(async (photo) => {
-        const extension = photo.storagePath.split(".").pop();
-        const storagePath = `${orderId}/${randomUUID()}${extension ? `.${extension}` : ""}`;
-
-        await copyDraftPhotoToOrderPhoto(
-          supabase,
-          photo.storagePath,
-          storagePath,
-        );
-
-        return { storagePath, position: photo.position, name: photo.name };
-      }),
+    const copiedPhotos = await copyDraftPhotosToOrder(
+      supabase,
+      orderId,
+      draft.photos,
     );
 
-    await prisma.$transaction([
-      prisma.order.create({
-        data: {
-          id: orderId,
-          userId: draft.userId,
-          draftId: draft.id,
-          templateId: draft.templateId,
-          orderNumber: generateOrderNumber(),
-          price: templatePrice,
-          // drafts.texts는 스키마상 NOT NULL(default "[]")이라 null일 수 없다.
-          texts: draft.texts as Prisma.InputJsonValue,
-          photos: { create: copiedPhotos },
-        },
-      }),
-      prisma.draft.update({
-        where: { id: draftId },
-        data: { status: "converted" },
-      }),
-    ]);
-  } catch (error) {
-    // 잠그기 전 상태로 되돌린다 (재구매 등 converted 상태에서 시작한 경우 포함).
-    await prisma.draft.updateMany({
-      where: { id: draftId, status: "converting" },
-      data: { status: draft.status },
+    await createOrderAndConvertDraft({
+      orderId,
+      draftId: draft.id,
+      userId: draft.userId,
+      templateId: draft.templateId,
+      price: templatePrice,
+      // drafts.texts는 스키마상 NOT NULL(default "[]")이라 null일 수 없다.
+      texts: draft.texts as Prisma.InputJsonValue,
+      photos: copiedPhotos,
     });
+  } catch (error) {
+    await unlockDraftAfterFailure(draftId, draft.status);
     throw error;
   }
 
