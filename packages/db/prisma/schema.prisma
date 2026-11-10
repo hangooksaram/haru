@@ -23,7 +23,7 @@ model Template {
 
   // 가져오기 기능은 이 3개 필드를 채우지 않는다 (별도 "템플릿 공개 관리" 기능 담당).
   price     Int?
-  isActive  Boolean @map("is_active") @default(false)
+  isActive  Boolean @default(false) @map("is_active")
   sortOrder Int?    @map("sort_order")
 
   drafts Draft[]
@@ -89,6 +89,10 @@ enum OrderStatus {
   pending_payment
   paid
   canceled
+}
+
+// 제작 전 null → rendering → completed / failed
+enum OrderRenderStatus {
   rendering
   completed
   failed
@@ -106,11 +110,12 @@ model Order {
   // 시안 텍스트 전체 배열(JSON). 전환 시 drafts.texts를 그대로 복사하며 이후 불변.
   texts       Json        @default("[]")
 
-  creatomateRenderId String?   @map("creatomate_render_id")
-  renderRequestedAt  DateTime? @map("render_requested_at")
-  renderAttemptCount Int       @default(0) @map("render_attempt_count")
-  completedAt        DateTime? @map("completed_at")
-  finalVideoUrl      String?   @map("final_video_url")
+  renderStatus       OrderRenderStatus? @map("render_status")
+  creatomateRenderId String?            @map("creatomate_render_id")
+  renderRequestedAt  DateTime?          @map("render_requested_at")
+  renderAttemptCount Int                @default(0) @map("render_attempt_count")
+  completedAt        DateTime?          @map("completed_at")
+  finalVideoUrl      String?            @map("final_video_url")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
