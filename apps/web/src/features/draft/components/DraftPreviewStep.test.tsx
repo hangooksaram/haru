@@ -11,6 +11,9 @@ const { useTemplateTextElements } = vi.hoisted(() => ({
   useTemplateTextElements: vi.fn(),
 }));
 const { getUser } = vi.hoisted(() => ({ getUser: vi.fn() }));
+const { useCreateOrderFromDraft } = vi.hoisted(() => ({
+  useCreateOrderFromDraft: vi.fn(),
+}));
 
 vi.mock("next/navigation", () => ({ useRouter }));
 vi.mock("@/features/draft/components/DraftIdProvider", () => ({ useDraftId }));
@@ -18,12 +21,16 @@ vi.mock("@/features/draft/hooks/useDraft", () => ({ useDraft }));
 vi.mock("@/features/template/hooks/useTemplateTextElements", () => ({
   useTemplateTextElements,
 }));
+vi.mock("@/features/order/hooks/useCreateOrderFromDraft", () => ({
+  useCreateOrderFromDraft,
+}));
 vi.mock("@/lib/supabase/client", () => ({
   createClient: () => ({ auth: { getUser } }),
 }));
 
 function setup({ isAnonymous = false }: { isAnonymous?: boolean } = {}) {
   const push = vi.fn();
+  const mutateAsync = vi.fn().mockResolvedValue({ id: "order-1" });
   useRouter.mockReturnValue({ push });
   getUser.mockResolvedValue({ data: { user: { is_anonymous: isAnonymous } } });
   useDraftId.mockReturnValue({ draftId: "draft-1" });
@@ -43,8 +50,9 @@ function setup({ isAnonymous = false }: { isAnonymous?: boolean } = {}) {
     data: [{ type: "기본정보", name: "신랑", text: "" }],
     isLoading: false,
   });
+  useCreateOrderFromDraft.mockReturnValue({ mutateAsync, isPending: false });
 
-  return { push };
+  return { push, mutateAsync };
 }
 
 describe("DraftPreviewStep", () => {
@@ -89,15 +97,18 @@ describe("DraftPreviewStep", () => {
     expect(screen.queryAllByRole("textbox")).toHaveLength(0);
   });
 
-  it("로그인한 유저가 이 시안으로 주문을 누르면 결제 단계로 이동한다", async () => {
-    const { push } = setup({ isAnonymous: false });
+  it("로그인한 유저가 이 시안으로 주문을 누르면 주문을 생성하고 결제 단계로 이동한다", async () => {
+    const { push, mutateAsync } = setup({ isAnonymous: false });
     const user = userEvent.setup();
 
     render(<DraftPreviewStep templateId="template-1" />);
     await user.click(screen.getByRole("button", { name: "이 시안으로 주문" }));
 
+    expect(mutateAsync).toHaveBeenCalledWith("draft-1");
     await waitFor(() =>
-      expect(push).toHaveBeenCalledWith("/draft/template-1/payment"),
+      expect(push).toHaveBeenCalledWith(
+        "/draft/template-1/payment?orderId=order-1",
+      ),
     );
   });
 

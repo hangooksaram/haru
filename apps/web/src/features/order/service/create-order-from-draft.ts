@@ -15,25 +15,35 @@ import { copyDraftPhotoToOrderPhoto } from "./order-photo-storage";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 type DraftPhotoInput = { storagePath: string; position: number; name: string };
+type OrderPhotoCopyPaths = DraftPhotoInput & { sourcePath: string };
 
-async function copyDraftPhotosToOrder(
-  supabase: SupabaseClient,
+// 복사 전에 목적지 경로를 미리 계산한다. order_photos 행을 실제 복사보다 먼저
+// 만들어야 하므로(아래 createOrderFromDraft 참고), 경로 계산과 복사를 분리한다.
+function computeOrderPhotoCopyPaths(
   orderId: string,
   photos: DraftPhotoInput[],
-): Promise<DraftPhotoInput[]> {
-  return Promise.all(
-    photos.map(async (photo) => {
-      const extension = photo.storagePath.split(".").pop();
-      const storagePath = `${orderId}/${randomUUID()}${extension ? `.${extension}` : ""}`;
+): OrderPhotoCopyPaths[] {
+  return photos.map((photo) => {
+    const extension = photo.storagePath.split(".").pop();
+    const storagePath = `${orderId}/${randomUUID()}${extension ? `.${extension}` : ""}`;
 
-      await copyDraftPhotoToOrderPhoto(
-        supabase,
-        photo.storagePath,
-        storagePath,
-      );
+    return {
+      storagePath,
+      position: photo.position,
+      name: photo.name,
+      sourcePath: photo.storagePath,
+    };
+  });
+}
 
-      return { storagePath, position: photo.position, name: photo.name };
-    }),
+async function copyOrderPhotosToStorage(
+  supabase: SupabaseClient,
+  photos: OrderPhotoCopyPaths[],
+): Promise<void> {
+  await Promise.all(
+    photos.map((photo) =>
+      copyDraftPhotoToOrderPhoto(supabase, photo.sourcePath, photo.storagePath),
+    ),
   );
 }
 
@@ -58,6 +68,22 @@ async function unlockDraftAfterFailure(
     where: { id: draftId, status: "converting" },
     data: { status: statusBeforeLock },
   });
+}
+
+// 주문 행 생성까지는 끝났지만 실제 파일 복사가 실패했을 때, 만든 주문 행을 지우고
+// draft를 "converted"에서 잠그기 전 상태로 되돌린다.
+async function rollbackOrderAfterCopyFailure(
+  orderId: string,
+  draftId: string,
+  statusBeforeLock: "editing" | "converted",
+): Promise<void> {
+  await prisma.$transaction([
+    prisma.order.delete({ where: { id: orderId } }),
+    prisma.draft.update({
+      where: { id: draftId },
+      data: { status: statusBeforeLock },
+    }),
+  ]);
 }
 
 async function createOrderAndConvertDraft(params: {
@@ -135,6 +161,7 @@ export async function createOrderFromDraft(
   }
 
   const orderId = randomUUID();
+  const photoCopyPaths = computeOrderPhotoCopyPaths(orderId, draft.photos);
 
   try {
     if (action === "cancel_and_create" && existingOrder) {
@@ -144,12 +171,6 @@ export async function createOrderFromDraft(
       });
     }
 
-    const copiedPhotos = await copyDraftPhotosToOrder(
-      supabase,
-      orderId,
-      draft.photos,
-    );
-
     await createOrderAndConvertDraft({
       orderId,
       draftId: draft.id,
@@ -158,10 +179,23 @@ export async function createOrderFromDraft(
       price: templatePrice,
       // drafts.texts는 스키마상 NOT NULL(default "[]")이라 null일 수 없다.
       texts: draft.texts as Prisma.InputJsonValue,
-      photos: copiedPhotos,
+      photos: photoCopyPaths.map(({ storagePath, position, name }) => ({
+        storagePath,
+        position,
+        name,
+      })),
     });
   } catch (error) {
     await unlockDraftAfterFailure(draftId, draft.status);
+    throw error;
+  }
+
+  try {
+    // order_photos 복사를 허용하는 스토리지 RLS 정책은 orders 행의 존재를 기준으로
+    // 소유권을 확인하므로, 주문 행을 먼저 만든 뒤에 실제 파일을 복사해야 한다.
+    await copyOrderPhotosToStorage(supabase, photoCopyPaths);
+  } catch (error) {
+    await rollbackOrderAfterCopyFailure(orderId, draftId, draft.status);
     throw error;
   }
 
