@@ -57,6 +57,7 @@ model Draft {
   status     DraftStatus @default(editing)
   createdAt  DateTime    @default(now()) @map("created_at")
   updatedAt  DateTime    @updatedAt @map("updated_at")
+  deletedAt  DateTime?   @map("deleted_at")
   // 시안 텍스트 전체 배열. 요소는 { name, text }이며 name은 요소 전체 이름(Creatomate modifications key).
   texts      Json        @default("[]")
 
