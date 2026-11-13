@@ -5,6 +5,7 @@ import {
   OrderForbiddenError,
   OrderNotFoundError,
 } from "@/features/order/errors";
+import { ClearDraftIdOnPaymentSuccess } from "@/features/payment/components/ClearDraftIdOnPaymentSuccess";
 import { PaymentFailureView } from "@/features/payment/components/PaymentFailureView";
 import {
   PaymentAmountMismatchError,
@@ -78,6 +79,7 @@ export default async function PaymentSuccessPage({
 
   return (
     <div className="flex flex-col items-center gap-6 py-20 text-center">
+      <ClearDraftIdOnPaymentSuccess />
       <h1 className="font-heading text-3xl font-extrabold tracking-tight">
         결제가 완료되었습니다
       </h1>

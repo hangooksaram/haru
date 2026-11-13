@@ -7,7 +7,6 @@ import { DraftStepNav } from "@/components/DraftStepNav";
 import { Button } from "@/components/ui/button";
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
 import { DraftPhotoGrid } from "@/features/draft/components/DraftPhotoGrid";
-import { DraftForbiddenError } from "@/features/draft/errors";
 import { useCreateDraft } from "@/features/draft/hooks/useCreateDraft";
 import { useDraft } from "@/features/draft/hooks/useDraft";
 import { useReplaceDraftPhoto } from "@/features/draft/hooks/useReplaceDraftPhoto";
@@ -29,13 +28,9 @@ export function DraftPhotosStep({
   showPreviewShortcut,
 }: Props) {
   const router = useRouter();
-  const { draftId, setDraftId, clearDraftId } = useDraftId();
+  const { draftId, setDraftId } = useDraftId();
   const { mutate: createDraft } = useCreateDraft();
-  const {
-    data: draft,
-    isLoading: isDraftLoading,
-    error,
-  } = useDraft(draftId ?? null);
+  const { data: draft, isLoading: isDraftLoading } = useDraft(draftId ?? null);
   const { data: labels, isLoading: isLabelsLoading } =
     useTemplatePhotoElements(templateId);
   const [message, setMessage] = useState<string | null>(null);
@@ -61,11 +56,6 @@ export function DraftPhotosStep({
       },
     });
   }, [draftId, templateId, createDraft, setDraftId]);
-
-  // 소유자가 아닌 시안을 조회하다 403을 받으면 이어하기를 노출하지 않고, 저장된 draftId를 지워 새 시안을 생성한다.
-  useEffect(() => {
-    if (error instanceof DraftForbiddenError) clearDraftId();
-  }, [error, clearDraftId]);
 
   if (!draftId || isDraftLoading || isLabelsLoading || !draft || !labels) {
     return <p className="text-muted-foreground">불러오는 중...</p>;
