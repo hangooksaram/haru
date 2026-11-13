@@ -123,6 +123,7 @@ model Order {
   draft    Draft        @relation(fields: [draftId], references: [id])
   template Template     @relation(fields: [templateId], references: [id])
   photos   OrderPhoto[]
+  payment  Payment?
 
   @@index([draftId])
   @@map("orders")
@@ -139,4 +140,26 @@ model OrderPhoto {
 
   @@unique([orderId, name])
   @@map("order_photos")
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  failed
+  refunded
+}
+
+model Payment {
+  id      String        @id @default(cuid())
+  orderId String        @unique @map("order_id")
+  amount  Int
+  status  PaymentStatus
+  // 결제대행사. 현재는 토스페이먼츠만 지원해 항상 "tosspayments".
+  pgProvider      String   @map("pg_provider")
+  pgTransactionId String   @map("pg_transaction_id")
+  paidAt          DateTime @map("paid_at")
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@map("payments")
 }
