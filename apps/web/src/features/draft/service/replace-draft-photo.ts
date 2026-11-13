@@ -34,10 +34,13 @@ export async function createReplaceDraftPhotoUploadUrl(
 
   const photo = await prisma.draftPhoto.findUnique({
     where: { id: photoId },
-    include: { draft: { select: { status: true, userId: true } } },
+    include: {
+      draft: { select: { status: true, userId: true, deletedAt: true } },
+    },
   });
 
   if (!photo) throw new DraftPhotoNotFoundError(photoId);
+  if (photo.draft.deletedAt) throw new DraftPhotoNotFoundError(photoId);
   assertDraftOwner(photo.draftId, photo.draft.userId, currentUserId);
   if (photo.draft.status !== "editing")
     throw new DraftNotEditableError(photoId);
@@ -56,10 +59,13 @@ export async function confirmReplaceDraftPhoto(
 ): Promise<DraftPhoto> {
   const photo = await prisma.draftPhoto.findUnique({
     where: { id: photoId },
-    include: { draft: { select: { status: true, userId: true } } },
+    include: {
+      draft: { select: { status: true, userId: true, deletedAt: true } },
+    },
   });
 
   if (!photo) throw new DraftPhotoNotFoundError(photoId);
+  if (photo.draft.deletedAt) throw new DraftPhotoNotFoundError(photoId);
   assertDraftOwner(photo.draftId, photo.draft.userId, currentUserId);
   if (photo.draft.status !== "editing")
     throw new DraftNotEditableError(photoId);

@@ -50,6 +50,7 @@ export async function createDraftPhotoUploadUrls(
   });
 
   if (!draft) throw new DraftNotFoundError(draftId);
+  if (draft.deletedAt) throw new DraftNotFoundError(draftId);
   assertDraftOwner(draftId, draft.userId, currentUserId);
   if (draft.status !== "editing") throw new DraftNotEditableError(draftId);
 
@@ -90,6 +91,7 @@ export async function confirmDraftPhotos(
   });
 
   if (!draft) throw new DraftNotFoundError(draftId);
+  if (draft.deletedAt) throw new DraftNotFoundError(draftId);
   assertDraftOwner(draftId, draft.userId, currentUserId);
   if (draft.status !== "editing") throw new DraftNotEditableError(draftId);
 

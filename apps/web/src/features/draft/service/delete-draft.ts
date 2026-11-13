@@ -17,6 +17,7 @@ export async function deleteDraft(
   });
 
   if (!draft) return false;
+  if (draft.deletedAt) return false;
 
   assertDraftOwner(draftId, draft.userId, currentUserId);
 

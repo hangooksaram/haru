@@ -20,6 +20,7 @@ export async function getDraft(
   });
 
   if (!draft) return null;
+  if (draft.deletedAt) return null;
 
   assertDraftOwner(draftId, draft.userId, currentUserId);
 

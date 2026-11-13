@@ -23,6 +23,7 @@ export async function updateDraftTexts(
   });
 
   if (!draft) throw new DraftNotFoundError(draftId);
+  if (draft.deletedAt) throw new DraftNotFoundError(draftId);
   assertDraftOwner(draftId, draft.userId, currentUserId);
   if (draft.status !== "editing") throw new DraftNotEditableError(draftId);
 
