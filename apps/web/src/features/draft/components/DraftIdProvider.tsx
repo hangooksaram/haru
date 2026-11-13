@@ -23,8 +23,11 @@ type Props = {
 
 export function DraftIdProvider({ templateId, children }: Props) {
   const currentUserId = useCurrentUserId();
-  const { draftId, setDraftId: setStoredDraftId, clearDraftId } =
-    useStoredDraftId(templateId, currentUserId);
+  const {
+    draftId,
+    setDraftId: setStoredDraftId,
+    clearDraftId,
+  } = useStoredDraftId(templateId, currentUserId);
   const { isAcknowledged, acknowledge } = useDraftAcknowledged();
 
   function setDraftId(id: string) {

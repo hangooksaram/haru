@@ -28,7 +28,7 @@ export function DraftResumeDialog() {
   // 결제 단계는 이미 끝까지 작성한 시안으로 들어온 화면이라 "이어서 작성/새로
   // 시작"을 물을 이유가 없고, 새로 시작을 잘못 누르면 결제 직전에 시안이
   // 삭제되는 위험도 있다.
-  const isPaymentStep = pathname.endsWith("/payment");
+  const isPaymentStep = pathname.includes("/payment");
 
   const open = Boolean(draftId && draft) && !isFreshlyCreated && !isPaymentStep;
 

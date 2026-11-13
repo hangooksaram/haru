@@ -1,6 +1,7 @@
 import { DraftStepNav } from "@/components/DraftStepNav";
 import { DraftStepper } from "@/components/DraftStepper";
 import { OrderPaymentSummary } from "@/features/order/components/OrderPaymentSummary";
+import { PaymentWidget } from "@/features/payment/components/PaymentWidget";
 
 type Props = {
   params: Promise<{ templateId: string }>;
@@ -20,7 +21,12 @@ export default async function DraftPaymentPage({
       <h1 className="font-heading text-3xl font-extrabold tracking-tight">
         결제
       </h1>
-      {orderId && <OrderPaymentSummary orderId={orderId} />}
+      {orderId && (
+        <>
+          <OrderPaymentSummary orderId={orderId} />
+          <PaymentWidget orderId={orderId} templateId={templateId} />
+        </>
+      )}
       <DraftStepNav prevHref={`/draft/${templateId}/preview`} />
     </div>
   );
