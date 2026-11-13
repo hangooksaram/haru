@@ -2,10 +2,10 @@
 
 import { useRouter } from "next/navigation";
 
-import { Button } from "@/components/ui/button";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useLogout } from "@/features/auth/hooks/useLogout";
 
-export function LogoutButton() {
+export function LogoutMenuItem() {
   const router = useRouter();
   const logout = useLogout();
 
@@ -19,13 +19,8 @@ export function LogoutButton() {
   }
 
   return (
-    <Button
-      type="button"
-      variant="outline"
-      onClick={handleClick}
-      disabled={logout.isPending}
-    >
+    <DropdownMenuItem onClick={handleClick} disabled={logout.isPending}>
       로그아웃
-    </Button>
+    </DropdownMenuItem>
   );
 }
