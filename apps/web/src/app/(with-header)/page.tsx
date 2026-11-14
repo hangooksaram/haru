@@ -5,6 +5,8 @@ import { HeroSection } from "@/components/HeroSection";
 import { MobileCtaBar } from "@/components/MobileCtaBar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { VideoSlider } from "@/components/VideoSlider";
+import { CONTAINER_PADDING_X } from "@/lib/layout";
+import { cn } from "@/lib/utils";
 
 export default function HomePage() {
   return (
@@ -20,7 +22,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-[1280px] px-5 sm:px-10 lg:px-[72px]">
+      <div className={cn("mx-auto max-w-[1280px]", CONTAINER_PADDING_X)}>
         <FaqSection />
         <CtaSection />
         <SiteFooter />

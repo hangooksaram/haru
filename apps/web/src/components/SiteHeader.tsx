@@ -2,6 +2,8 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { ProfileBadge } from "@/features/auth/components/ProfileBadge";
+import { CONTAINER_PADDING_X } from "@/lib/layout";
+import { cn } from "@/lib/utils";
 
 type Props = {
   categories?: string[];
@@ -10,28 +12,18 @@ type Props = {
 
 export function SiteHeader({ categories = [], variant = "full" }: Props) {
   return (
-    <header className="site-header bg-background/90 sticky top-0 z-50 w-full py-5 backdrop-blur-md">
+    <header className="site-header bg-background/90 sticky top-0 z-50 w-full backdrop-blur-md">
       <style>{`
+        .site-header{height:64px;padding:0;display:flex;align-items:center}
         @keyframes site-header-shadow{from{box-shadow:0 0 0 rgba(11,18,32,0)}to{box-shadow:0 6px 24px rgba(11,18,32,.08)}}
-        @keyframes site-header-pad{from{padding-top:20px;padding-bottom:20px}to{padding-top:8px;padding-bottom:8px}}
         @supports (animation-timeline: scroll()) {
           .site-header{animation:site-header-shadow linear both;animation-timeline:scroll();animation-range:0 80px}
-          @media (min-width: 640px){
-            .site-header{animation:site-header-shadow linear both, site-header-pad linear both;animation-timeline:scroll(), scroll();animation-range:0 80px}
-          }
         }
         @media (prefers-reduced-motion: reduce){
           .site-header{animation:none !important}
         }
 
         /* 홈(풀블리드 영상 히어로) 전용: 영상 위에서는 투명/흰 글자로 시작해 스크롤 시 흰 배경으로 전환 */
-        body:has(.home-hero-video) .site-header{
-          height:64px;
-          padding-top:0 !important;
-          padding-bottom:0 !important;
-          display:flex;
-          align-items:center;
-        }
         @supports (animation-timeline: scroll()) {
           body:has(.home-hero-video) .site-header{
             animation:site-header-overlay-fade linear both;
@@ -61,7 +53,12 @@ export function SiteHeader({ categories = [], variant = "full" }: Props) {
         }
       `}</style>
 
-      <div className="mx-auto flex w-full max-w-[1280px] flex-wrap items-center justify-between gap-4 px-5 sm:px-10 lg:px-[72px]">
+      <div
+        className={cn(
+          "mx-auto flex min-h-11 w-full max-w-[1280px] flex-wrap items-center justify-between gap-4",
+          CONTAINER_PADDING_X,
+        )}
+      >
         <Link href="/" className="text-2xl font-black tracking-tight">
           haru<span className="text-brand-deep">.</span>
         </Link>
@@ -79,7 +76,11 @@ export function SiteHeader({ categories = [], variant = "full" }: Props) {
               ))}
             </nav>
             <div className="flex items-center gap-6">
-              <Button asChild size="lg" className="cta-flip-wrap rounded-full px-5 font-bold">
+              <Button
+                asChild
+                size="lg"
+                className="cta-flip-wrap rounded-full px-5 font-bold"
+              >
                 <Link href="/templates/tags">
                   <span className="cta-flip">
                     <span className="cta-flip-track">
