@@ -25,11 +25,15 @@ export async function POST(request: Request) {
   try {
     const supabase = await createServerClient();
     const { data } = await supabase.auth.getUser();
-    const order = await createOrderFromDraft(
-      supabase,
-      draftId,
-      data.user?.id ?? null,
-    );
+
+    if (!data.user || data.user.is_anonymous) {
+      return NextResponse.json(
+        { error: "인증 정보가 없습니다." },
+        { status: 401 },
+      );
+    }
+
+    const order = await createOrderFromDraft(supabase, draftId, data.user.id);
 
     return NextResponse.json(order, { status: 201 });
   } catch (error) {

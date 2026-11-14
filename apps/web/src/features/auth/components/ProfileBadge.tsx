@@ -30,7 +30,7 @@ export async function ProfileBadge() {
   const supabase = await createServerClient();
   const { data } = await supabase.auth.getUser();
 
-  if (!data.user) {
+  if (!data.user || data.user.is_anonymous) {
     return (
       <Button asChild variant="outline" size="sm">
         <Link href="/login">로그인</Link>

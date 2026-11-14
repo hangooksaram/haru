@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   const supabase = await createServerClient();
   const { data } = await supabase.auth.getUser();
 
-  if (!data.user) {
+  if (!data.user || data.user.is_anonymous) {
     return NextResponse.json(
       { error: "인증 정보가 없습니다." },
       { status: 401 },
