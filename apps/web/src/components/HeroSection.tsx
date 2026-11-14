@@ -1,7 +1,8 @@
+// 데스크톱(sm 이상)은 DesktopHeroVideo가 대체하므로 이 컴포넌트는 모바일에서만 렌더링된다.
 export function HeroSection() {
   return (
     <section
-      className="relative grid items-center gap-6 py-6 pb-10 sm:grid-cols-2 sm:py-10"
+      className="relative grid items-center gap-6 py-6 pb-10"
       style={{
         backgroundImage:
           "radial-gradient(70% 70% at 75% 55%, var(--brand-soft) 0%, transparent 70%)",
@@ -32,12 +33,12 @@ export function HeroSection() {
         }
       `}</style>
 
-      <div className="text-center sm:text-left">
-        <h1 className="font-heading text-[30px] leading-[1.25] font-black tracking-tight text-[#0B1220] sm:text-[44px] sm:leading-[1.2] sm:tracking-[-1.5px]">
+      <div className="text-center">
+        <h1 className="font-heading text-[30px] leading-[1.25] font-black tracking-tight text-[#0B1220]">
           <span className="hero-word" style={{ animationDelay: ".05s" }}>
-            영상 시안은
+            영상 시안 제작,
           </span>
-          <br className="sm:hidden" />{" "}
+          <br />
           <span
             className="hero-word hero-mark"
             style={{ animationDelay: ".25s, .8s" }}
@@ -46,7 +47,7 @@ export function HeroSection() {
           </span>
         </h1>
         <p
-          className="hero-word text-muted-foreground mt-3 text-base sm:mt-2 sm:text-lg"
+          className="hero-word text-muted-foreground mt-3 text-base"
           style={{ animationDelay: ".7s" }}
         >
           마음에 들면 그때 주문하세요
@@ -57,7 +58,7 @@ export function HeroSection() {
         viewBox="0 0 520 400"
         role="img"
         aria-label="사진들이 모여 영상 시안이 되는 일러스트"
-        className="mx-auto block w-full max-w-[200px] sm:max-w-[320px]"
+        className="mx-auto block w-full max-w-[200px]"
       >
         <g className="hero-blob">
           <path

@@ -1,4 +1,5 @@
 import { CtaSection } from "@/components/CtaSection";
+import { DesktopHeroVideo } from "@/components/DesktopHeroVideo";
 import { FaqSection } from "@/components/FaqSection";
 import { HeroSection } from "@/components/HeroSection";
 import { MobileCtaBar } from "@/components/MobileCtaBar";
@@ -8,15 +9,18 @@ import { VideoSlider } from "@/components/VideoSlider";
 export default function HomePage() {
   return (
     <main>
-      <div className="mx-auto max-w-[1280px] px-5 sm:px-10 lg:px-16">
-        <HeroSection />
+      <DesktopHeroVideo />
+
+      <div className="sm:hidden">
+        <div className="mx-auto max-w-[1280px] px-5">
+          <HeroSection />
+        </div>
+        <div className="mx-auto max-w-[1280px] px-5 py-2">
+          <VideoSlider />
+        </div>
       </div>
 
-      <div className="mx-auto max-w-[1280px] px-5 py-2 sm:px-10 sm:py-4 lg:px-16">
-        <VideoSlider />
-      </div>
-
-      <div className="mx-auto max-w-[1280px] px-5 sm:px-10 lg:px-16">
+      <div className="mx-auto max-w-[1280px] px-5 sm:px-10 lg:px-[72px]">
         <FaqSection />
         <CtaSection />
         <SiteFooter />

@@ -32,7 +32,7 @@ export async function ProfileBadge() {
 
   if (!data.user || data.user.is_anonymous) {
     return (
-      <Button asChild variant="outline" size="sm">
+      <Button asChild variant="outline" size="sm" className="text-foreground">
         <Link href="/login">로그인</Link>
       </Button>
     );

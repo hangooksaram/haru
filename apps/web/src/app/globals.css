@@ -47,6 +47,23 @@ body {
   margin: 0;
 }
 
+html {
+  scrollbar-gutter: stable;
+  scrollbar-color: rgba(0, 0, 0, 0.35) transparent;
+}
+
+html.dark {
+  scrollbar-color: rgba(255, 255, 255, 0.35) transparent;
+}
+
+::-webkit-scrollbar {
+  background: transparent;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 @theme inline {
   --font-heading: var(--font-heading);
   --font-sans: var(--font-sans);

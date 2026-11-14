@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 export function CtaSection() {
   return (
     <section className="bg-brand-soft my-6 rounded-[24px] px-6 py-11 text-center sm:my-0 sm:rounded-[32px] sm:px-8 sm:py-20">
-      <h2 className="font-heading text-[28px] font-black tracking-tight sm:text-[44px] sm:tracking-[-1.5px]">
+      <h2 className="font-heading text-[28px] font-black tracking-tight sm:text-[40px] sm:leading-[1.4] sm:font-bold sm:tracking-[-0.6px]">
         아직 시작 전이신가요?
       </h2>
       <p className="text-muted-foreground mt-2 text-[15px] sm:mt-3 sm:text-lg">

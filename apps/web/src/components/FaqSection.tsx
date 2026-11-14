@@ -12,7 +12,7 @@ export function FaqSection() {
   return (
     <section id="faq" className="py-10 sm:py-16">
       <span className="text-brand-deep text-sm font-bold">FAQ</span>
-      <h2 className="font-heading mt-3 mb-8 text-2xl font-black tracking-tight sm:text-4xl">
+      <h2 className="font-heading mt-3 mb-8 text-2xl font-black tracking-tight sm:text-[40px] sm:leading-[1.4] sm:font-bold sm:tracking-[-0.6px]">
         자주 묻는 질문
       </h2>
       <div className="grid gap-5 sm:grid-cols-2">
