@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { SiteHeader } from "@/components/SiteHeader";
 
 type Props = {
   children: React.ReactNode;
@@ -6,13 +6,11 @@ type Props = {
 
 export default function DraftLayout({ children }: Props) {
   return (
-    <main className="mx-auto max-w-[1280px] px-6">
-      <header className="flex items-center border-b py-5">
-        <Link href="/" className="text-xl font-extrabold tracking-tight">
-          하루
-        </Link>
-      </header>
-      {children}
-    </main>
+    <>
+      <SiteHeader variant="minimal" />
+      <main className="mx-auto max-w-[1280px] px-5 sm:px-10 lg:px-16">
+        {children}
+      </main>
+    </>
   );
 }
