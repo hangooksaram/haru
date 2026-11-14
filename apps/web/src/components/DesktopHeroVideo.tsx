@@ -4,15 +4,16 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import {
-  CREATE_FROM_VIDEO_HREF,
-  VIDEO_AUTO_ADVANCE_MS,
-  VIDEO_SLIDES,
-} from "@/components/video-slides";
+import type { HeroSlide } from "@/components/video-slides";
+import { VIDEO_AUTO_ADVANCE_MS } from "@/components/video-slides";
+
+type Props = {
+  slides: HeroSlide[];
+};
 
 // 모바일은 HeroSection + VideoSlider가 대체하므로 이 컴포넌트는 데스크톱(sm 이상)에서만 보인다.
 // 루트 요소의 home-hero-video 클래스는 SiteHeader가 :has()로 감지해 투명 헤더로 전환하는 마커다.
-export function DesktopHeroVideo() {
+export function DesktopHeroVideo({ slides }: Props) {
   const [idx, setIdx] = useState(0);
   const [userPaused, setUserPaused] = useState(false);
   const [muted, setMuted] = useState(true);
@@ -28,17 +29,21 @@ export function DesktopHeroVideo() {
   useEffect(() => {
     const timer = window.setInterval(() => {
       if (!userPaused && !hoverPausedRef.current) {
-        setIdx((current) => (current + 1) % VIDEO_SLIDES.length);
+        setIdx((current) => (current + 1) % slides.length);
       }
     }, VIDEO_AUTO_ADVANCE_MS);
     return () => window.clearInterval(timer);
-  }, [userPaused]);
+  }, [userPaused, slides.length]);
 
   const goPrev = () =>
-    setIdx((current) => (current + VIDEO_SLIDES.length - 1) % VIDEO_SLIDES.length);
-  const goNext = () => setIdx((current) => (current + 1) % VIDEO_SLIDES.length);
+    setIdx((current) => (current + slides.length - 1) % slides.length);
+  const goNext = () => setIdx((current) => (current + 1) % slides.length);
 
-  const current = VIDEO_SLIDES[idx];
+  if (slides.length === 0) {
+    return null;
+  }
+
+  const current = slides[idx];
 
   return (
     <div
@@ -48,7 +53,7 @@ export function DesktopHeroVideo() {
       onMouseLeave={() => {
         hoverPausedRef.current = false;
       }}
-      className="home-hero-video relative hidden h-[760px] w-full -mt-16 overflow-hidden bg-[#14151A] text-[#C7CAD6] sm:block"
+      className="home-hero-video relative -mt-16 hidden h-[760px] w-full overflow-hidden bg-[#14151A] text-[#C7CAD6] sm:block"
     >
       <style>{`
         .hero-vid-word{display:inline-block;animation:hero-vid-rise .8s cubic-bezier(.2,.8,.2,1) both}
@@ -112,9 +117,9 @@ export function DesktopHeroVideo() {
             </svg>
           )}
         </button>
-        {VIDEO_SLIDES.map((slide, slideIndex) => (
+        {slides.map((slide, slideIndex) => (
           <button
-            key={slide.title}
+            key={slide.href}
             type="button"
             aria-label={`영상 ${slideIndex + 1} 보기`}
             onClick={() => setIdx(slideIndex)}
@@ -137,11 +142,11 @@ export function DesktopHeroVideo() {
           {current.title}
         </span>
         <Button asChild size="lg" className="rounded-xl px-6 font-bold">
-          <Link href={CREATE_FROM_VIDEO_HREF}>이 영상으로 제작하기</Link>
+          <Link href={current.href}>이 영상으로 제작하기</Link>
         </Button>
       </div>
 
-      <div className="absolute bottom-14 right-[72px] flex items-center gap-3">
+      <div className="absolute right-[72px] bottom-14 flex items-center gap-3">
         <button
           type="button"
           aria-label={muted ? "소리 켜기" : "소리 끄기"}

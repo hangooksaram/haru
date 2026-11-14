@@ -4,14 +4,15 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import {
-  CREATE_FROM_VIDEO_HREF,
-  VIDEO_AUTO_ADVANCE_MS,
-  VIDEO_SLIDES,
-} from "@/components/video-slides";
+import type { HeroSlide } from "@/components/video-slides";
+import { VIDEO_AUTO_ADVANCE_MS } from "@/components/video-slides";
+
+type Props = {
+  slides: HeroSlide[];
+};
 
 // 데스크톱(sm 이상)은 DesktopHeroVideo가 대체하므로 이 컴포넌트는 모바일에서만 렌더링된다.
-export function VideoSlider() {
+export function VideoSlider({ slides }: Props) {
   const [idx, setIdx] = useState(0);
   const [userPaused, setUserPaused] = useState(false);
   const [muted, setMuted] = useState(true);
@@ -27,23 +28,27 @@ export function VideoSlider() {
   useEffect(() => {
     const timer = window.setInterval(() => {
       if (!userPaused) {
-        setIdx((current) => (current + 1) % VIDEO_SLIDES.length);
+        setIdx((current) => (current + 1) % slides.length);
       }
     }, VIDEO_AUTO_ADVANCE_MS);
     return () => window.clearInterval(timer);
-  }, [userPaused]);
+  }, [userPaused, slides.length]);
 
   const goPrev = () =>
-    setIdx((current) => (current + VIDEO_SLIDES.length - 1) % VIDEO_SLIDES.length);
-  const goNext = () => setIdx((current) => (current + 1) % VIDEO_SLIDES.length);
+    setIdx((current) => (current + slides.length - 1) % slides.length);
+  const goNext = () => setIdx((current) => (current + 1) % slides.length);
 
-  const current = VIDEO_SLIDES[idx];
+  if (slides.length === 0) {
+    return null;
+  }
+
+  const current = slides[idx];
 
   const dots = (
     <>
-      {VIDEO_SLIDES.map((slide, slideIndex) => (
+      {slides.map((slide, slideIndex) => (
         <button
-          key={slide.title}
+          key={slide.href}
           type="button"
           aria-label={`영상 ${slideIndex + 1} 보기`}
           onClick={() => setIdx(slideIndex)}
@@ -130,11 +135,21 @@ export function VideoSlider() {
             className="flex size-11 items-center justify-center"
           >
             {userPaused ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
                 <path d="M7 5l12 7-12 7z" fill="#fff" />
               </svg>
             ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
                 <path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="#fff" />
               </svg>
             )}
@@ -178,8 +193,12 @@ export function VideoSlider() {
       </div>
 
       <div className="flex items-center justify-center">{dots}</div>
-      <Button asChild size="lg" className="w-full rounded-xl text-[17px] font-bold">
-        <Link href={CREATE_FROM_VIDEO_HREF}>이 영상으로 제작하기</Link>
+      <Button
+        asChild
+        size="lg"
+        className="w-full rounded-xl text-[17px] font-bold"
+      >
+        <Link href={current.href}>이 영상으로 제작하기</Link>
       </Button>
     </div>
   );
