@@ -1,16 +1,9 @@
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
+import { getPlaceholderColor } from "@/features/template/lib/getPlaceholderColor";
 
 import type { Template } from "@/features/template/types";
-
-// 썸네일이 API에 없어서, 템플릿 id로 색상을 정해 placeholder로 사용한다.
-const PLACEHOLDER_COLORS = ["#DCEFFB", "#FCE4E4", "#FFF3D6", "#E7E1F7"];
-
-function getPlaceholderColor(id: string) {
-  const sum = [...id].reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return PLACEHOLDER_COLORS[sum % PLACEHOLDER_COLORS.length];
-}
 
 function formatDuration(seconds: number): string {
   const totalSeconds = Math.round(seconds);

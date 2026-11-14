@@ -9,6 +9,22 @@ function getStorageKey(
   return `haru:draft:${templateId}:${currentUserId ?? "guest"}`;
 }
 
+// 훅 바깥(예: 내 영상 목록)에서도 같은 저장 형식으로 draftId를 읽고 쓰기 위한 함수.
+export function readStoredDraftId(
+  templateId: string,
+  currentUserId: string | null,
+): string | null {
+  return localStorage.getItem(getStorageKey(templateId, currentUserId));
+}
+
+export function writeStoredDraftId(
+  templateId: string,
+  currentUserId: string | null,
+  draftId: string,
+): void {
+  localStorage.setItem(getStorageKey(templateId, currentUserId), draftId);
+}
+
 export function findMigratableDraftId(
   templateId: string,
   ownKey: string,

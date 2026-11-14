@@ -56,7 +56,7 @@ export async function ProfileBadge() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="#">내 영상</Link>
+          <Link href="/my-videos">내 영상</Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <LogoutMenuItem />
