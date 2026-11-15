@@ -5,13 +5,18 @@ import { HeroSection } from "@/components/HeroSection";
 import { MobileCtaBar } from "@/components/MobileCtaBar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { buildHeroSlides } from "@/components/video-slides";
+import { VideoListSection } from "@/components/VideoListSection";
 import { VideoSlider } from "@/components/VideoSlider";
 import { getHeroTemplates } from "@/features/template/service/get-hero-templates";
+import { getPublicTemplates } from "@/features/template/service/get-public-templates";
 import { CONTAINER_PADDING_X } from "@/lib/layout";
 import { cn } from "@/lib/utils";
 
 export default async function HomePage() {
-  const heroTemplates = await getHeroTemplates();
+  const [heroTemplates, templates] = await Promise.all([
+    getHeroTemplates(),
+    getPublicTemplates(),
+  ]);
   const slides = buildHeroSlides(heroTemplates);
 
   return (
@@ -28,6 +33,7 @@ export default async function HomePage() {
       </div>
 
       <div className={cn("mx-auto max-w-[1280px]", CONTAINER_PADDING_X)}>
+        <VideoListSection templates={templates} />
         <FaqSection />
         <CtaSection />
         <SiteFooter />

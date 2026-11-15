@@ -12,6 +12,7 @@ function createTemplate(override: Partial<Template>): Template {
     tags: ["결혼"],
     duration: 30,
     photoCount: 5,
+    summary: null,
     ...override,
   };
 }

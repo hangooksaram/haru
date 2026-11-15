@@ -1,3 +1,8 @@
+export type TemplateSummary = {
+  ko?: string;
+  en?: string;
+};
+
 export type Template = {
   id: string;
   name: string;
@@ -5,6 +10,7 @@ export type Template = {
   tags: string[];
   duration: number;
   photoCount: number;
+  summary: TemplateSummary | null;
 };
 
 export type TemplateTextElementType = "기본정보" | "자막";

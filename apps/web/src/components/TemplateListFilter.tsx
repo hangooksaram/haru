@@ -9,6 +9,8 @@ import { filterTemplates } from "@/features/template/lib/filterTemplates";
 import { resolveInitialTag } from "@/features/template/lib/resolveInitialTag";
 
 import type { Template } from "@/features/template/types";
+import { TemplateVideoCard } from "./TemplateVideoCard";
+import { getVideoSrcForIndex } from "./video-slides";
 
 type Props = {
   templates: Template[];
@@ -16,7 +18,11 @@ type Props = {
   initialTag?: string;
 };
 
-export function TemplateListFilter({ templates, tagOptions, initialTag }: Props) {
+export function TemplateListFilter({
+  templates,
+  tagOptions,
+  initialTag,
+}: Props) {
   const [selectedTag, setSelectedTag] = useState<string | null>(
     resolveInitialTag(initialTag, tagOptions),
   );
@@ -58,8 +64,12 @@ export function TemplateListFilter({ templates, tagOptions, initialTag }: Props)
         <p className="text-muted-foreground">조건에 맞는 템플릿이 없습니다.</p>
       ) : (
         <div className="grid grid-cols-2 gap-5 lg:grid-cols-4">
-          {filteredTemplates.map((template) => (
-            <TemplateCard key={template.id} template={template} />
+          {filteredTemplates.map((template, index) => (
+            <TemplateVideoCard
+              key={template.id}
+              template={template}
+              videoSrc={getVideoSrcForIndex(index)}
+            />
           ))}
         </div>
       )}
