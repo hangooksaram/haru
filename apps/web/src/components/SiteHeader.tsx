@@ -86,7 +86,7 @@ export function SiteHeader({ categories = [], variant = "full" }: Props) {
                 size="lg"
                 className="cta-flip-wrap rounded-full px-5 font-bold"
               >
-                <Link href="/templates/tags">
+                <Link href="/templates">
                   <span className="cta-flip">
                     <span className="cta-flip-track">
                       <span>시안 만들기</span>

@@ -12,7 +12,7 @@ export function CtaSection() {
         지금 시안부터 만들어 보세요.
       </p>
       <Button asChild size="lg" className="mt-6 h-14 w-full rounded-xl px-11 text-[17px] font-bold sm:mt-8 sm:w-auto">
-        <Link href="/templates/tags">무료로 시안 만들기</Link>
+        <Link href="/templates">무료로 시안 만들기</Link>
       </Button>
     </section>
   );

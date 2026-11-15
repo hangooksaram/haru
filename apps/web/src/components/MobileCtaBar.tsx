@@ -7,7 +7,7 @@ export function MobileCtaBar() {
   return (
     <div className="sticky bottom-0 border-t bg-background px-5 py-3 sm:hidden">
       <Button asChild size="lg" className="h-14 w-full rounded-xl text-[17px] font-bold">
-        <Link href="/templates/tags">시안 만들기</Link>
+        <Link href="/templates">시안 만들기</Link>
       </Button>
     </div>
   );
