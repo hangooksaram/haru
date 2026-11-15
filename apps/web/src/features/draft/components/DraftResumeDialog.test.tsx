@@ -25,7 +25,7 @@ const TITLE = "작성 중이던 시안이 있어요";
 
 function setup({
   draftId = "draft-1",
-  draft = { id: "draft-1" },
+  draft = { id: "draft-1", photos: [{ id: "photo-1" }] },
   isFreshlyCreated = false,
   pathname = "/draft/template-1/photos",
   mutate = vi.fn(),
@@ -91,6 +91,14 @@ describe("DraftResumeDialog", () => {
 
   it("결제 단계에서는 모달을 보여주지 않는다", () => {
     setup({ pathname: "/draft/template-1/payment" });
+
+    render(<DraftResumeDialog />);
+
+    expect(screen.queryByText(TITLE)).not.toBeInTheDocument();
+  });
+
+  it("사진이 한 장도 없는 시안이면 모달을 보여주지 않는다", () => {
+    setup({ draft: { id: "draft-1", photos: [] } });
 
     render(<DraftResumeDialog />);
 

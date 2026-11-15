@@ -30,7 +30,14 @@ export function DraftResumeDialog() {
   // 삭제되는 위험도 있다.
   const isPaymentStep = pathname.includes("/payment");
 
-  const open = Boolean(draftId && draft) && !isFreshlyCreated && !isPaymentStep;
+  // 정책: 사진이 한 장도 없는 시안은 이어갈 작성 내용이 없으므로 모달 없이 그대로 사용한다.
+  const hasPhotos = (draft?.photos.length ?? 0) > 0;
+
+  const open =
+    Boolean(draftId && draft) &&
+    hasPhotos &&
+    !isFreshlyCreated &&
+    !isPaymentStep;
 
   function handleResume() {
     acknowledgeResume();
