@@ -4,6 +4,11 @@ export type TemplateElement =
   | { id: string; name: string; type: "image"; source?: string }
   | { id: string; name: string; type: "text"; text: string };
 
+export type TemplateSummary = {
+  ko?: string;
+  en?: string;
+};
+
 export type Template = {
   id: string;
   name: string;
@@ -15,4 +20,5 @@ export type Template = {
   updatedAt: string | null;
   elements: TemplateElement[] | null;
   duration: number | null;
+  summary: TemplateSummary | null;
 };

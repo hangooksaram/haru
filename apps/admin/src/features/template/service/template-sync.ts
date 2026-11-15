@@ -41,6 +41,7 @@ export async function getTemplatesWithSyncStatus(): Promise<Template[]> {
       updatedAt: imported?.updatedAt.toISOString() ?? null,
       elements: (imported?.elements as Template["elements"]) ?? null,
       duration: imported?.duration ?? null,
+      summary: (imported?.summary as Template["summary"]) ?? null,
     };
   });
 }

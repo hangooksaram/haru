@@ -21,10 +21,11 @@ model Template {
   elements  Json
   duration  Float
 
-  // 가져오기 기능은 이 3개 필드를 채우지 않는다 (별도 "템플릿 공개 관리" 기능 담당).
+  // 가져오기 기능은 이 4개 필드를 채우지 않는다 (별도 "템플릿 공개 관리" / "템플릿 소개 관리" 기능 담당).
   price     Int?
   isActive  Boolean @default(false) @map("is_active")
   sortOrder Int?    @map("sort_order")
+  summary   Json? // 언어 코드를 키로 한 JSON. 예: { "ko": "...", "en": "..." }. 언어별 40자 이하
 
   drafts Draft[]
   orders Order[]

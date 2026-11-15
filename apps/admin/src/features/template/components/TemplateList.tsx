@@ -67,6 +67,7 @@ export function TemplateList({ templates }: { templates: Template[] }) {
             <TableHead>이름</TableHead>
             <TableHead>생성일</TableHead>
             <TableHead>가격</TableHead>
+            <TableHead>소개 문구</TableHead>
             <TableHead>공개 설정</TableHead>
             <TableHead className="text-right">상태</TableHead>
           </TableRow>

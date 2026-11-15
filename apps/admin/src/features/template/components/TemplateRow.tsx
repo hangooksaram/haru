@@ -8,6 +8,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { ImportActionButton } from "@/features/template/components/ImportActionButton";
 import { TemplateActiveToggle } from "@/features/template/components/TemplateActiveToggle";
 import { TemplatePriceInput } from "@/features/template/components/TemplatePriceInput";
+import { TemplateSummaryInput } from "@/features/template/components/TemplateSummaryInput";
 import type { Template } from "@/features/template/types";
 
 const STATUS_LABEL: Record<Template["status"], string> = {
@@ -59,6 +60,26 @@ export function TemplateRow({ template }: { template: Template }) {
         </TableCell>
         <TableCell>
           {canExpand ? (
+            <div className="flex flex-col gap-1">
+              <TemplateSummaryInput
+                templateId={template.id}
+                lang="ko"
+                value={template.summary?.ko ?? ""}
+              />
+              <TemplateSummaryInput
+                templateId={template.id}
+                lang="en"
+                value={template.summary?.en ?? ""}
+              />
+            </div>
+          ) : (
+            <span className="text-muted-foreground text-xs">
+              가져온 뒤 설정 가능
+            </span>
+          )}
+        </TableCell>
+        <TableCell>
+          {canExpand ? (
             <TemplateActiveToggle
               templateId={template.id}
               isActive={template.isActive}
@@ -93,7 +114,7 @@ export function TemplateRow({ template }: { template: Template }) {
       </TableRow>
       {expanded && canExpand ? (
         <TableRow>
-          <TableCell colSpan={5}>
+          <TableCell colSpan={6}>
             <pre className="bg-muted max-h-96 overflow-auto rounded-md p-3 text-xs">
               {JSON.stringify(
                 {
@@ -101,6 +122,7 @@ export function TemplateRow({ template }: { template: Template }) {
                   updatedAt: template.updatedAt,
                   elements: template.elements,
                   duration: template.duration,
+                  summary: template.summary,
                 },
                 null,
                 2,
