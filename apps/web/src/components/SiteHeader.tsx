@@ -59,7 +59,12 @@ export function SiteHeader({ categories = [], variant = "full" }: Props) {
           CONTAINER_PADDING_X,
         )}
       >
-        <Link href="/" className="text-2xl font-black tracking-tight">
+        <Link
+          href="/"
+          className="flex items-center gap-2 text-2xl font-black tracking-tight"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icon.svg" alt="" width={22} height={22} />
           haru<span className="text-brand-deep">.</span>
         </Link>
         {variant === "full" ? (
