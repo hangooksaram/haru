@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 const PROVIDERS = [
   { id: "google", label: "구글로 가입하기" },
   { id: "kakao", label: "카카오로 가입하기" },
+  { id: "naver", label: "네이버로 가입하기" },
 ] as const;
 
 type Provider = (typeof PROVIDERS)[number]["id"];
@@ -22,6 +23,13 @@ export function SocialLoginButtons({ next, socialConflict }: Props) {
   const hasRetried = useRef(false);
 
   async function handleClick(provider: Provider) {
+    if (provider === "naver") {
+      const naverUrl = new URL("/auth/naver", window.location.origin);
+      naverUrl.searchParams.set("next", sanitizeNextPath(next));
+      window.location.href = naverUrl.toString();
+      return;
+    }
+
     const supabase = createClient();
     const callbackUrl = new URL("/auth/callback", window.location.origin);
     callbackUrl.searchParams.set("next", sanitizeNextPath(next));

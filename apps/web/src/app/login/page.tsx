@@ -6,11 +6,15 @@ import { LoginForm } from "@/features/auth/components/LoginForm";
 import { SocialLoginButtons } from "@/features/auth/components/SocialLoginButtons";
 
 type Props = {
-  searchParams: Promise<{ next?: string; socialConflict?: string }>;
+  searchParams: Promise<{
+    next?: string;
+    socialConflict?: string;
+    error?: string;
+  }>;
 };
 
 export default async function LoginPage({ searchParams }: Props) {
-  const { next, socialConflict } = await searchParams;
+  const { next, socialConflict, error } = await searchParams;
 
   return (
     <div className="mx-auto flex max-w-md flex-col gap-10 px-6 py-16">
@@ -21,6 +25,12 @@ export default async function LoginPage({ searchParams }: Props) {
         <CardContent className="flex flex-col gap-6">
           <LoginForm next={next} />
           <Separator />
+          {error === "naver_email_conflict" && (
+            <p className="text-sm font-medium text-destructive">
+              이미 다른 방식으로 가입된 이메일입니다. 가입하신 방법으로
+              로그인해주세요.
+            </p>
+          )}
           <SocialLoginButtons next={next} socialConflict={socialConflict} />
           <p className="text-muted-foreground text-center text-sm">
             계정이 없으신가요?{" "}
