@@ -22,19 +22,22 @@ const PREVIEW_PLAYBACK_RATE = 8;
 // 영상 둘러보기 리스트의 영상 카드. 템플릿 고르기 화면 등 다른 곳에서도 재사용한다.
 export function TemplateVideoCard({ template, videoSrc }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const playPromiseRef = useRef<Promise<void> | null>(null);
 
   function handlePreviewStart() {
     const video = videoRef.current;
     if (!video) return;
     video.playbackRate = PREVIEW_PLAYBACK_RATE;
-    video.play();
+    playPromiseRef.current = video.play().catch(() => {});
   }
 
   function handlePreviewEnd() {
     const video = videoRef.current;
     if (!video) return;
-    video.pause();
-    video.currentTime = 0;
+    Promise.resolve(playPromiseRef.current).then(() => {
+      video.pause();
+      video.currentTime = 0;
+    });
   }
 
   return (

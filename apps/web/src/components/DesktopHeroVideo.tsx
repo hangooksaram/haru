@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import type { HeroSlide } from "@/components/video-slides";
-import { VIDEO_AUTO_ADVANCE_MS } from "@/components/video-slides";
 import { CONTAINER_INSET_LEFT, CONTAINER_INSET_RIGHT } from "@/lib/layout";
 import { cn } from "@/lib/utils";
 
@@ -17,9 +16,7 @@ type Props = {
 // 루트 요소의 home-hero-video 클래스는 SiteHeader가 :has()로 감지해 투명 헤더로 전환하는 마커다.
 export function DesktopHeroVideo({ slides }: Props) {
   const [idx, setIdx] = useState(0);
-  const [userPaused, setUserPaused] = useState(false);
   const [muted, setMuted] = useState(true);
-  const hoverPausedRef = useRef(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
@@ -27,15 +24,6 @@ export function DesktopHeroVideo({ slides }: Props) {
       videoRef.current.muted = muted;
     }
   }, [muted]);
-
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      if (!userPaused && !hoverPausedRef.current) {
-        setIdx((current) => (current + 1) % slides.length);
-      }
-    }, VIDEO_AUTO_ADVANCE_MS);
-    return () => window.clearInterval(timer);
-  }, [userPaused, slides.length]);
 
   const goPrev = () =>
     setIdx((current) => (current + slides.length - 1) % slides.length);
@@ -48,15 +36,7 @@ export function DesktopHeroVideo({ slides }: Props) {
   const current = slides[idx];
 
   return (
-    <div
-      onMouseEnter={() => {
-        hoverPausedRef.current = true;
-      }}
-      onMouseLeave={() => {
-        hoverPausedRef.current = false;
-      }}
-      className="home-hero-video relative -mt-16 hidden h-[760px] w-full overflow-hidden bg-[#14151A] text-[#C7CAD6] sm:block"
-    >
+    <div className="home-hero-video relative -mt-16 hidden h-[760px] w-full overflow-hidden bg-[#14151A] text-[#C7CAD6] sm:block">
       <style>{`
         .hero-vid-word{display:inline-block;animation:hero-vid-rise .8s cubic-bezier(.2,.8,.2,1) both}
         @keyframes hero-vid-rise{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
@@ -114,22 +94,6 @@ export function DesktopHeroVideo({ slides }: Props) {
             CONTAINER_INSET_RIGHT,
           )}
         >
-          <button
-            type="button"
-            aria-label={userPaused ? "자동 전환 재생" : "자동 전환 일시정지"}
-            onClick={() => setUserPaused((value) => !value)}
-            className="flex size-11 items-center justify-center"
-          >
-            {userPaused ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M7 5l12 7-12 7z" fill="#fff" />
-              </svg>
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="#fff" />
-              </svg>
-            )}
-          </button>
           {slides.map((slide, slideIndex) => (
             <button
               key={slide.href}

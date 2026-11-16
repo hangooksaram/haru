@@ -5,8 +5,6 @@ const TEMP_VIDEO_SRC_02 = `${R2_BASE_URL}/식전 영상.mp4`;
 
 const HERO_VIDEO_SRCS = [TEMP_VIDEO_SRC_01, TEMP_VIDEO_SRC_02];
 
-export const VIDEO_AUTO_ADVANCE_MS = 5000;
-
 export type HeroSlide = {
   title: string;
   href: string;

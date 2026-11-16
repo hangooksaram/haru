@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import type { HeroSlide } from "@/components/video-slides";
-import { VIDEO_AUTO_ADVANCE_MS } from "@/components/video-slides";
 
 type Props = {
   slides: HeroSlide[];
@@ -14,7 +13,6 @@ type Props = {
 // 데스크톱(sm 이상)은 DesktopHeroVideo가 대체하므로 이 컴포넌트는 모바일에서만 렌더링된다.
 export function VideoSlider({ slides }: Props) {
   const [idx, setIdx] = useState(0);
-  const [userPaused, setUserPaused] = useState(false);
   const [muted, setMuted] = useState(true);
   const touchStartXRef = useRef(0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -24,15 +22,6 @@ export function VideoSlider({ slides }: Props) {
       videoRef.current.muted = muted;
     }
   }, [muted]);
-
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      if (!userPaused) {
-        setIdx((current) => (current + 1) % slides.length);
-      }
-    }, VIDEO_AUTO_ADVANCE_MS);
-    return () => window.clearInterval(timer);
-  }, [userPaused, slides.length]);
 
   const goPrev = () =>
     setIdx((current) => (current + slides.length - 1) % slides.length);
@@ -126,35 +115,6 @@ export function VideoSlider({ slides }: Props) {
             </svg>
           )}
         </button>
-
-        <div className="absolute top-2 right-2 flex items-center rounded-full bg-[rgba(11,18,32,0.78)] px-1">
-          <button
-            type="button"
-            aria-label={userPaused ? "자동 전환 재생" : "자동 전환 일시정지"}
-            onClick={() => setUserPaused((value) => !value)}
-            className="flex size-11 items-center justify-center"
-          >
-            {userPaused ? (
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path d="M7 5l12 7-12 7z" fill="#fff" />
-              </svg>
-            ) : (
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="#fff" />
-              </svg>
-            )}
-          </button>
-        </div>
 
         <button
           type="button"
