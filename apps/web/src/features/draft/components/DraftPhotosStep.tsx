@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { DraftStepNav } from "@/components/DraftStepNav";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
 import { DraftPhotoGrid } from "@/features/draft/components/DraftPhotoGrid";
 import { useCreateDraft } from "@/features/draft/hooks/useCreateDraft";
@@ -58,7 +59,16 @@ export function DraftPhotosStep({
   }, [draftId, templateId, createDraft, setDraftId]);
 
   if (!draftId || isDraftLoading || isLabelsLoading || !draft || !labels) {
-    return <p className="text-muted-foreground">불러오는 중...</p>;
+    return (
+      <div className="flex flex-col gap-4">
+        <Skeleton className="h-5 w-16" />
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, index) => (
+            <Skeleton key={index} className="aspect-square rounded-xl" />
+          ))}
+        </div>
+      </div>
+    );
   }
 
   const photoCount = draft.photos.length;
