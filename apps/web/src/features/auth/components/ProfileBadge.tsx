@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Suspense } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { HeaderLoginLink } from "@/features/auth/components/HeaderLoginLink";
 import { LogoutMenuItem } from "@/features/auth/components/LogoutMenuItem";
 import { createServerClient } from "@/lib/supabase/server";
 
@@ -32,9 +34,20 @@ export async function ProfileBadge() {
 
   if (!data.user || data.user.is_anonymous) {
     return (
-      <Button asChild variant="outline" size="sm" className="text-foreground">
-        <Link href="/login">로그인</Link>
-      </Button>
+      <Suspense
+        fallback={
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="text-foreground"
+          >
+            <Link href="/login">로그인</Link>
+          </Button>
+        }
+      >
+        <HeaderLoginLink />
+      </Suspense>
     );
   }
 
