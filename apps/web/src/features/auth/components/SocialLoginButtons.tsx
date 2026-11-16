@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+
 import { Button } from "@/components/ui/button";
 import { sanitizeNextPath } from "@/features/auth/lib/sanitizeNextPath";
 import { createClient } from "@/lib/supabase/client";
@@ -9,13 +11,17 @@ const PROVIDERS = [
   { id: "kakao", label: "카카오로 가입하기" },
 ] as const;
 
+type Provider = (typeof PROVIDERS)[number]["id"];
+
 type Props = {
   next?: string;
   socialConflict?: string;
 };
 
 export function SocialLoginButtons({ next, socialConflict }: Props) {
-  async function handleClick(provider: "google" | "kakao") {
+  const hasRetried = useRef(false);
+
+  async function handleClick(provider: Provider) {
     const supabase = createClient();
     const callbackUrl = new URL("/auth/callback", window.location.origin);
     callbackUrl.searchParams.set("next", sanitizeNextPath(next));
@@ -38,13 +44,15 @@ export function SocialLoginButtons({ next, socialConflict }: Props) {
     });
   }
 
+  useEffect(() => {
+    if (!socialConflict || hasRetried.current) return;
+    hasRetried.current = true;
+    void handleClick(socialConflict as Provider);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [socialConflict]);
+
   return (
     <div className="flex flex-col gap-2">
-      {socialConflict && (
-        <p className="text-destructive text-sm">
-          이미 다른 계정에 연결된 소셜 계정이에요. 다시 눌러서 로그인해주세요.
-        </p>
-      )}
       {PROVIDERS.map(({ id, label }) => (
         <Button
           key={id}
