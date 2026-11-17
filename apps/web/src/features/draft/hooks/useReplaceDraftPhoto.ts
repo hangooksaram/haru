@@ -6,7 +6,7 @@ import { DRAFT_PHOTOS_BUCKET } from "@/features/draft/constants";
 import { processPhotoFile } from "@/features/draft/lib/processPhotoFile";
 import { createClient } from "@/lib/supabase/client";
 
-import type { DraftPhoto } from "@/features/draft/types";
+import type { Draft, DraftPhoto } from "@/features/draft/types";
 
 type ReplaceDraftPhotoInput = {
   photoId: string;
@@ -82,8 +82,24 @@ export function useReplaceDraftPhoto(draftId: string) {
 
       return { ...photo, isBlurryWarning: processed.isBlurryWarning };
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["draft", draftId] });
+    onSuccess: (result) => {
+      const photo: DraftPhoto = {
+        id: result.id,
+        name: result.name,
+        position: result.position,
+        url: result.url,
+      };
+
+      queryClient.setQueryData<Draft>(["draft", draftId], (previous) =>
+        previous
+          ? {
+              ...previous,
+              photos: previous.photos.map((p) =>
+                p.id === photo.id ? photo : p,
+              ),
+            }
+          : previous,
+      );
     },
   });
 }

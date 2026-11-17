@@ -1,12 +1,12 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import type { RefObject } from "react";
+import type { Ref } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
 
 type Props = {
-  containerRef: RefObject<HTMLDivElement | null>;
+  containerRef: Ref<HTMLDivElement>;
   isLoading: boolean;
   isBuffering: boolean;
   error: string | null;

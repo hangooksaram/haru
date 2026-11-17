@@ -6,7 +6,7 @@ import { DRAFT_PHOTOS_BUCKET } from "@/features/draft/constants";
 import { processPhotoFile } from "@/features/draft/lib/processPhotoFile";
 import { createClient } from "@/lib/supabase/client";
 
-import type { DraftPhoto } from "@/features/draft/types";
+import type { Draft, DraftPhoto } from "@/features/draft/types";
 
 type UploadResult = {
   added: DraftPhoto[];
@@ -125,8 +125,12 @@ export function useUploadDraftPhotos(draftId: string) {
         blurryWarningCount: countBlurryWarnings(added, succeeded),
       };
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["draft", draftId] });
+    onSuccess: (result) => {
+      queryClient.setQueryData<Draft>(["draft", draftId], (previous) =>
+        previous
+          ? { ...previous, photos: [...previous.photos, ...result.added] }
+          : previous,
+      );
     },
   });
 }
