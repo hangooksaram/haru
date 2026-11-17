@@ -129,6 +129,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@creatomate/preview':
+        specifier: ^1.6.1
+        version: 1.6.1
       '@dnd-kit/core':
         specifier: ^6.3.1
         version: 6.3.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -405,6 +408,9 @@ packages:
   '@bramus/specificity@2.4.3':
     resolution: {integrity: sha512-0GEz8qJWokkUVYQYRukmkSHIFNoBH8QTreeHrAFbvz1XFYc3Y+puhMs8PQ5x8GNugiC2l5jvDBXKLbBIByeSBw==}
     hasBin: true
+
+  '@creatomate/preview@1.6.1':
+    resolution: {integrity: sha512-LGq0o+9YMMOEksjreQBw/w6p8yXUFCOeJsdQDWMX6uRdcx1BspzNz4XUqrlLW5t69z7NA/j1f1n+/1lzq0DUFQ==}
 
   '@csstools/color-helpers@6.1.2':
     resolution: {integrity: sha512-grhRy3OKmniaAEKXMjua5z/EODX0MSqBGjunw8+j/3HQjOnahs2AGhvEOIYVUWcU6ScApbhLhVrQTX8XqrMrow==}
@@ -4332,6 +4338,8 @@ snapshots:
   '@bramus/specificity@2.4.3':
     dependencies:
       css-tree: 3.2.1
+
+  '@creatomate/preview@1.6.1': {}
 
   '@csstools/color-helpers@6.1.2': {}
 

@@ -3,16 +3,15 @@
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { DraftVideoPreview } from "@/features/draft/components/DraftVideoPreview";
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
 import { useDraft } from "@/features/draft/hooks/useDraft";
-import { elementKey } from "@/features/draft/lib/elementKey";
 import { removeHyphens } from "@/features/draft/lib/removeHyphens";
 import { useCreateOrderWithGuestResume } from "@/features/order/hooks/useCreateOrderWithGuestResume";
 import { useTemplateTextElements } from "@/features/template/hooks/useTemplateTextElements";
@@ -56,17 +55,17 @@ export function DraftPreviewStep({ templateId }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      <Card className="max-w-[200px]">
-        <CardContent className="text-muted-foreground flex aspect-video items-center justify-center">
-          미리보기는 준비 중입니다
-        </CardContent>
-      </Card>
+      <DraftVideoPreview
+        templateId={templateId}
+        photos={draft.photos}
+        texts={draft.texts}
+      />
 
       <div className="text-muted-foreground flex flex-col gap-1 text-sm">
         <p>사진 {draft.photos.length}장</p>
         {textElements.map((element) => (
-          <p key={elementKey(element)}>
-            {removeHyphens(element.name)}: {texts[elementKey(element)] ?? ""}
+          <p key={element.name}>
+            {removeHyphens(element.name)}: {texts[element.name] ?? ""}
           </p>
         ))}
       </div>
