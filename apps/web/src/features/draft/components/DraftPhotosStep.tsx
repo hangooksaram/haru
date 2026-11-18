@@ -6,14 +6,21 @@ import { useEffect, useRef, useState } from "react";
 import { DraftStepNav } from "@/components/DraftStepNav";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DraftElementPreviewPanel } from "@/features/draft/components/DraftElementPreviewPanel";
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
 import { DraftPhotoGrid } from "@/features/draft/components/DraftPhotoGrid";
 import { useCreateDraft } from "@/features/draft/hooks/useCreateDraft";
 import { useDraft } from "@/features/draft/hooks/useDraft";
+import { useDraftElementPreviewPanel } from "@/features/draft/hooks/useDraftElementPreviewPanel";
 import { useReplaceDraftPhoto } from "@/features/draft/hooks/useReplaceDraftPhoto";
 import { useSwapDraftPhotos } from "@/features/draft/hooks/useSwapDraftPhotos";
 import { useUploadDraftPhotos } from "@/features/draft/hooks/useUploadDraftPhotos";
 import { useTemplatePhotoElements } from "@/features/template/hooks/useTemplatePhotoElements";
+
+import type { DraftPhoto, DraftSavedText } from "@/features/draft/types";
+
+const EMPTY_PHOTOS: DraftPhoto[] = [];
+const EMPTY_TEXTS: DraftSavedText[] = [];
 
 type Props = {
   templateId: string;
@@ -36,13 +43,25 @@ export function DraftPhotosStep({
     useTemplatePhotoElements(templateId);
   const [message, setMessage] = useState<string | null>(null);
   const [navError, setNavError] = useState<string | null>(null);
-  const [replacingPhotoId, setReplacingPhotoId] = useState<string | null>(
-    null,
-  );
+  const [replacingPhotoId, setReplacingPhotoId] = useState<string | null>(null);
 
   const upload = useUploadDraftPhotos(draftId ?? "");
   const replace = useReplaceDraftPhoto(draftId ?? "");
   const swap = useSwapDraftPhotos(draftId ?? "");
+
+  const {
+    isOpen: isPreviewOpen,
+    toggle: togglePreview,
+    containerRef: previewContainerRef,
+    isLoading: isPreviewLoading,
+    isBuffering: isPreviewBuffering,
+    error: previewError,
+    onSelect: handleSelect,
+  } = useDraftElementPreviewPanel({
+    templateId,
+    photos: draft?.photos ?? EMPTY_PHOTOS,
+    texts: draft?.texts ?? EMPTY_TEXTS,
+  });
 
   const hasRequestedDraft = useRef(false);
 
@@ -76,27 +95,30 @@ export function DraftPhotosStep({
 
   function handleUpload(label: string, files: File[]) {
     setMessage(null);
-    upload.mutate({ label, files }, {
-      onSuccess: (result) => {
-        const notes: string[] = [];
-        if (result.rejectedCount > 0) {
-          notes.push(
-            `${result.rejectedCount}장은 남은 자리가 없어 올리지 못했습니다.`,
+    upload.mutate(
+      { label, files },
+      {
+        onSuccess: (result) => {
+          const notes: string[] = [];
+          if (result.rejectedCount > 0) {
+            notes.push(
+              `${result.rejectedCount}장은 남은 자리가 없어 올리지 못했습니다.`,
+            );
+          }
+          if (result.blurryWarningCount > 0) {
+            notes.push(
+              `${result.blurryWarningCount}장은 해상도가 낮아 화질이 흐릴 수 있습니다.`,
+            );
+          }
+          if (notes.length > 0) setMessage(notes.join(" "));
+        },
+        onError: (error) => {
+          setMessage(
+            error instanceof Error ? error.message : "업로드에 실패했습니다.",
           );
-        }
-        if (result.blurryWarningCount > 0) {
-          notes.push(
-            `${result.blurryWarningCount}장은 해상도가 낮아 화질이 흐릴 수 있습니다.`,
-          );
-        }
-        if (notes.length > 0) setMessage(notes.join(" "));
+        },
       },
-      onError: (error) => {
-        setMessage(
-          error instanceof Error ? error.message : "업로드에 실패했습니다.",
-        );
-      },
-    });
+    );
   }
 
   function handleReplace(photoId: string, file: File) {
@@ -159,6 +181,18 @@ export function DraftPhotosStep({
 
   return (
     <div className="flex flex-col gap-4">
+      <DraftStepNav
+        prevHref={prevHref}
+        nextHref={nextHref}
+        onNext={handleNext}
+        extra={
+          showPreviewShortcut ? (
+            <Button variant="outline" size="lg" onClick={handleGoToPreview}>
+              미리보기로 이동
+            </Button>
+          ) : undefined
+        }
+      />
       <p className="text-muted-foreground text-sm">
         {photoCount} / {labelCount}장
       </p>
@@ -173,20 +207,18 @@ export function DraftPhotosStep({
         onSwap={handleSwap}
         onUpload={handleUpload}
         onReplace={handleReplace}
+        onSelect={handleSelect}
         replacingPhotoId={replacingPhotoId}
         uploadDisabled={upload.isPending}
       />
-      <DraftStepNav
-        prevHref={prevHref}
-        nextHref={nextHref}
-        onNext={handleNext}
-        extra={
-          showPreviewShortcut ? (
-            <Button variant="outline" size="lg" onClick={handleGoToPreview}>
-              미리보기로 이동
-            </Button>
-          ) : undefined
-        }
+
+      <DraftElementPreviewPanel
+        isOpen={isPreviewOpen}
+        onToggle={togglePreview}
+        containerRef={previewContainerRef}
+        isLoading={isPreviewLoading}
+        isBuffering={isPreviewBuffering}
+        error={previewError}
       />
     </div>
   );

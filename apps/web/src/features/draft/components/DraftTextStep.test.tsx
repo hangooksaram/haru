@@ -14,6 +14,9 @@ const { useUpdateDraftTexts } = vi.hoisted(() => ({
 const { useTemplateTextElements } = vi.hoisted(() => ({
   useTemplateTextElements: vi.fn(),
 }));
+const { useDraftElementPreviewPanel } = vi.hoisted(() => ({
+  useDraftElementPreviewPanel: vi.fn(),
+}));
 
 vi.mock("next/navigation", () => ({ useRouter }));
 vi.mock("@/features/draft/components/DraftIdProvider", () => ({ useDraftId }));
@@ -25,9 +28,13 @@ vi.mock("@/features/draft/hooks/useUpdateDraftTexts", () => ({
 vi.mock("@/features/template/hooks/useTemplateTextElements", () => ({
   useTemplateTextElements,
 }));
+vi.mock("@/features/draft/hooks/useDraftElementPreviewPanel", () => ({
+  useDraftElementPreviewPanel,
+}));
 
 function setup({ draftTexts = [] }: { draftTexts?: { name: string; text: string }[] } = {}) {
   const mutate = vi.fn();
+  const onSelect = vi.fn();
 
   useRouter.mockReturnValue({ push: vi.fn() });
   useDraftId.mockReturnValue({ draftId: "draft-1", setDraftId: vi.fn() });
@@ -44,8 +51,17 @@ function setup({ draftTexts = [] }: { draftTexts?: { name: string; text: string 
     ],
     isLoading: false,
   });
+  useDraftElementPreviewPanel.mockReturnValue({
+    isOpen: false,
+    toggle: vi.fn(),
+    containerRef: { current: null },
+    isLoading: false,
+    isBuffering: false,
+    error: null,
+    onSelect,
+  });
 
-  return { mutate };
+  return { mutate, onSelect };
 }
 
 describe("DraftTextStep", () => {
@@ -156,5 +172,23 @@ describe("DraftTextStep", () => {
         screen.getByText("기본정보를 모두 입력해 주세요."),
       ).toBeInTheDocument(),
     );
+  });
+
+  it("요소 이름을 클릭하면 미리보기를 해당 요소 위치로 이동시킨다", async () => {
+    const { onSelect } = setup();
+    const user = userEvent.setup({
+      advanceTimers: vi.advanceTimersByTime,
+    });
+
+    render(
+      <DraftTextStep
+        templateId="template-1"
+        prevHref="/prev"
+        nextHref="/next"
+      />,
+    );
+    await user.click(screen.getByRole("button", { name: "상호명" }));
+
+    expect(onSelect).toHaveBeenCalledWith("상호명");
   });
 });

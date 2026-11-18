@@ -4,9 +4,11 @@ import { useEffect, useRef, useState } from "react";
 
 import { DraftStepNav } from "@/components/DraftStepNav";
 import { Input } from "@/components/ui/input";
+import { DraftElementPreviewPanel } from "@/features/draft/components/DraftElementPreviewPanel";
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
 import { useCreateDraft } from "@/features/draft/hooks/useCreateDraft";
 import { useDraft } from "@/features/draft/hooks/useDraft";
+import { useDraftElementPreviewPanel } from "@/features/draft/hooks/useDraftElementPreviewPanel";
 import { useUpdateDraftTexts } from "@/features/draft/hooks/useUpdateDraftTexts";
 import { elementKey } from "@/features/draft/lib/elementKey";
 import { removeHyphens } from "@/features/draft/lib/removeHyphens";
@@ -15,16 +17,43 @@ import { trimBlankText } from "@/features/draft/lib/trimBlankText";
 import { useTemplateTextElements } from "@/features/template/hooks/useTemplateTextElements";
 import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
 
-import type { DraftTextInput } from "@/features/draft/types";
+import type { DraftPhoto, DraftTextInput } from "@/features/draft/types";
 import type { TemplateTextElement } from "@/features/template/types";
 
 const AUTOSAVE_DEBOUNCE_MS = 500;
+const EMPTY_PHOTOS: DraftPhoto[] = [];
+const EMPTY_TEXT_ELEMENTS: TemplateTextElement[] = [];
 
 type Props = {
   templateId: string;
   prevHref: string;
   nextHref: string;
 };
+
+type ElementLabelButtonProps = {
+  label: string;
+  onSelect: () => void;
+};
+
+// <label>에 <button> 등 labelable 요소를 중첩하면 Input의 접근성 이름 계산이 깨지므로
+// role="button"을 쓴 <span>으로 구현한다.
+function ElementLabelButton({ label, onSelect }: ElementLabelButtonProps) {
+  return (
+    <span
+      role="button"
+      tabIndex={0}
+      onClick={onSelect}
+      onKeyDown={(event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        onSelect();
+      }}
+      className="w-fit cursor-pointer text-left hover:underline"
+    >
+      {label}
+    </span>
+  );
+}
 
 export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
   const { draftId, setDraftId } = useDraftId();
@@ -72,6 +101,23 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
     AUTOSAVE_DEBOUNCE_MS,
   );
 
+  const {
+    isOpen: isPreviewOpen,
+    toggle: togglePreview,
+    containerRef: previewContainerRef,
+    isLoading: isPreviewLoading,
+    isBuffering: isPreviewBuffering,
+    error: previewError,
+    onSelect: handleSelectElement,
+  } = useDraftElementPreviewPanel({
+    templateId,
+    photos: draft?.photos ?? EMPTY_PHOTOS,
+    texts: (elements ?? EMPTY_TEXT_ELEMENTS).map((element) => ({
+      name: element.name,
+      text: values[elementKey(element)] ?? "",
+    })),
+  });
+
   if (!draftId || isElementsLoading || isDraftLoading || !elements) {
     return <p className="text-muted-foreground">불러오는 중...</p>;
   }
@@ -118,6 +164,11 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
 
   return (
     <div className="flex flex-col gap-8">
+      <DraftStepNav
+        prevHref={prevHref}
+        nextHref={nextHref}
+        onNext={handleNext}
+      />
       {error && <p className="text-destructive text-sm font-medium">{error}</p>}
 
       {basicInfoElements.length > 0 && (
@@ -128,7 +179,10 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
               key={elementKey(element)}
               className="flex flex-col gap-1.5 text-sm font-medium"
             >
-              {removeHyphens(element.name)}
+              <ElementLabelButton
+                label={removeHyphens(element.name)}
+                onSelect={() => handleSelectElement(element.name)}
+              />
               <Input
                 value={getValue(element)}
                 placeholder={element.text}
@@ -154,7 +208,10 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
               key={elementKey(element)}
               className="flex flex-col gap-1.5 text-sm font-medium"
             >
-              {removeHyphens(element.name)}
+              <ElementLabelButton
+                label={removeHyphens(element.name)}
+                onSelect={() => handleSelectElement(element.name)}
+              />
               <Input
                 value={getValue(element)}
                 placeholder={element.text}
@@ -167,10 +224,13 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
         </section>
       )}
 
-      <DraftStepNav
-        prevHref={prevHref}
-        nextHref={nextHref}
-        onNext={handleNext}
+      <DraftElementPreviewPanel
+        isOpen={isPreviewOpen}
+        onToggle={togglePreview}
+        containerRef={previewContainerRef}
+        isLoading={isPreviewLoading}
+        isBuffering={isPreviewBuffering}
+        error={previewError}
       />
     </div>
   );

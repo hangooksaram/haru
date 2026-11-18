@@ -14,6 +14,7 @@ type Props = {
   photo: DraftPhoto | null;
   onReplace: (file: File) => void;
   onUpload: (files: File[]) => void;
+  onSelect: () => void;
   isReplacing: boolean;
   uploadDisabled: boolean;
   registerNode: (label: string, node: HTMLElement | null) => void;
@@ -24,6 +25,7 @@ export function DraftPhotoItem({
   photo,
   onReplace,
   onUpload,
+  onSelect,
   isReplacing,
   uploadDisabled,
   registerNode,
@@ -42,6 +44,7 @@ export function DraftPhotoItem({
     return (
       <div
         ref={setNodeRef}
+        onClick={onSelect}
         className={cn(
           "relative aspect-square rounded-xl",
           droppable.isOver && "ring-2 ring-primary",
@@ -58,6 +61,7 @@ export function DraftPhotoItem({
   return (
     <div
       ref={setNodeRef}
+      onClick={onSelect}
       className={cn(
         "group relative aspect-square overflow-hidden rounded-xl border",
         draggable.isDragging && "opacity-50",

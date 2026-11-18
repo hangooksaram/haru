@@ -25,6 +25,7 @@ type Props = {
   onSwap: (from: string, to: string) => void;
   onUpload: (label: string, files: File[]) => void;
   onReplace: (photoId: string, file: File) => void;
+  onSelect: (label: string) => void;
   replacingPhotoId: string | null;
   uploadDisabled: boolean;
 };
@@ -34,6 +35,7 @@ export function DraftPhotoGrid({
   onSwap,
   onUpload,
   onReplace,
+  onSelect,
   replacingPhotoId,
   uploadDisabled,
 }: Props) {
@@ -90,6 +92,7 @@ export function DraftPhotoGrid({
               if (slot.photo) onReplace(slot.photo.id, file);
             }}
             onUpload={(files) => onUpload(slot.label, files)}
+            onSelect={() => onSelect(slot.label)}
             uploadDisabled={uploadDisabled}
             registerNode={registerNode}
           />
