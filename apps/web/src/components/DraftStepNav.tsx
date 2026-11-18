@@ -33,16 +33,30 @@ export function DraftStepNav({
 
   return (
     <div className="flex items-center gap-3">
-      <Button asChild variant="outline" size="lg">
+      <Button
+        asChild
+        variant="secondary"
+        size="lg"
+        className="h-12 px-6 text-base font-semibold"
+      >
         <Link href={prevHref}>이전</Link>
       </Button>
       {nextHref &&
         (onNext ? (
-          <Button size="lg" onClick={handleNext} disabled={nextPending}>
+          <Button
+            size="lg"
+            className="h-12 px-6 text-base font-semibold"
+            onClick={handleNext}
+            disabled={nextPending}
+          >
             다음
           </Button>
         ) : (
-          <Button asChild size="lg">
+          <Button
+            asChild
+            size="lg"
+            className="h-12 px-6 text-base font-semibold"
+          >
             <Link href={nextHref}>다음</Link>
           </Button>
         ))}

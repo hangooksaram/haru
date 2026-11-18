@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { DraftPhotoOrderDebug } from "@/features/draft/components/DraftPhotoOrderDebug";
 import { DraftVideoPreview } from "@/features/draft/components/DraftVideoPreview";
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
 import { useDraft } from "@/features/draft/hooks/useDraft";
@@ -61,14 +62,7 @@ export function DraftPreviewStep({ templateId }: Props) {
         texts={draft.texts}
       />
 
-      <div className="text-muted-foreground flex flex-col gap-1 text-sm">
-        <p>사진 {draft.photos.length}장</p>
-        {textElements.map((element) => (
-          <p key={element.name}>
-            {removeHyphens(element.name)}: {texts[element.name] ?? ""}
-          </p>
-        ))}
-      </div>
+      <DraftPhotoOrderDebug templateId={templateId} photos={draft.photos} />
 
       <div className="flex items-center gap-3">
         <DropdownMenu>
