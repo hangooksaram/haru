@@ -16,18 +16,15 @@ export default async function DraftPaymentPage({
   const { orderId } = await searchParams;
 
   return (
-    <div className="flex flex-col gap-10 py-10">
-      <DraftStepper current={4} />
-      <h1 className="font-heading text-3xl font-extrabold tracking-tight">
-        결제
-      </h1>
+    <div className="flex flex-col gap-4 py-4">
+      <DraftStepper current={4} templateId={templateId} />
+      <DraftStepNav prevHref={`/draft/${templateId}/preview`} />
       {orderId && (
         <>
           <OrderPaymentSummary orderId={orderId} />
           <PaymentWidget orderId={orderId} templateId={templateId} />
         </>
       )}
-      <DraftStepNav prevHref={`/draft/${templateId}/preview`} />
     </div>
   );
 }

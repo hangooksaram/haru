@@ -11,11 +11,8 @@ export default async function DraftPhotosPage({ params, searchParams }: Props) {
   const { return: returnParam } = await searchParams;
 
   return (
-    <div className="flex flex-col gap-10 py-10">
-      <DraftStepper current={1} />
-      <h1 className="font-heading text-3xl font-extrabold tracking-tight">
-        사진을 올려 주세요
-      </h1>
+    <div className="flex flex-col gap-4 py-4">
+      <DraftStepper current={1} templateId={templateId} />
       <DraftPhotosStep
         templateId={templateId}
         prevHref="/templates"
