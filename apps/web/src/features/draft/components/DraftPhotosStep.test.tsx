@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -22,8 +22,8 @@ const { useReplaceDraftPhoto } = vi.hoisted(() => ({
 const { useSwapDraftPhotos } = vi.hoisted(() => ({
   useSwapDraftPhotos: vi.fn(),
 }));
-const { useDraftElementPreviewPanel } = vi.hoisted(() => ({
-  useDraftElementPreviewPanel: vi.fn(),
+const { useDraftPreview } = vi.hoisted(() => ({
+  useDraftPreview: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({ useRouter }));
@@ -42,13 +42,14 @@ vi.mock("@/features/draft/hooks/useReplaceDraftPhoto", () => ({
 vi.mock("@/features/draft/hooks/useSwapDraftPhotos", () => ({
   useSwapDraftPhotos,
 }));
-vi.mock("@/features/draft/hooks/useDraftElementPreviewPanel", () => ({
-  useDraftElementPreviewPanel,
+vi.mock("@/features/draft/hooks/useDraftPreview", () => ({
+  useDraftPreview,
 }));
 
 function setup(draft: Draft, labels: string[]) {
   const push = vi.fn();
-  const onSelect = vi.fn();
+  const selectElement = vi.fn();
+  const uploadMutate = vi.fn();
   useRouter.mockReturnValue({ push });
   useDraftId.mockReturnValue({
     draftId: "draft-1",
@@ -58,20 +59,26 @@ function setup(draft: Draft, labels: string[]) {
   useCreateDraft.mockReturnValue({ mutate: vi.fn() });
   useDraft.mockReturnValue({ data: draft, isLoading: false, error: null });
   useTemplatePhotoElements.mockReturnValue({ data: labels, isLoading: false });
-  useUploadDraftPhotos.mockReturnValue({ mutate: vi.fn(), isPending: false });
+  useUploadDraftPhotos.mockReturnValue({
+    mutate: uploadMutate,
+    isPending: false,
+  });
   useReplaceDraftPhoto.mockReturnValue({ mutate: vi.fn() });
   useSwapDraftPhotos.mockReturnValue({ mutate: vi.fn() });
-  useDraftElementPreviewPanel.mockReturnValue({
-    isOpen: false,
-    toggle: vi.fn(),
+  useDraftPreview.mockReturnValue({
     containerRef: { current: null },
     isLoading: false,
     isBuffering: false,
     error: null,
-    onSelect,
+    activeElementName: null,
+    selectElement,
+    replay: vi.fn(),
+    isPlayingAll: false,
+    toggleAll: vi.fn(),
+    playbackProgress: 0,
   });
 
-  return { push, seekToElement: onSelect };
+  return { push, selectElement, uploadMutate };
 }
 
 function createDraft(photoNames: string[]): Draft {
@@ -124,7 +131,7 @@ describe("DraftPhotosStep", () => {
   });
 
   it("사진이 채워진 요소를 클릭하면 미리보기를 해당 요소 위치로 이동시킨다", async () => {
-    const { seekToElement } = setup(createDraft(["1"]), ["1", "2"]);
+    const { selectElement } = setup(createDraft(["1"]), ["1", "2"]);
     const user = userEvent.setup();
 
     render(
@@ -136,11 +143,11 @@ describe("DraftPhotosStep", () => {
     );
     await user.click(screen.getByAltText("1"));
 
-    expect(seekToElement).toHaveBeenCalledWith("1");
+    expect(selectElement).toHaveBeenCalledWith("1");
   });
 
   it("사진이 비어 있는 요소를 클릭해도 미리보기를 해당 요소 위치로 이동시킨다", async () => {
-    const { seekToElement } = setup(createDraft(["1"]), ["1", "2"]);
+    const { selectElement } = setup(createDraft(["1"]), ["1", "2"]);
     const user = userEvent.setup();
 
     render(
@@ -150,8 +157,47 @@ describe("DraftPhotosStep", () => {
         nextHref="/next"
       />,
     );
-    await user.click(screen.getByRole("button", { name: "+ 사진 선택" }));
+    await user.click(screen.getByRole("button", { name: "사진 선택" }));
 
-    expect(seekToElement).toHaveBeenCalledWith("2");
+    expect(selectElement).toHaveBeenCalledWith("2");
+  });
+
+  it("한꺼번에 올리기로 선택한 파일은 특정 라벨 없이 업로드되어 빈 라벨부터 채워진다", () => {
+    const { uploadMutate } = setup(createDraft(["1"]), ["1", "2"]);
+
+    render(
+      <DraftPhotosStep
+        templateId="template-1"
+        prevHref="/prev"
+        nextHref="/next"
+      />,
+    );
+
+    const input = screen
+      .getByRole("button", { name: "한꺼번에 올리기" })
+      .parentElement!.querySelector('input[type="file"]') as HTMLInputElement;
+    const file = new File(["x"], "a.jpg", { type: "image/jpeg" });
+    fireEvent.change(input, { target: { files: [file] } });
+
+    expect(uploadMutate).toHaveBeenCalledTimes(1);
+    const call = uploadMutate.mock.calls[0][0];
+    expect(call.label).toBeUndefined();
+    expect(call.files).toEqual([file]);
+  });
+
+  it("상단에 채운 사진 수와 전체 사진 수, 남은 사진 수를 보여준다", () => {
+    setup(createDraft(["1"]), ["1", "2", "3"]);
+
+    render(
+      <DraftPhotosStep
+        templateId="template-1"
+        prevHref="/prev"
+        nextHref="/next"
+      />,
+    );
+
+    expect(screen.getByText("1장")).toBeInTheDocument();
+    expect(screen.getByText("/ 전체 3장")).toBeInTheDocument();
+    expect(screen.getByText("2장")).toBeInTheDocument();
   });
 });

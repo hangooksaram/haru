@@ -158,3 +158,37 @@ html.dark {
     @apply font-sans;
   }
 }
+
+/* 미리보기 패널을 숨겼다가 플로팅 버튼에서 다시 펼칠 때의 등장 애니메이션 */
+@keyframes draft-preview-grow {
+  from {
+    transform: translateY(55vh) scale(0.12);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* 미리보기 플로팅 버튼이 처음 나타날 때의 등장 애니메이션 */
+@keyframes draft-preview-pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [class*="animate-[draft-preview-"] {
+    animation: none !important;
+  }
+}

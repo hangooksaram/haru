@@ -1,4 +1,3 @@
-import { DraftStepper } from "@/components/DraftStepper";
 import { TemplateListFilter } from "@/components/TemplateListFilter";
 import { extractUniqueTags } from "@/features/template/lib/extractUniqueTags";
 import { getPublicTemplates } from "@/features/template/service/get-public-templates";
@@ -16,7 +15,6 @@ export default async function TemplatesPage({ searchParams }: Props) {
 
   return (
     <div className="flex flex-col gap-4 py-4">
-      <DraftStepper current={0} templateId={null} />
       <TemplateListFilter
         templates={templates}
         tagOptions={tagOptions}

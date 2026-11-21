@@ -12,7 +12,7 @@ export default async function DraftPhotosPage({ params, searchParams }: Props) {
 
   return (
     <div className="flex flex-col gap-4 py-4">
-      <DraftStepper current={1} templateId={templateId} />
+      <DraftStepper current={0} templateId={templateId} />
       <DraftPhotosStep
         templateId={templateId}
         prevHref="/templates"

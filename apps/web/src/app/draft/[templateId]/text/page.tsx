@@ -10,7 +10,7 @@ export default async function DraftTextPage({ params }: Props) {
 
   return (
     <div className="flex flex-col gap-4 py-4">
-      <DraftStepper current={2} templateId={templateId} />
+      <DraftStepper current={1} templateId={templateId} />
       <DraftTextStep
         templateId={templateId}
         prevHref={`/draft/${templateId}/photos`}

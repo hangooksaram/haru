@@ -1,14 +1,15 @@
 "use client";
 
+import { Eye } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { DraftStepNav } from "@/components/DraftStepNav";
 import { Input } from "@/components/ui/input";
-import { DraftElementPreviewPanel } from "@/features/draft/components/DraftElementPreviewPanel";
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
+import { DraftPreviewPanel } from "@/features/draft/components/DraftPreviewPanel";
 import { useCreateDraft } from "@/features/draft/hooks/useCreateDraft";
 import { useDraft } from "@/features/draft/hooks/useDraft";
-import { useDraftElementPreviewPanel } from "@/features/draft/hooks/useDraftElementPreviewPanel";
+import { useDraftPreview } from "@/features/draft/hooks/useDraftPreview";
 import { useUpdateDraftTexts } from "@/features/draft/hooks/useUpdateDraftTexts";
 import { elementKey } from "@/features/draft/lib/elementKey";
 import { removeHyphens } from "@/features/draft/lib/removeHyphens";
@@ -16,6 +17,7 @@ import { removeLineBreaks } from "@/features/draft/lib/removeLineBreaks";
 import { trimBlankText } from "@/features/draft/lib/trimBlankText";
 import { useTemplateTextElements } from "@/features/template/hooks/useTemplateTextElements";
 import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
+import { cn } from "@/lib/utils";
 
 import type { DraftPhoto, DraftTextInput } from "@/features/draft/types";
 import type { TemplateTextElement } from "@/features/template/types";
@@ -48,9 +50,19 @@ function ElementLabelButton({ label, onSelect }: ElementLabelButtonProps) {
         event.preventDefault();
         onSelect();
       }}
-      className="w-fit cursor-pointer text-left hover:underline"
+      className="w-fit shrink-0 cursor-pointer text-left whitespace-nowrap hover:underline"
     >
       {label}
+    </span>
+  );
+}
+
+// 입력 폼에 미리보기가 보여주는 요소를 표시한다.
+function PreviewingBadge() {
+  return (
+    <span className="bg-foreground text-background flex w-fit shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium">
+      <Eye className="h-3 w-3" />
+      미리보기 중
     </span>
   );
 }
@@ -63,7 +75,12 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
   const { data: draft, isLoading: isDraftLoading } = useDraft(draftId ?? null);
   const { mutate: updateTexts } = useUpdateDraftTexts(draftId ?? "");
   const [values, setValues] = useState<Record<string, string>>({});
+  // 미리보기에는 입력을 마친(디바운스 저장된) 값만 반영한다. 매 타이핑마다 반영하지 않는다.
+  const [committedTexts, setCommittedTexts] = useState<Record<string, string>>(
+    {},
+  );
   const [error, setError] = useState<string | null>(null);
+  const [isPreviewCollapsed, setIsPreviewCollapsed] = useState(false);
   const hydratedDraftId = useRef<string | null>(null);
 
   useEffect(() => {
@@ -77,11 +94,11 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
     if (!draftId || !draft || hydratedDraftId.current === draftId) return;
     hydratedDraftId.current = draftId;
     // 템플릿의 텍스트 요소가 바뀌었을 수 있으므로 복원한 값도 입력 검증을 거친다.
-    setValues(
-      Object.fromEntries(
-        draft.texts.map(({ name, text }) => [name, removeLineBreaks(text)]),
-      ),
+    const restored = Object.fromEntries(
+      draft.texts.map(({ name, text }) => [name, removeLineBreaks(text)]),
     );
+    setValues(restored);
+    setCommittedTexts(restored);
   }, [draftId, draft]);
 
   const saveTexts = useDebouncedCallback(
@@ -97,24 +114,28 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
         return [{ type: element.type, name: element.name, text }];
       });
       updateTexts(payload);
+      setCommittedTexts(nextValues);
     },
     AUTOSAVE_DEBOUNCE_MS,
   );
 
   const {
-    isOpen: isPreviewOpen,
-    toggle: togglePreview,
     containerRef: previewContainerRef,
     isLoading: isPreviewLoading,
     isBuffering: isPreviewBuffering,
     error: previewError,
-    onSelect: handleSelectElement,
-  } = useDraftElementPreviewPanel({
+    activeElementName,
+    selectElement,
+    replay,
+    isPlayingAll,
+    toggleAll,
+    playbackProgress,
+  } = useDraftPreview({
     templateId,
     photos: draft?.photos ?? EMPTY_PHOTOS,
     texts: (elements ?? EMPTY_TEXT_ELEMENTS).map((element) => ({
       name: element.name,
-      text: values[elementKey(element)] ?? "",
+      text: committedTexts[elementKey(element)] ?? "",
     })),
   });
 
@@ -161,6 +182,13 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
   const subtitleElements = textElements.filter(
     (element) => element.type === "자막",
   );
+  const filledCount = textElements.filter(
+    (element) => trimBlankText(getValue(element)) !== "",
+  ).length;
+  const segments = textElements.map((element) => ({
+    name: element.name,
+    filled: trimBlankText(getValue(element)) !== "",
+  }));
 
   return (
     <div className="flex flex-col gap-8">
@@ -171,67 +199,99 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
       />
       {error && <p className="text-destructive text-sm font-medium">{error}</p>}
 
-      {basicInfoElements.length > 0 && (
-        <section className="flex flex-col gap-4">
-          <h2 className="font-medium">기본정보</h2>
-          {basicInfoElements.map((element) => (
-            <label
-              key={elementKey(element)}
-              className="flex flex-col gap-1.5 text-sm font-medium"
-            >
-              <ElementLabelButton
-                label={removeHyphens(element.name)}
-                onSelect={() => handleSelectElement(element.name)}
-              />
-              <Input
-                value={getValue(element)}
-                placeholder={element.text}
-                onChange={(event) =>
-                  handleChange(elementKey(element), event.target.value)
-                }
-              />
-              {isBasicInfoEmpty(element) && (
-                <p className="text-destructive text-xs font-normal">
-                  필수 입력입니다.
-                </p>
-              )}
-            </label>
-          ))}
-        </section>
-      )}
+      <div
+        className={cn(
+          "grid gap-6 md:items-start",
+          isPreviewCollapsed
+            ? "md:grid-cols-1"
+            : "md:grid-cols-[4.5fr_5.5fr]",
+        )}
+      >
+        <div className="flex flex-col gap-8">
+          <p className="text-muted-foreground text-sm">
+            {filledCount}/{textElements.length} 채움
+          </p>
 
-      {subtitleElements.length > 0 && (
-        <section className="flex flex-col gap-4">
-          <h2 className="font-medium">자막</h2>
-          {subtitleElements.map((element) => (
-            <label
-              key={elementKey(element)}
-              className="flex flex-col gap-1.5 text-sm font-medium"
-            >
-              <ElementLabelButton
-                label={removeHyphens(element.name)}
-                onSelect={() => handleSelectElement(element.name)}
-              />
-              <Input
-                value={getValue(element)}
-                placeholder={element.text}
-                onChange={(event) =>
-                  handleChange(elementKey(element), event.target.value)
-                }
-              />
-            </label>
-          ))}
-        </section>
-      )}
+          {basicInfoElements.length > 0 && (
+            <section className="flex flex-col gap-4">
+              <h2 className="font-medium">기본정보</h2>
+              {basicInfoElements.map((element) => (
+                <label
+                  key={elementKey(element)}
+                  className="flex flex-col gap-1.5 text-sm font-medium"
+                >
+                  <div className="flex items-start gap-3">
+                    <ElementLabelButton
+                      label={removeHyphens(element.name)}
+                      onSelect={() => selectElement(element.name)}
+                    />
+                    <Input
+                      className="flex-1"
+                      value={getValue(element)}
+                      placeholder={element.text}
+                      onChange={(event) =>
+                        handleChange(elementKey(element), event.target.value)
+                      }
+                    />
+                    {element.name === activeElementName && (
+                      <PreviewingBadge />
+                    )}
+                  </div>
+                  {isBasicInfoEmpty(element) && (
+                    <p className="text-destructive text-xs font-normal">
+                      필수 입력입니다.
+                    </p>
+                  )}
+                </label>
+              ))}
+            </section>
+          )}
 
-      <DraftElementPreviewPanel
-        isOpen={isPreviewOpen}
-        onToggle={togglePreview}
-        containerRef={previewContainerRef}
-        isLoading={isPreviewLoading}
-        isBuffering={isPreviewBuffering}
-        error={previewError}
-      />
+          {subtitleElements.length > 0 && (
+            <section className="flex flex-col gap-4">
+              <h2 className="font-medium">자막</h2>
+              {subtitleElements.map((element) => (
+                <label
+                  key={elementKey(element)}
+                  className="flex items-start gap-3 text-sm font-medium"
+                >
+                  <ElementLabelButton
+                    label={removeHyphens(element.name)}
+                    onSelect={() => selectElement(element.name)}
+                  />
+                  <Input
+                    className="flex-1"
+                    value={getValue(element)}
+                    placeholder={element.text}
+                    onChange={(event) =>
+                      handleChange(elementKey(element), event.target.value)
+                    }
+                  />
+                  {element.name === activeElementName && <PreviewingBadge />}
+                </label>
+              ))}
+            </section>
+          )}
+        </div>
+
+        <div className="hidden md:block">
+          <div className="md:sticky md:top-20">
+            <DraftPreviewPanel
+              containerRef={previewContainerRef}
+              isLoading={isPreviewLoading}
+              isBuffering={isPreviewBuffering}
+              error={previewError}
+              activeElementName={activeElementName}
+              segments={segments}
+              onReplay={replay}
+              isPlayingAll={isPlayingAll}
+              onToggleAll={toggleAll}
+              playbackProgress={playbackProgress}
+              onCollapsedChange={setIsPreviewCollapsed}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

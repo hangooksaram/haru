@@ -1,6 +1,7 @@
 "use client";
 
 import { useDraggable, useDroppable } from "@dnd-kit/core";
+import { CheckCircle2 } from "lucide-react";
 import { useRef } from "react";
 
 import { DraftPhotoUploader } from "@/features/draft/components/DraftPhotoUploader";
@@ -9,9 +10,13 @@ import { cn } from "@/lib/utils";
 
 import type { DraftPhoto } from "@/features/draft/types";
 
+export type DraftPhotoSlotStatus = "empty" | "uploading" | "failed";
+
 type Props = {
   label: string;
+  caption?: string;
   photo: DraftPhoto | null;
+  status: DraftPhotoSlotStatus;
   onReplace: (file: File) => void;
   onUpload: (files: File[]) => void;
   onSelect: () => void;
@@ -22,7 +27,9 @@ type Props = {
 
 export function DraftPhotoItem({
   label,
+  caption,
   photo,
+  status,
   onReplace,
   onUpload,
   onSelect,
@@ -33,6 +40,7 @@ export function DraftPhotoItem({
   const inputRef = useRef<HTMLInputElement>(null);
   const draggable = useDraggable({ id: label, disabled: !photo });
   const droppable = useDroppable({ id: label });
+  const displayCaption = caption ?? removeHyphens(label);
 
   function setNodeRef(node: HTMLElement | null) {
     draggable.setNodeRef(node);
@@ -50,10 +58,17 @@ export function DraftPhotoItem({
           droppable.isOver && "ring-2 ring-primary",
         )}
       >
-        <DraftPhotoUploader onSelect={onUpload} disabled={uploadDisabled} />
-        <span className="pointer-events-none absolute inset-x-0 top-0 truncate px-2 py-1 text-xs font-medium text-muted-foreground">
-          {removeHyphens(label)}
-        </span>
+        <DraftPhotoUploader
+          onSelect={onUpload}
+          disabled={uploadDisabled || status === "uploading"}
+          variant={
+            status === "uploading"
+              ? "uploading"
+              : status === "failed"
+                ? "failed"
+                : "default"
+          }
+        />
       </div>
     );
   }
@@ -71,17 +86,20 @@ export function DraftPhotoItem({
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={photo.url}
-        alt={removeHyphens(label)}
+        alt={displayCaption}
         className="h-full w-full object-cover"
       />
       <div
         {...draggable.attributes}
         {...draggable.listeners}
-        className="absolute inset-x-0 top-0 flex items-center justify-between bg-black/50 px-2 py-1 text-xs font-medium text-white"
+        className="absolute inset-x-0 top-0 flex h-6 cursor-grab items-center justify-center bg-black/50 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 active:cursor-grabbing"
       >
-        <span className="truncate">{removeHyphens(label)}</span>
-        <span className="cursor-grab active:cursor-grabbing">⠿</span>
+        ⠿
       </div>
+      <CheckCircle2
+        className="absolute right-1 bottom-1 h-5 w-5 rounded-full bg-emerald-500 text-white"
+        aria-hidden="true"
+      />
       <button
         type="button"
         disabled={isReplacing}

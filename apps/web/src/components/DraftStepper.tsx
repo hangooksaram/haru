@@ -2,25 +2,22 @@ import Link from "next/link";
 
 import { cn } from "@/lib/utils";
 
-const STEPS = ["템플릿 선택", "사진", "텍스트", "미리보기", "결제"];
+const STEPS = ["사진", "텍스트", "미리보기", "결제"];
 
 type Props = {
   current: number;
-  templateId?: string | null;
+  templateId: string;
 };
 
-function getStepHref(index: number, templateId?: string | null) {
-  if (index === 0) return "/templates";
-  if (!templateId) return null;
-
+function getStepHref(index: number, templateId: string) {
   switch (index) {
-    case 1:
+    case 0:
       return `/draft/${templateId}/photos`;
-    case 2:
+    case 1:
       return `/draft/${templateId}/text`;
-    case 3:
+    case 2:
       return `/draft/${templateId}/preview`;
-    case 4:
+    case 3:
       return `/draft/${templateId}/payment`;
     default:
       return null;

@@ -12,11 +12,14 @@ type UploadResult = {
   added: DraftPhoto[];
   rejectedCount: number;
   blurryWarningCount: number;
+  failedLabels: string[];
 };
 
 type UploadDraftPhotosInput = {
-  label: string;
+  // label 없이 올리면(화면 전체 드랍, 한꺼번에 올리기) 빈 라벨부터 템플릿 순서대로 채운다.
+  label?: string;
   files: File[];
+  onLabelsAssigned?: (labels: string[]) => void;
 };
 
 type UploadSlot = { path: string; token: string; label: string };
@@ -25,7 +28,7 @@ type UploadedSlot = UploadSlot & { isBlurryWarning: boolean };
 
 async function requestUploadUrls(
   draftId: string,
-  label: string,
+  label: string | undefined,
   processed: ProcessedPhoto[],
 ): Promise<{ uploads: UploadSlot[]; rejectedCount: number }> {
   const response = await fetch(`/api/drafts/${draftId}/photos/upload-urls`, {
@@ -53,7 +56,7 @@ async function requestUploadUrls(
 async function uploadToStorage(
   uploads: UploadSlot[],
   processed: ProcessedPhoto[],
-): Promise<UploadedSlot[]> {
+): Promise<{ succeeded: UploadedSlot[]; failedLabels: string[] }> {
   const supabase = createClient();
   const settlements = await Promise.allSettled(
     uploads.map(async (slot, index) => {
@@ -67,12 +70,15 @@ async function uploadToStorage(
     }),
   );
 
-  return settlements
-    .filter(
-      (result): result is PromiseFulfilledResult<UploadedSlot> =>
-        result.status === "fulfilled",
-    )
-    .map((result) => result.value);
+  const succeeded: UploadedSlot[] = [];
+  const failedLabels: string[] = [];
+
+  settlements.forEach((result, index) => {
+    if (result.status === "fulfilled") succeeded.push(result.value);
+    else failedLabels.push(uploads[index].label);
+  });
+
+  return { succeeded, failedLabels };
 }
 
 async function confirmUploads(
@@ -109,6 +115,7 @@ export function useUploadDraftPhotos(draftId: string) {
     mutationFn: async ({
       label,
       files,
+      onLabelsAssigned,
     }: UploadDraftPhotosInput): Promise<UploadResult> => {
       const processed = await Promise.all(files.map(processPhotoFile));
       const { uploads, rejectedCount } = await requestUploadUrls(
@@ -116,13 +123,18 @@ export function useUploadDraftPhotos(draftId: string) {
         label,
         processed,
       );
-      const succeeded = await uploadToStorage(uploads, processed);
+      onLabelsAssigned?.(uploads.map((upload) => upload.label));
+      const { succeeded, failedLabels } = await uploadToStorage(
+        uploads,
+        processed,
+      );
       const added = await confirmUploads(draftId, succeeded);
 
       return {
         added,
-        rejectedCount: rejectedCount + (uploads.length - succeeded.length),
+        rejectedCount,
         blurryWarningCount: countBlurryWarnings(added, succeeded),
+        failedLabels,
       };
     },
     onSuccess: (result) => {

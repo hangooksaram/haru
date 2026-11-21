@@ -17,7 +17,7 @@ export default async function DraftPaymentPage({
 
   return (
     <div className="flex flex-col gap-4 py-4">
-      <DraftStepper current={4} templateId={templateId} />
+      <DraftStepper current={3} templateId={templateId} />
       <DraftStepNav prevHref={`/draft/${templateId}/preview`} />
       {orderId && (
         <>

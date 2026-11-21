@@ -10,7 +10,7 @@ export default async function DraftPreviewPage({ params }: Props) {
 
   return (
     <div className="flex flex-col gap-4 py-4">
-      <DraftStepper current={3} templateId={templateId} />
+      <DraftStepper current={2} templateId={templateId} />
       <DraftPreviewStep templateId={templateId} />
     </div>
   );

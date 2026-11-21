@@ -14,8 +14,8 @@ const { useUpdateDraftTexts } = vi.hoisted(() => ({
 const { useTemplateTextElements } = vi.hoisted(() => ({
   useTemplateTextElements: vi.fn(),
 }));
-const { useDraftElementPreviewPanel } = vi.hoisted(() => ({
-  useDraftElementPreviewPanel: vi.fn(),
+const { useDraftPreview } = vi.hoisted(() => ({
+  useDraftPreview: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({ useRouter }));
@@ -28,13 +28,19 @@ vi.mock("@/features/draft/hooks/useUpdateDraftTexts", () => ({
 vi.mock("@/features/template/hooks/useTemplateTextElements", () => ({
   useTemplateTextElements,
 }));
-vi.mock("@/features/draft/hooks/useDraftElementPreviewPanel", () => ({
-  useDraftElementPreviewPanel,
+vi.mock("@/features/draft/hooks/useDraftPreview", () => ({
+  useDraftPreview,
 }));
 
-function setup({ draftTexts = [] }: { draftTexts?: { name: string; text: string }[] } = {}) {
+function setup({
+  draftTexts = [],
+  activeElementName = null,
+}: {
+  draftTexts?: { name: string; text: string }[];
+  activeElementName?: string | null;
+} = {}) {
   const mutate = vi.fn();
-  const onSelect = vi.fn();
+  const selectElement = vi.fn();
 
   useRouter.mockReturnValue({ push: vi.fn() });
   useDraftId.mockReturnValue({ draftId: "draft-1", setDraftId: vi.fn() });
@@ -51,17 +57,20 @@ function setup({ draftTexts = [] }: { draftTexts?: { name: string; text: string 
     ],
     isLoading: false,
   });
-  useDraftElementPreviewPanel.mockReturnValue({
-    isOpen: false,
-    toggle: vi.fn(),
+  useDraftPreview.mockReturnValue({
     containerRef: { current: null },
     isLoading: false,
     isBuffering: false,
     error: null,
-    onSelect,
+    activeElementName,
+    selectElement,
+    replay: vi.fn(),
+    isPlayingAll: false,
+    toggleAll: vi.fn(),
+    playbackProgress: 0,
   });
 
-  return { mutate, onSelect };
+  return { mutate, selectElement };
 }
 
 describe("DraftTextStep", () => {
@@ -175,7 +184,7 @@ describe("DraftTextStep", () => {
   });
 
   it("요소 이름을 클릭하면 미리보기를 해당 요소 위치로 이동시킨다", async () => {
-    const { onSelect } = setup();
+    const { selectElement } = setup();
     const user = userEvent.setup({
       advanceTimers: vi.advanceTimersByTime,
     });
@@ -189,6 +198,20 @@ describe("DraftTextStep", () => {
     );
     await user.click(screen.getByRole("button", { name: "상호명" }));
 
-    expect(onSelect).toHaveBeenCalledWith("상호명");
+    expect(selectElement).toHaveBeenCalledWith("상호명");
+  });
+
+  it("미리보기가 보여주는 요소의 입력 옆에 미리보기 중을 보여준다", () => {
+    setup({ activeElementName: "상호명" });
+
+    render(
+      <DraftTextStep
+        templateId="template-1"
+        prevHref="/prev"
+        nextHref="/next"
+      />,
+    );
+
+    expect(screen.getByText("미리보기 중")).toBeInTheDocument();
   });
 });

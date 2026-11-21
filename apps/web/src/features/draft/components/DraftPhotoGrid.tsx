@@ -11,17 +11,27 @@ import {
 } from "@dnd-kit/core";
 import { useRef, useState } from "react";
 
-import { DraftPhotoItem } from "@/features/draft/components/DraftPhotoItem";
+import { type DraftPhotoSlotStatus } from "@/features/draft/components/DraftPhotoItem";
+import { DraftPhotoLabelCard } from "@/features/draft/components/DraftPhotoLabelCard";
+import { firstEmptySlotName } from "@/features/draft/lib/firstEmptySlotName";
+import { removeHyphens } from "@/features/draft/lib/removeHyphens";
+import { cn } from "@/lib/utils";
 
 import type { DraftPhoto } from "@/features/draft/types";
+import type { DragEvent } from "react";
 
-export type DraftPhotoSlot = {
+export type DraftPhotoGroup = {
   label: string;
-  photo: DraftPhoto | null;
+  slots: {
+    name: string;
+    photo: DraftPhoto | null;
+    status: DraftPhotoSlotStatus;
+  }[];
 };
 
 type Props = {
-  slots: DraftPhotoSlot[];
+  groups: DraftPhotoGroup[];
+  activeElementName: string | null;
   onSwap: (from: string, to: string) => void;
   onUpload: (label: string, files: File[]) => void;
   onReplace: (photoId: string, file: File) => void;
@@ -31,7 +41,8 @@ type Props = {
 };
 
 export function DraftPhotoGrid({
-  slots,
+  groups,
+  activeElementName,
   onSwap,
   onUpload,
   onReplace,
@@ -45,8 +56,12 @@ export function DraftPhotoGrid({
     width: number;
     height: number;
   } | null>(null);
+  const [dragOverGroupLabel, setDragOverGroupLabel] = useState<string | null>(
+    null,
+  );
+  const allSlots = groups.flatMap((group) => group.slots);
   const activePhoto =
-    slots.find((slot) => slot.label === activeLabel)?.photo ?? null;
+    allSlots.find((slot) => slot.name === activeLabel)?.photo ?? null;
   const nodesRef = useRef(new Map<string, HTMLElement>());
 
   function registerNode(label: string, node: HTMLElement | null) {
@@ -71,6 +86,19 @@ export function DraftPhotoGrid({
     onSwap(String(active.id), String(over.id));
   }
 
+  // 슬롯 자체의 드롭(DraftPhotoUploader)이 이미 처리했으면 defaultPrevented가 true이므로 건너뛴다.
+  function handleGroupDrop(group: DraftPhotoGroup, event: DragEvent) {
+    setDragOverGroupLabel(null);
+    if (event.defaultPrevented || uploadDisabled) return;
+
+    const targetSlot = firstEmptySlotName(group.slots);
+    if (!targetSlot) return;
+
+    event.preventDefault();
+    const files = Array.from(event.dataTransfer.files);
+    if (files.length > 0) onUpload(targetSlot, files);
+  }
+
   return (
     <DndContext
       sensors={sensors}
@@ -81,22 +109,48 @@ export function DraftPhotoGrid({
         setActiveSize(null);
       }}
     >
-      <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
-        {slots.map((slot) => (
-          <DraftPhotoItem
-            key={slot.label}
-            label={slot.label}
-            photo={slot.photo}
-            isReplacing={slot.photo?.id === replacingPhotoId}
-            onReplace={(file) => {
-              if (slot.photo) onReplace(slot.photo.id, file);
-            }}
-            onUpload={(files) => onUpload(slot.label, files)}
-            onSelect={() => onSelect(slot.label)}
-            uploadDisabled={uploadDisabled}
-            registerNode={registerNode}
-          />
-        ))}
+      <div className="flex flex-col gap-3">
+        {groups.map((group) => {
+          const hasEmptySlot = firstEmptySlotName(group.slots) !== undefined;
+
+          return (
+            <div
+              key={group.label}
+              className={cn(
+                "rounded-xl transition-shadow",
+                dragOverGroupLabel === group.label && "ring-2 ring-primary",
+              )}
+              onDragOver={(event) => {
+                if (event.defaultPrevented || uploadDisabled || !hasEmptySlot)
+                  return;
+                event.preventDefault();
+                setDragOverGroupLabel(group.label);
+              }}
+              onDragLeave={() => setDragOverGroupLabel(null)}
+              onDrop={(event) => handleGroupDrop(group, event)}
+            >
+              <DraftPhotoLabelCard
+                label={group.label}
+                activeElementName={activeElementName}
+                slots={group.slots.map((slot) => ({
+                  name: slot.name,
+                  caption:
+                    group.slots.length === 1
+                      ? removeHyphens(group.label)
+                      : removeHyphens(slot.name.slice(group.label.length + 1)),
+                  photo: slot.photo,
+                  status: slot.status,
+                }))}
+                onUpload={onUpload}
+                onReplace={onReplace}
+                onSelect={onSelect}
+                replacingPhotoId={replacingPhotoId}
+                uploadDisabled={uploadDisabled}
+                registerNode={registerNode}
+              />
+            </div>
+          );
+        })}
       </div>
       <DragOverlay>
         {activePhoto && activeSize && (
