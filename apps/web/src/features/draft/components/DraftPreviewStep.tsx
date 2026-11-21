@@ -9,7 +9,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DraftPhotoOrderDebug } from "@/features/draft/components/DraftPhotoOrderDebug";
 import { DraftVideoPreview } from "@/features/draft/components/DraftVideoPreview";
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
 import { useDraft } from "@/features/draft/hooks/useDraft";
@@ -61,8 +60,6 @@ export function DraftPreviewStep({ templateId }: Props) {
         photos={draft.photos}
         texts={draft.texts}
       />
-
-      <DraftPhotoOrderDebug templateId={templateId} photos={draft.photos} />
 
       <div className="flex items-center gap-3">
         <DropdownMenu>
