@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-
 import { Button } from "@/components/ui/button";
 import { sanitizeNextPath } from "@/features/auth/lib/sanitizeNextPath";
 import { createClient } from "@/lib/supabase/client";
@@ -60,12 +58,9 @@ type Provider = (typeof PROVIDERS)[number]["id"];
 
 type Props = {
   next?: string;
-  socialConflict?: string;
 };
 
-export function SocialLoginButtons({ next, socialConflict }: Props) {
-  const hasRetried = useRef(false);
-
+export function SocialLoginButtons({ next }: Props) {
   async function handleClick(provider: Provider) {
     if (provider === "naver") {
       const naverUrl = new URL("/auth/naver", window.location.origin);
@@ -77,31 +72,12 @@ export function SocialLoginButtons({ next, socialConflict }: Props) {
     const supabase = createClient();
     const callbackUrl = new URL("/auth/callback", window.location.origin);
     callbackUrl.searchParams.set("next", sanitizeNextPath(next));
-    callbackUrl.searchParams.set("provider", provider);
-
-    const { data } = await supabase.auth.getUser();
-    const shouldLink = data.user?.is_anonymous && provider !== socialConflict;
-
-    if (shouldLink) {
-      await supabase.auth.linkIdentity({
-        provider,
-        options: { redirectTo: callbackUrl.toString() },
-      });
-      return;
-    }
 
     await supabase.auth.signInWithOAuth({
       provider,
       options: { redirectTo: callbackUrl.toString() },
     });
   }
-
-  useEffect(() => {
-    if (!socialConflict || hasRetried.current) return;
-    hasRetried.current = true;
-    void handleClick(socialConflict as Provider);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [socialConflict]);
 
   return (
     <div className="flex flex-col gap-2">

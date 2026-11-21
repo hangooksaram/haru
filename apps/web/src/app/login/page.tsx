@@ -7,13 +7,12 @@ import { SocialLoginButtons } from "@/features/auth/components/SocialLoginButton
 type Props = {
   searchParams: Promise<{
     next?: string;
-    socialConflict?: string;
     error?: string;
   }>;
 };
 
 export default async function LoginPage({ searchParams }: Props) {
-  const { next, socialConflict, error } = await searchParams;
+  const { next, error } = await searchParams;
 
   return (
     <div className="mx-auto flex max-w-sm flex-col gap-8 px-6 py-20">
@@ -22,7 +21,7 @@ export default async function LoginPage({ searchParams }: Props) {
         haru<span className="text-brand-deep">.</span>
       </div>
       <div className="flex flex-col gap-6">
-        <SocialLoginButtons next={next} socialConflict={socialConflict} />
+        <SocialLoginButtons next={next} />
         <div className="flex items-center gap-3">
           <Separator className="flex-1" />
           <span className="text-muted-foreground text-xs">또는</span>

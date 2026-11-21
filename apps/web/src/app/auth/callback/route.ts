@@ -31,16 +31,5 @@ export async function GET(request: Request) {
     }
   }
 
-  if (searchParams.get("error_code") === "identity_already_exists") {
-    const provider = searchParams.get("provider");
-    const conflictParam = provider
-      ? `&socialConflict=${encodeURIComponent(provider)}`
-      : "";
-
-    return NextResponse.redirect(
-      `${origin}/login?next=${encodeURIComponent(next)}${conflictParam}`,
-    );
-  }
-
   return NextResponse.redirect(`${origin}/signup?error=social`);
 }
