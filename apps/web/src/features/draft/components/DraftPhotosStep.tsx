@@ -17,11 +17,11 @@ import { useSwapDraftPhotos } from "@/features/draft/hooks/useSwapDraftPhotos";
 import { useUploadDraftPhotos } from "@/features/draft/hooks/useUploadDraftPhotos";
 import { groupPhotoLabels } from "@/features/draft/lib/groupPhotoLabels";
 import { useTemplatePhotoElements } from "@/features/template/hooks/useTemplatePhotoElements";
-import { cn } from "@/lib/utils";
 
 import type { DraftPhotoGroup } from "@/features/draft/components/DraftPhotoGrid";
 import type { DraftPhotoSlotStatus } from "@/features/draft/components/DraftPhotoItem";
 import type { DraftPhoto, DraftSavedText } from "@/features/draft/types";
+import type { CSSProperties } from "react";
 
 const EMPTY_PHOTOS: DraftPhoto[] = [];
 const EMPTY_TEXTS: DraftSavedText[] = [];
@@ -311,12 +311,12 @@ export function DraftPhotosStep({
       />
 
       <div
-        className={cn(
-          "grid gap-6 md:items-start",
-          isPreviewCollapsed
-            ? "md:grid-cols-1"
-            : "md:grid-cols-[6fr_4fr]",
-        )}
+        className="grid gap-6 md:items-start md:[grid-template-columns:var(--preview-cols)] md:transition-[grid-template-columns] md:duration-[380ms] md:ease-[cubic-bezier(0.4,0,0.2,1)]"
+        style={
+          {
+            "--preview-cols": isPreviewCollapsed ? "1fr 0fr" : "6fr 4fr",
+          } as CSSProperties
+        }
       >
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center gap-4 rounded-xl border p-4">
@@ -392,7 +392,7 @@ export function DraftPhotosStep({
           />
         </div>
 
-        <div className="hidden md:block">
+        <div className="hidden min-w-0 md:block">
           <div className="md:sticky md:top-20">
             <DraftPreviewPanel
               containerRef={previewContainerRef}

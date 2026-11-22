@@ -59,10 +59,10 @@ export function DraftPreviewPanel({
   }, []);
 
   function handleHide() {
+    onCollapsedChange?.(true);
     setPhase("hiding");
     timeoutRef.current = setTimeout(() => {
       setPhase("hidden");
-      onCollapsedChange?.(true);
     }, ANIMATION_MS);
   }
 
@@ -74,96 +74,75 @@ export function DraftPreviewPanel({
     }, ANIMATION_MS);
   }
 
-  if (phase === "hidden") {
-    return (
-      <button
-        type="button"
-        onClick={handleShow}
-        aria-label="미리보기 다시 열기"
-        style={{ transformOrigin: "bottom right" }}
-        className="animate-[draft-preview-pop_320ms_ease-out_both] fixed right-8 bottom-8 z-10 flex items-center gap-2.5 rounded-full bg-foreground py-1.5 pr-4 pl-1.5 text-sm font-medium text-background shadow-lg"
-      >
-        <span className="bg-primary/60 flex h-8 w-14 items-center justify-center rounded-full">
-          <Play className="h-3.5 w-3.5 fill-current" />
-        </span>
-        미리보기
-      </button>
-    );
-  }
-
   return (
-    <div
-      style={{ transformOrigin: "bottom right" }}
-      className={cn(
-        "flex flex-col gap-3 rounded-2xl border p-4 transition-[transform,opacity] duration-[380ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
-        phase === "hiding" &&
-          "pointer-events-none translate-y-[55vh] scale-[0.12] opacity-0",
-        phase === "appearing" &&
-          "animate-[draft-preview-grow_380ms_cubic-bezier(0.2,0,0,1)_both]",
+    <>
+      {phase === "hidden" && (
+        <button
+          type="button"
+          onClick={handleShow}
+          aria-label="미리보기 다시 열기"
+          style={{ transformOrigin: "bottom right" }}
+          className="bg-foreground text-background fixed right-8 bottom-8 z-10 flex animate-[draft-preview-pop_320ms_ease-out_both] items-center gap-2.5 rounded-full py-1.5 pr-4 pl-1.5 text-sm font-medium shadow-lg"
+        >
+          <span className="bg-primary/60 flex h-8 w-14 items-center justify-center rounded-full">
+            <Play className="h-3.5 w-3.5 fill-current" />
+          </span>
+          미리보기
+        </button>
       )}
-    >
-      <div className="flex items-center justify-between gap-3">
-        {activeSegment ? (
-          <div className="flex min-w-0 items-center gap-2">
-            <Badge variant="secondary" className="shrink-0">
-              {activeIndex + 1} / {segments.length}
-            </Badge>
-            <span className="truncate text-sm font-medium">
-              {removeHyphens(activeSegment.name)}
-            </span>
-          </div>
-        ) : (
-          <strong className="text-sm">내 영상</strong>
+
+      {/* 숨긴 동안에도 DOM에서 제거하지 않는다. 언마운트하면 미리보기 영상이 다시 로드된다. */}
+      <div
+        aria-hidden={phase === "hidden"}
+        style={{ transformOrigin: "bottom right" }}
+        className={cn(
+          "flex flex-col gap-3 rounded-2xl border p-4 transition-[transform,opacity] duration-[380ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
+          phase === "hiding" &&
+            "pointer-events-none translate-y-[55vh] scale-[0.12] opacity-0",
+          phase === "appearing" &&
+            "animate-[draft-preview-grow_380ms_cubic-bezier(0.2,0,0,1)_both]",
+          phase === "hidden" &&
+            "pointer-events-none invisible fixed top-0 left-0 opacity-0",
         )}
-        <Button type="button" variant="ghost" size="sm" onClick={handleHide}>
-          <EyeOff />
-          숨기기
-        </Button>
-      </div>
-
-      <div className="relative">
-        <DraftPreviewFrame
-          containerRef={containerRef}
-          isLoading={isLoading}
-          isBuffering={isBuffering}
-          error={error}
-        />
-
-        {showEmptyOverlay && !isLoading && !error && (
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <div className="border-primary text-muted-foreground flex aspect-[4/3] w-[46%] flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed text-center">
-              <span className="text-foreground text-sm">
-                {activeSegment && removeHyphens(activeSegment.name)}
+      >
+        <div className="flex items-center justify-between gap-3">
+          {activeSegment ? (
+            <div className="flex min-w-0 items-center gap-2">
+              <Badge variant="secondary" className="shrink-0">
+                {activeIndex + 1} / {segments.length}
+              </Badge>
+              <span className="truncate text-sm font-medium">
+                {removeHyphens(activeSegment.name)}
               </span>
             </div>
-          </div>
-        )}
-      </div>
+          ) : (
+            <strong className="text-sm">내 영상</strong>
+          )}
+          <Button type="button" variant="ghost" size="sm" onClick={handleHide}>
+            <EyeOff />
+            숨기기
+          </Button>
+        </div>
 
-      <div
-        aria-hidden="true"
-        className="bg-muted mx-1 h-1 overflow-hidden rounded-full"
-      >
-        <div
-          className="bg-primary h-full rounded-full transition-[width] duration-300"
-          style={{ width: `${Math.min(100, Math.max(0, playbackProgress * 100))}%` }}
-        />
-      </div>
+        <div className="relative">
+          <DraftPreviewFrame
+            containerRef={containerRef}
+            isLoading={isLoading}
+            isBuffering={isBuffering}
+            error={error}
+          />
 
-      <div className="flex flex-wrap items-center gap-2">
-        <Button
-          type="button"
-          size="sm"
-          variant="secondary"
-          disabled={!activeElementName}
-          onClick={onReplay}
-        >
-          이 장면 다시보기
-        </Button>
-        <Button type="button" size="sm" variant="outline" onClick={onToggleAll}>
-          {isPlayingAll ? "일시정지" : "전체 재생"}
-        </Button>
+          {showEmptyOverlay && !isLoading && !error && (
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              <div className="border-primary text-muted-foreground flex aspect-[4/3] w-[46%] flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed text-center">
+                <span className="text-foreground text-sm">
+                  {activeSegment && removeHyphens(activeSegment.name)}
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

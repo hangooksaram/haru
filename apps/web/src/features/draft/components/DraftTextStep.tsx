@@ -17,10 +17,10 @@ import { removeLineBreaks } from "@/features/draft/lib/removeLineBreaks";
 import { trimBlankText } from "@/features/draft/lib/trimBlankText";
 import { useTemplateTextElements } from "@/features/template/hooks/useTemplateTextElements";
 import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
-import { cn } from "@/lib/utils";
 
 import type { DraftPhoto, DraftTextInput } from "@/features/draft/types";
 import type { TemplateTextElement } from "@/features/template/types";
+import type { CSSProperties } from "react";
 
 const AUTOSAVE_DEBOUNCE_MS = 500;
 const EMPTY_PHOTOS: DraftPhoto[] = [];
@@ -200,12 +200,12 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
       {error && <p className="text-destructive text-sm font-medium">{error}</p>}
 
       <div
-        className={cn(
-          "grid gap-6 md:items-start",
-          isPreviewCollapsed
-            ? "md:grid-cols-1"
-            : "md:grid-cols-[4.5fr_5.5fr]",
-        )}
+        className="grid gap-6 md:items-start md:[grid-template-columns:var(--preview-cols)] md:transition-[grid-template-columns] md:duration-[380ms] md:ease-[cubic-bezier(0.4,0,0.2,1)]"
+        style={
+          {
+            "--preview-cols": isPreviewCollapsed ? "1fr 0fr" : "4.5fr 5.5fr",
+          } as CSSProperties
+        }
       >
         <div className="flex flex-col gap-8">
           <p className="text-muted-foreground text-sm">
@@ -274,7 +274,7 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
           )}
         </div>
 
-        <div className="hidden md:block">
+        <div className="hidden min-w-0 md:block">
           <div className="md:sticky md:top-20">
             <DraftPreviewPanel
               containerRef={previewContainerRef}
