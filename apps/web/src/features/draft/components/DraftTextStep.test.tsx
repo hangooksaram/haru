@@ -4,6 +4,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DraftTextStep } from "./DraftTextStep";
 
+const { toast } = vi.hoisted(() => ({
+  toast: { error: vi.fn() },
+}));
 const { useRouter } = vi.hoisted(() => ({ useRouter: vi.fn() }));
 const { useDraftId } = vi.hoisted(() => ({ useDraftId: vi.fn() }));
 const { useCreateDraft } = vi.hoisted(() => ({ useCreateDraft: vi.fn() }));
@@ -18,6 +21,7 @@ const { useDraftPreview } = vi.hoisted(() => ({
   useDraftPreview: vi.fn(),
 }));
 
+vi.mock("sonner", () => ({ toast }));
 vi.mock("next/navigation", () => ({ useRouter }));
 vi.mock("@/features/draft/components/DraftIdProvider", () => ({ useDraftId }));
 vi.mock("@/features/draft/hooks/useCreateDraft", () => ({ useCreateDraft }));
@@ -174,12 +178,12 @@ describe("DraftTextStep", () => {
         nextHref="/next"
       />,
     );
-    await user.click(screen.getByRole("button", { name: "다음" }));
+    await user.click(screen.getByRole("button", { name: "이 시안으로 주문" }));
 
     await waitFor(() =>
-      expect(
-        screen.getByText("기본정보를 모두 입력해 주세요."),
-      ).toBeInTheDocument(),
+      expect(toast.error).toHaveBeenCalledWith(
+        "기본정보를 모두 입력해 주세요.",
+      ),
     );
   });
 

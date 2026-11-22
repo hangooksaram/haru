@@ -2,8 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
-import { DraftStepNav } from "@/components/DraftStepNav";
+import { DraftStepBar } from "@/components/DraftStepBar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
@@ -28,14 +29,12 @@ const EMPTY_TEXTS: DraftSavedText[] = [];
 
 type Props = {
   templateId: string;
-  prevHref: string;
   nextHref: string;
   showPreviewShortcut?: boolean;
 };
 
 export function DraftPhotosStep({
   templateId,
-  prevHref,
   nextHref,
   showPreviewShortcut,
 }: Props) {
@@ -46,7 +45,10 @@ export function DraftPhotosStep({
   const { data: labels, isLoading: isLabelsLoading } =
     useTemplatePhotoElements(templateId);
   const [message, setMessage] = useState<string | null>(null);
-  const [navError, setNavError] = useState<string | null>(null);
+  const [highlightSlotName, setHighlightSlotName] = useState<string | null>(
+    null,
+  );
+  const [highlightToken, setHighlightToken] = useState(0);
   const [replacingPhotoId, setReplacingPhotoId] = useState<string | null>(null);
   const [uploadingLabels, setUploadingLabels] = useState<Set<string>>(
     new Set(),
@@ -251,10 +253,14 @@ export function DraftPhotosStep({
   }
 
   function validatePhotoCount(): boolean {
-    setNavError(null);
-
     if (photoCount < labelCount) {
-      setNavError("사진을 모두 업로드해 주세요.");
+      toast.error("사진을 모두 업로드해 주세요.");
+
+      const firstEmpty = segments.find((segment) => !segment.filled)?.name;
+      if (firstEmpty) {
+        setHighlightSlotName(firstEmpty);
+        setHighlightToken((token) => token + 1);
+      }
 
       return false;
     }
@@ -262,8 +268,10 @@ export function DraftPhotosStep({
     return true;
   }
 
-  async function handleNext(): Promise<boolean> {
-    return validatePhotoCount();
+  function handlePrimaryClick() {
+    if (!validatePhotoCount()) return;
+
+    router.push(nextHref);
   }
 
   function handleGoToPreview() {
@@ -295,23 +303,31 @@ export function DraftPhotosStep({
     })),
   );
 
+  const remainingCount = labelCount - photoCount;
+
   return (
     <div className="flex flex-col gap-4">
-      <DraftStepNav
-        prevHref={prevHref}
-        nextHref={nextHref}
-        onNext={handleNext}
-        extra={
-          showPreviewShortcut ? (
-            <Button variant="outline" size="lg" onClick={handleGoToPreview}>
-              미리보기로 이동
-            </Button>
-          ) : undefined
+      <DraftStepBar
+        current={0}
+        templateId={templateId}
+        templateName={draft.templateName}
+        primaryLabel="다음: 텍스트 입력"
+        onPrimaryClick={handlePrimaryClick}
+        remainingLabel={
+          remainingCount > 0 ? `${remainingCount}장 남음` : undefined
         }
       />
 
+      {showPreviewShortcut && (
+        <div>
+          <Button variant="outline" size="lg" onClick={handleGoToPreview}>
+            미리보기로 이동
+          </Button>
+        </div>
+      )}
+
       <div
-        className="grid gap-6 md:items-start md:[grid-template-columns:var(--preview-cols)] md:transition-[grid-template-columns] md:duration-[380ms] md:ease-[cubic-bezier(0.4,0,0.2,1)]"
+        className="grid gap-6 md:[grid-template-columns:var(--preview-cols)] md:transition-[grid-template-columns] md:duration-[380ms] md:ease-[cubic-bezier(0.4,0,0.2,1)]"
         style={
           {
             "--preview-cols": isPreviewCollapsed ? "1fr 0fr" : "6fr 4fr",
@@ -377,9 +393,6 @@ export function DraftPhotosStep({
           {message && (
             <p className="text-sm font-medium text-amber-600">{message}</p>
           )}
-          {navError && (
-            <p className="text-destructive text-sm font-medium">{navError}</p>
-          )}
           <DraftPhotoGrid
             groups={groups}
             activeElementName={activeElementName}
@@ -389,11 +402,13 @@ export function DraftPhotosStep({
             onSelect={selectElement}
             replacingPhotoId={replacingPhotoId}
             uploadDisabled={upload.isPending}
+            highlightSlotName={highlightSlotName}
+            highlightToken={highlightToken}
           />
         </div>
 
         <div className="hidden min-w-0 md:block">
-          <div className="md:sticky md:top-20">
+          <div className="md:sticky md:top-[136px]">
             <DraftPreviewPanel
               containerRef={previewContainerRef}
               isLoading={isPreviewLoading}

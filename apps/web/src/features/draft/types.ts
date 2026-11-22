@@ -13,6 +13,7 @@ export type DraftSavedText = {
 export type Draft = {
   id: string;
   templateId: string;
+  templateName: string;
   status: "editing" | "converting" | "converted";
   photos: DraftPhoto[];
   texts: DraftSavedText[];

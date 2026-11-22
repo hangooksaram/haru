@@ -3,6 +3,7 @@ import "./globals.css";
 import { Gothic_A1 } from "next/font/google";
 import localFont from "next/font/local";
 import { cn } from "@/lib/utils";
+import { Toaster } from "@/components/ui/sonner";
 
 import { Providers } from "./providers";
 
@@ -44,6 +45,7 @@ export default function RootLayout({
     >
       <body>
         <Providers>{children}</Providers>
+        <Toaster />
       </body>
     </html>
   );

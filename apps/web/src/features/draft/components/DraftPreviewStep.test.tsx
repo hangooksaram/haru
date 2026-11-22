@@ -38,6 +38,7 @@ function setup({ isAnonymous = false }: { isAnonymous?: boolean } = {}) {
     data: {
       id: "draft-1",
       templateId: "template-1",
+      templateName: "템플릿",
       status: "editing",
       photos: [
         { id: "p1", name: "사진1", position: 0, url: "https://example.com/p1.jpg" },

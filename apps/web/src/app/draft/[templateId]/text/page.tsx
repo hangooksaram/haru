@@ -1,4 +1,3 @@
-import { DraftStepper } from "@/components/DraftStepper";
 import { DraftTextStep } from "@/features/draft/components/DraftTextStep";
 
 type Props = {
@@ -10,7 +9,6 @@ export default async function DraftTextPage({ params }: Props) {
 
   return (
     <div className="flex flex-col gap-4 py-4">
-      <DraftStepper current={1} templateId={templateId} />
       <DraftTextStep
         templateId={templateId}
         prevHref={`/draft/${templateId}/photos`}

@@ -1,4 +1,3 @@
-import { DraftStepper } from "@/components/DraftStepper";
 import { DraftPhotosStep } from "@/features/draft/components/DraftPhotosStep";
 
 type Props = {
@@ -12,10 +11,8 @@ export default async function DraftPhotosPage({ params, searchParams }: Props) {
 
   return (
     <div className="flex flex-col gap-4 py-4">
-      <DraftStepper current={0} templateId={templateId} />
       <DraftPhotosStep
         templateId={templateId}
-        prevHref="/templates"
         nextHref={`/draft/${templateId}/text`}
         showPreviewShortcut={returnParam === "preview"}
       />

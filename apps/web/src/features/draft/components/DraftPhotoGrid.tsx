@@ -9,7 +9,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { type DraftPhotoSlotStatus } from "@/features/draft/components/DraftPhotoItem";
 import { DraftPhotoLabelCard } from "@/features/draft/components/DraftPhotoLabelCard";
@@ -38,6 +38,8 @@ type Props = {
   onSelect: (label: string) => void;
   replacingPhotoId: string | null;
   uploadDisabled: boolean;
+  highlightSlotName?: string | null;
+  highlightToken?: number;
 };
 
 export function DraftPhotoGrid({
@@ -49,6 +51,8 @@ export function DraftPhotoGrid({
   onSelect,
   replacingPhotoId,
   uploadDisabled,
+  highlightSlotName,
+  highlightToken,
 }: Props) {
   const sensors = useSensors(useSensor(PointerSensor));
   const [activeLabel, setActiveLabel] = useState<string | null>(null);
@@ -63,6 +67,23 @@ export function DraftPhotoGrid({
   const activePhoto =
     allSlots.find((slot) => slot.name === activeLabel)?.photo ?? null;
   const nodesRef = useRef(new Map<string, HTMLElement>());
+
+  // 필수 항목이 남은 채로 다음 단계 버튼을 누르면 첫 빈 슬롯으로 스크롤해 잠깐 강조한다.
+  useEffect(() => {
+    if (!highlightSlotName) return;
+
+    const node = nodesRef.current.get(highlightSlotName);
+    if (!node) return;
+
+    node.scrollIntoView?.({ behavior: "smooth", block: "center" });
+    node.classList.add("ring-2", "ring-destructive", "ring-offset-2");
+
+    const timer = setTimeout(() => {
+      node.classList.remove("ring-2", "ring-destructive", "ring-offset-2");
+    }, 1600);
+
+    return () => clearTimeout(timer);
+  }, [highlightSlotName, highlightToken]);
 
   function registerNode(label: string, node: HTMLElement | null) {
     if (node) nodesRef.current.set(label, node);

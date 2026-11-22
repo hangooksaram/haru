@@ -1,9 +1,11 @@
 "use client";
 
 import { Eye } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
-import { DraftStepNav } from "@/components/DraftStepNav";
+import { DraftStepBar } from "@/components/DraftStepBar";
 import { Input } from "@/components/ui/input";
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
 import { DraftPreviewPanel } from "@/features/draft/components/DraftPreviewPanel";
@@ -68,6 +70,7 @@ function PreviewingBadge() {
 }
 
 export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
+  const router = useRouter();
   const { draftId, setDraftId } = useDraftId();
   const { mutate: createDraft } = useCreateDraft();
   const { data: elements, isLoading: isElementsLoading } =
@@ -79,9 +82,9 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
   const [committedTexts, setCommittedTexts] = useState<Record<string, string>>(
     {},
   );
-  const [error, setError] = useState<string | null>(null);
   const [isPreviewCollapsed, setIsPreviewCollapsed] = useState(false);
   const hydratedDraftId = useRef<string | null>(null);
+  const fieldNodesRef = useRef(new Map<string, HTMLElement>());
 
   useEffect(() => {
     if (draftId === undefined || draftId) return;
@@ -162,18 +165,25 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
     );
   }
 
-  async function handleNext(): Promise<boolean> {
-    setError(null);
+  function handlePrimaryClick() {
+    const firstEmpty = textElements.find(isBasicInfoEmpty);
 
-    const hasEmptyBasicInfo = textElements.some(isBasicInfoEmpty);
+    if (firstEmpty) {
+      toast.error("기본정보를 모두 입력해 주세요.");
 
-    if (hasEmptyBasicInfo) {
-      setError("기본정보를 모두 입력해 주세요.");
+      const node = fieldNodesRef.current.get(elementKey(firstEmpty));
+      if (node) {
+        node.scrollIntoView?.({ behavior: "smooth", block: "center" });
+        node.classList.add("ring-2", "ring-destructive", "ring-offset-2");
+        setTimeout(() => {
+          node.classList.remove("ring-2", "ring-destructive", "ring-offset-2");
+        }, 1600);
+      }
 
-      return false;
+      return;
     }
 
-    return true;
+    router.push(nextHref);
   }
 
   const basicInfoElements = textElements.filter(
@@ -182,6 +192,9 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
   const subtitleElements = textElements.filter(
     (element) => element.type === "자막",
   );
+  const missingBasicInfoCount = basicInfoElements.filter(
+    isBasicInfoEmpty,
+  ).length;
   const filledCount = textElements.filter(
     (element) => trimBlankText(getValue(element)) !== "",
   ).length;
@@ -191,16 +204,23 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
   }));
 
   return (
-    <div className="flex flex-col gap-8">
-      <DraftStepNav
+    <div className="flex flex-col gap-4">
+      <DraftStepBar
+        current={1}
+        templateId={templateId}
+        templateName={draft?.templateName ?? ""}
         prevHref={prevHref}
-        nextHref={nextHref}
-        onNext={handleNext}
+        primaryLabel="이 시안으로 주문"
+        onPrimaryClick={handlePrimaryClick}
+        remainingLabel={
+          missingBasicInfoCount > 0
+            ? `기본정보 ${missingBasicInfoCount}개 남음`
+            : undefined
+        }
       />
-      {error && <p className="text-destructive text-sm font-medium">{error}</p>}
 
       <div
-        className="grid gap-6 md:items-start md:[grid-template-columns:var(--preview-cols)] md:transition-[grid-template-columns] md:duration-[380ms] md:ease-[cubic-bezier(0.4,0,0.2,1)]"
+        className="grid gap-6 md:[grid-template-columns:var(--preview-cols)] md:transition-[grid-template-columns] md:duration-[380ms] md:ease-[cubic-bezier(0.4,0,0.2,1)]"
         style={
           {
             "--preview-cols": isPreviewCollapsed ? "1fr 0fr" : "4.5fr 5.5fr",
@@ -218,6 +238,10 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
               {basicInfoElements.map((element) => (
                 <label
                   key={elementKey(element)}
+                  ref={(node) => {
+                    if (node) fieldNodesRef.current.set(elementKey(element), node);
+                    else fieldNodesRef.current.delete(elementKey(element));
+                  }}
                   className="flex flex-col gap-1.5 text-sm font-medium"
                 >
                   <div className="flex items-start gap-3">
@@ -275,7 +299,7 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
         </div>
 
         <div className="hidden min-w-0 md:block">
-          <div className="md:sticky md:top-20">
+          <div className="md:sticky md:top-[136px]">
             <DraftPreviewPanel
               containerRef={previewContainerRef}
               isLoading={isPreviewLoading}

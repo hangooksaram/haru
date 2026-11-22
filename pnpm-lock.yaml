@@ -171,6 +171,9 @@ importers:
       next:
         specifier: 'catalog:'
         version: 16.3.6(@babel/core@7.29.7)(@types/node@22.20.4)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      next-themes:
+        specifier: ^0.4.6
+        version: 0.4.6(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       pretendard:
         specifier: ^1.3.9
         version: 1.3.9
@@ -186,6 +189,9 @@ importers:
       shadcn:
         specifier: 'catalog:'
         version: 4.21.0(typescript@5.9.3)
+      sonner:
+        specifier: ^2.0.8
+        version: 2.0.8(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       tw-animate-css:
         specifier: 'catalog:'
         version: 1.4.0

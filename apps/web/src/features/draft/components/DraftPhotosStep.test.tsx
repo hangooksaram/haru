@@ -6,6 +6,9 @@ import { DraftPhotosStep } from "./DraftPhotosStep";
 
 import type { Draft } from "@/features/draft/types";
 
+const { toast } = vi.hoisted(() => ({
+  toast: { error: vi.fn() },
+}));
 const { useRouter } = vi.hoisted(() => ({ useRouter: vi.fn() }));
 const { useDraftId } = vi.hoisted(() => ({ useDraftId: vi.fn() }));
 const { useCreateDraft } = vi.hoisted(() => ({ useCreateDraft: vi.fn() }));
@@ -26,6 +29,7 @@ const { useDraftPreview } = vi.hoisted(() => ({
   useDraftPreview: vi.fn(),
 }));
 
+vi.mock("sonner", () => ({ toast }));
 vi.mock("next/navigation", () => ({ useRouter }));
 vi.mock("@/features/draft/components/DraftIdProvider", () => ({ useDraftId }));
 vi.mock("@/features/draft/hooks/useCreateDraft", () => ({ useCreateDraft }));
@@ -85,6 +89,7 @@ function createDraft(photoNames: string[]): Draft {
   return {
     id: "draft-1",
     templateId: "template-1",
+    templateName: "템플릿",
     status: "editing",
     photos: photoNames.map((name, index) => ({
       id: `photo-${index}`,
@@ -104,14 +109,13 @@ describe("DraftPhotosStep", () => {
     render(
       <DraftPhotosStep
         templateId="template-1"
-        prevHref="/prev"
         nextHref="/next"
       />,
     );
-    await user.click(screen.getByRole("button", { name: "다음" }));
+    await user.click(screen.getByRole("button", { name: "다음: 텍스트 입력" }));
 
     expect(push).not.toHaveBeenCalled();
-    expect(screen.getByText("사진을 모두 업로드해 주세요.")).toBeInTheDocument();
+    expect(toast.error).toHaveBeenCalledWith("사진을 모두 업로드해 주세요.");
   });
 
   it("템플릿의 사진 개수만큼 올리면 다음으로 이동한다", async () => {
@@ -121,11 +125,10 @@ describe("DraftPhotosStep", () => {
     render(
       <DraftPhotosStep
         templateId="template-1"
-        prevHref="/prev"
         nextHref="/next"
       />,
     );
-    await user.click(screen.getByRole("button", { name: "다음" }));
+    await user.click(screen.getByRole("button", { name: "다음: 텍스트 입력" }));
 
     expect(push).toHaveBeenCalledWith("/next");
   });
@@ -137,7 +140,6 @@ describe("DraftPhotosStep", () => {
     render(
       <DraftPhotosStep
         templateId="template-1"
-        prevHref="/prev"
         nextHref="/next"
       />,
     );
@@ -153,7 +155,6 @@ describe("DraftPhotosStep", () => {
     render(
       <DraftPhotosStep
         templateId="template-1"
-        prevHref="/prev"
         nextHref="/next"
       />,
     );
@@ -168,7 +169,6 @@ describe("DraftPhotosStep", () => {
     render(
       <DraftPhotosStep
         templateId="template-1"
-        prevHref="/prev"
         nextHref="/next"
       />,
     );
@@ -191,7 +191,6 @@ describe("DraftPhotosStep", () => {
     render(
       <DraftPhotosStep
         templateId="template-1"
-        prevHref="/prev"
         nextHref="/next"
       />,
     );

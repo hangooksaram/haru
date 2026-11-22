@@ -16,6 +16,7 @@ export async function getDraft(
     where: { id: draftId },
     include: {
       photos: { orderBy: { position: "asc" } },
+      template: { select: { name: true } },
     },
   });
 
@@ -36,6 +37,7 @@ export async function getDraft(
   return {
     id: draft.id,
     templateId: draft.templateId,
+    templateName: draft.template.name,
     status: draft.status,
     photos,
     texts: draft.texts as DraftSavedText[],

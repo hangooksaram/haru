@@ -12,13 +12,19 @@ type Props = {
 
 export function SiteHeader({ categories = [], variant = "full" }: Props) {
   return (
-    <header className="site-header bg-background/90 sticky top-0 z-50 w-full backdrop-blur-md">
+    <header
+      className={cn(
+        "site-header bg-background/90 sticky top-0 z-50 w-full backdrop-blur-md",
+        variant === "minimal" && "site-header--no-shadow",
+      )}
+    >
       <style>{`
         .site-header{height:64px;padding:0;display:flex;align-items:center}
         @keyframes site-header-shadow{from{box-shadow:0 0 0 rgba(11,18,32,0)}to{box-shadow:0 6px 24px rgba(11,18,32,.08)}}
         @supports (animation-timeline: scroll()) {
           .site-header{animation:site-header-shadow linear both;animation-timeline:scroll();animation-range:0 80px}
         }
+        .site-header--no-shadow{animation:none !important;box-shadow:none !important}
         @media (prefers-reduced-motion: reduce){
           .site-header{animation:none !important}
         }
