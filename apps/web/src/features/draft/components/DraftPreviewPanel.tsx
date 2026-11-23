@@ -50,7 +50,6 @@ export function DraftPreviewPanel({
     (segment) => segment.name === activeElementName,
   );
   const activeSegment = activeIndex === -1 ? undefined : segments[activeIndex];
-  const showEmptyOverlay = activeSegment !== undefined && !activeSegment.filled;
 
   useEffect(() => {
     return () => {
@@ -131,16 +130,6 @@ export function DraftPreviewPanel({
             isBuffering={isBuffering}
             error={error}
           />
-
-          {showEmptyOverlay && !isLoading && !error && (
-            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-              <div className="border-primary text-muted-foreground flex aspect-[4/3] w-[46%] flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed text-center">
-                <span className="text-foreground text-sm">
-                  {activeSegment && removeHyphens(activeSegment.name)}
-                </span>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </>
