@@ -1,3 +1,5 @@
+import { elementKey } from "@/features/draft/lib/elementKey";
+
 import type {
   TemplateTextElement,
   TemplateTextElementType,
@@ -30,5 +32,5 @@ export function resolveDraftTextElement(
   );
   if (!exists) return null;
 
-  return { name: `${normalizedType}_${name}`, type: normalizedType };
+  return { name: elementKey({ type: normalizedType, name }), type: normalizedType };
 }

@@ -1,19 +1,32 @@
-import type {
-  TemplateTextElement,
-  TemplateTextElementType,
-} from "@/features/template/types";
+import type { TemplateTextElement } from "@/features/template/types";
 
-function classify(prefix: string): TemplateTextElementType | null {
-  const normalized = prefix.normalize("NFC").replace(/\s+/g, "");
+const PLACEHOLDER_PATTERN = /\{\{\s*([^{}|]+?)\s*(?:\|[^{}]*)?\}\}/g;
 
-  if (normalized === "기본정보") return "기본정보";
-  if (normalized === "자막") return "자막";
-
-  return null;
+function isSubtitlePrefix(prefix: string): boolean {
+  return prefix.normalize("NFC").replace(/\s+/g, "") === "자막";
 }
 
-function toTextElement(element: unknown): TemplateTextElement | null {
-  if (typeof element !== "object" || element === null) return null;
+function toSubtitleElement(
+  name: string,
+  text: string,
+): TemplateTextElement | null {
+  const separatorIndex = name.indexOf("_");
+  if (separatorIndex === -1) return null;
+  if (!isSubtitlePrefix(name.slice(0, separatorIndex))) return null;
+
+  return { type: "자막", name: name.slice(separatorIndex + 1), text };
+}
+
+function toBasicInfoElements(text: string): TemplateTextElement[] {
+  return Array.from(text.matchAll(PLACEHOLDER_PATTERN), ([, name]) => ({
+    type: "기본정보",
+    name,
+    text: "",
+  }));
+}
+
+function toTextElements(element: unknown): TemplateTextElement[] {
+  if (typeof element !== "object" || element === null) return [];
 
   const { type, name, text } = element as {
     type?: unknown;
@@ -22,16 +35,26 @@ function toTextElement(element: unknown): TemplateTextElement | null {
   };
 
   if (type !== "text" || typeof name !== "string" || typeof text !== "string") {
-    return null;
+    return [];
   }
 
-  const separatorIndex = name.indexOf("_");
-  if (separatorIndex === -1) return null;
+  const subtitle = toSubtitleElement(name, text);
+  if (subtitle) return [subtitle];
 
-  const elementType = classify(name.slice(0, separatorIndex));
-  if (!elementType) return null;
+  return toBasicInfoElements(text);
+}
 
-  return { type: elementType, name: name.slice(separatorIndex + 1), text };
+function removeDuplicateBasicInfo(
+  elements: TemplateTextElement[],
+): TemplateTextElement[] {
+  const seen = new Set<string>();
+
+  return elements.filter((element) => {
+    if (element.type !== "기본정보") return true;
+    if (seen.has(element.name)) return false;
+    seen.add(element.name);
+    return true;
+  });
 }
 
 function sortSubtitles(elements: TemplateTextElement[]): TemplateTextElement[] {
@@ -55,9 +78,7 @@ export function extractSortedTextElements(
 ): TemplateTextElement[] {
   if (!Array.isArray(elements)) return [];
 
-  const parsed = elements
-    .map(toTextElement)
-    .filter((element): element is TemplateTextElement => element !== null);
+  const parsed = removeDuplicateBasicInfo(elements.flatMap(toTextElements));
 
   return sortSubtitles(parsed);
 }

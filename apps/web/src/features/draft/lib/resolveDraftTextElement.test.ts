@@ -14,7 +14,7 @@ describe("resolveDraftTextElement", () => {
     expect(
       resolveDraftTextElement("기본정보", "상호명", templateTextElements),
     ).toEqual({
-      name: "기본정보_상호명",
+      name: "상호명",
       type: "기본정보",
     });
   });
@@ -23,7 +23,7 @@ describe("resolveDraftTextElement", () => {
     expect(
       resolveDraftTextElement("기본 정보", "상호명", templateTextElements),
     ).toEqual({
-      name: "기본정보_상호명",
+      name: "상호명",
       type: "기본정보",
     });
   });

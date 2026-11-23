@@ -43,7 +43,7 @@ function setup({ isAnonymous = false }: { isAnonymous?: boolean } = {}) {
       photos: [
         { id: "p1", name: "사진1", position: 0, url: "https://example.com/p1.jpg" },
       ],
-      texts: [{ name: "기본정보_신랑", text: "철수" }],
+      texts: [{ name: "신랑", text: "철수" }],
     },
     isLoading: false,
   });
