@@ -311,7 +311,7 @@ export function DraftPhotosStep({
         current={0}
         templateId={templateId}
         templateName={draft.templateName}
-        primaryLabel="다음: 텍스트 입력"
+        primaryLabel="다음: 기본정보 입력"
         onPrimaryClick={handlePrimaryClick}
         remainingLabel={
           remainingCount > 0 ? `${remainingCount}장 남음` : undefined

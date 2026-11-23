@@ -45,8 +45,9 @@ function setup({
 } = {}) {
   const mutate = vi.fn();
   const selectElement = vi.fn();
+  const push = vi.fn();
 
-  useRouter.mockReturnValue({ push: vi.fn() });
+  useRouter.mockReturnValue({ push });
   useDraftId.mockReturnValue({ draftId: "draft-1", setDraftId: vi.fn() });
   useCreateDraft.mockReturnValue({ mutate: vi.fn() });
   useDraft.mockReturnValue({
@@ -74,7 +75,7 @@ function setup({
     playbackProgress: 0,
   });
 
-  return { mutate, selectElement };
+  return { mutate, selectElement, push };
 }
 
 describe("DraftTextStep", () => {
@@ -94,6 +95,7 @@ describe("DraftTextStep", () => {
 
     render(
       <DraftTextStep
+        textType="기본정보"
         templateId="template-1"
         prevHref="/prev"
         nextHref="/next"
@@ -117,6 +119,7 @@ describe("DraftTextStep", () => {
 
     render(
       <DraftTextStep
+        textType="기본정보"
         templateId="template-1"
         prevHref="/prev"
         nextHref="/next"
@@ -133,6 +136,7 @@ describe("DraftTextStep", () => {
 
     render(
       <DraftTextStep
+        textType="기본정보"
         templateId="template-1"
         prevHref="/prev"
         nextHref="/next"
@@ -152,6 +156,7 @@ describe("DraftTextStep", () => {
 
     render(
       <DraftTextStep
+        textType="기본정보"
         templateId="template-1"
         prevHref="/prev"
         nextHref="/next"
@@ -173,12 +178,13 @@ describe("DraftTextStep", () => {
 
     render(
       <DraftTextStep
+        textType="기본정보"
         templateId="template-1"
         prevHref="/prev"
         nextHref="/next"
       />,
     );
-    await user.click(screen.getByRole("button", { name: "이 시안으로 주문" }));
+    await user.click(screen.getByRole("button", { name: "다음: 자막 입력" }));
 
     await waitFor(() =>
       expect(toast.error).toHaveBeenCalledWith(
@@ -195,6 +201,7 @@ describe("DraftTextStep", () => {
 
     render(
       <DraftTextStep
+        textType="기본정보"
         templateId="template-1"
         prevHref="/prev"
         nextHref="/next"
@@ -202,14 +209,86 @@ describe("DraftTextStep", () => {
     );
     await user.click(screen.getByRole("button", { name: "상호명" }));
 
-    expect(selectElement).toHaveBeenCalledWith("상호명");
+    expect(selectElement).toHaveBeenCalledWith("기본정보_상호명");
   });
 
-  it("미리보기가 보여주는 요소의 입력 옆에 미리보기 중을 보여준다", () => {
-    setup({ activeElementName: "상호명" });
+  it("입력칸에 포커스하면 미리보기를 해당 요소 위치로 이동시킨다", async () => {
+    const { selectElement } = setup();
+    const user = userEvent.setup({
+      advanceTimers: vi.advanceTimersByTime,
+    });
 
     render(
       <DraftTextStep
+        textType="기본정보"
+        templateId="template-1"
+        prevHref="/prev"
+        nextHref="/next"
+      />,
+    );
+    await user.click(screen.getByPlaceholderText("하루"));
+
+    expect(selectElement).toHaveBeenCalledWith("기본정보_상호명");
+  });
+
+  it("기본정보 스텝에서는 자막 입력을 보여주지 않는다", () => {
+    setup();
+
+    render(
+      <DraftTextStep
+        textType="기본정보"
+        templateId="template-1"
+        prevHref="/prev"
+        nextHref="/next"
+      />,
+    );
+
+    expect(screen.getByPlaceholderText("하루")).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText("첫 장면")).not.toBeInTheDocument();
+  });
+
+  it("자막 스텝에서는 기본정보 입력을 보여주지 않는다", () => {
+    setup();
+
+    render(
+      <DraftTextStep
+        textType="자막"
+        templateId="template-1"
+        prevHref="/prev"
+        nextHref="/next"
+      />,
+    );
+
+    expect(screen.getByPlaceholderText("첫 장면")).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText("하루")).not.toBeInTheDocument();
+  });
+
+  it("자막은 비어 있어도 이 시안으로 주문할 수 있다", async () => {
+    const { push } = setup();
+    const user = userEvent.setup({
+      advanceTimers: vi.advanceTimersByTime,
+    });
+
+    render(
+      <DraftTextStep
+        textType="자막"
+        templateId="template-1"
+        prevHref="/prev"
+        nextHref="/next"
+      />,
+    );
+    await user.click(screen.getByRole("button", { name: "이 시안으로 주문" }));
+
+    expect(toast.error).not.toHaveBeenCalled();
+    expect(push).toHaveBeenCalledWith("/next");
+  });
+
+  it("미리보기가 보여주는 요소의 입력 옆에 미리보기 중을 보여준다", () => {
+    setup({ activeElementName: "기본정보_상호명" });
+
+    render(
+      <DraftTextStep
+        textType="기본정보"
         templateId="template-1"
         prevHref="/prev"
         nextHref="/next"

@@ -13,7 +13,7 @@ export default async function DraftPhotosPage({ params, searchParams }: Props) {
     <div className="flex flex-col gap-4 py-4">
       <DraftPhotosStep
         templateId={templateId}
-        nextHref={`/draft/${templateId}/text`}
+        nextHref={`/draft/${templateId}/basic-info`}
         showPreviewShortcut={returnParam === "preview"}
       />
     </div>

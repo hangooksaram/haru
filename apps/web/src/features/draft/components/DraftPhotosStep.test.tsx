@@ -112,7 +112,7 @@ describe("DraftPhotosStep", () => {
         nextHref="/next"
       />,
     );
-    await user.click(screen.getByRole("button", { name: "다음: 텍스트 입력" }));
+    await user.click(screen.getByRole("button", { name: "다음: 기본정보 입력" }));
 
     expect(push).not.toHaveBeenCalled();
     expect(toast.error).toHaveBeenCalledWith("사진을 모두 업로드해 주세요.");
@@ -128,7 +128,7 @@ describe("DraftPhotosStep", () => {
         nextHref="/next"
       />,
     );
-    await user.click(screen.getByRole("button", { name: "다음: 텍스트 입력" }));
+    await user.click(screen.getByRole("button", { name: "다음: 기본정보 입력" }));
 
     expect(push).toHaveBeenCalledWith("/next");
   });

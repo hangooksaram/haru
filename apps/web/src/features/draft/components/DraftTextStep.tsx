@@ -2,7 +2,7 @@
 
 import { Eye } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { DraftStepBar } from "@/components/DraftStepBar";
@@ -29,6 +29,7 @@ const EMPTY_PHOTOS: DraftPhoto[] = [];
 const EMPTY_TEXT_ELEMENTS: TemplateTextElement[] = [];
 
 type Props = {
+  textType: TemplateTextElement["type"];
   templateId: string;
   prevHref: string;
   nextHref: string;
@@ -69,7 +70,12 @@ function PreviewingBadge() {
   );
 }
 
-export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
+export function DraftTextStep({
+  textType,
+  templateId,
+  prevHref,
+  nextHref,
+}: Props) {
   const router = useRouter();
   const { draftId, setDraftId } = useDraftId();
   const { mutate: createDraft } = useCreateDraft();
@@ -122,6 +128,17 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
     AUTOSAVE_DEBOUNCE_MS,
   );
 
+  // 타이핑마다 리렌더되어도 committedTexts(디바운스된 값)가 그대로면
+  // 레퍼런스를 유지해 미리보기 쪽 setModifications가 불필요하게 재호출되지 않게 한다.
+  const previewTexts = useMemo(
+    () =>
+      (elements ?? EMPTY_TEXT_ELEMENTS).map((element) => ({
+        name: elementKey(element),
+        text: committedTexts[elementKey(element)] ?? "",
+      })),
+    [elements, committedTexts],
+  );
+
   const {
     containerRef: previewContainerRef,
     isLoading: isPreviewLoading,
@@ -136,10 +153,7 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
   } = useDraftPreview({
     templateId,
     photos: draft?.photos ?? EMPTY_PHOTOS,
-    texts: (elements ?? EMPTY_TEXT_ELEMENTS).map((element) => ({
-      name: element.name,
-      text: committedTexts[elementKey(element)] ?? "",
-    })),
+    texts: previewTexts,
   });
 
   if (!draftId || isElementsLoading || isDraftLoading || !elements) {
@@ -165,8 +179,12 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
     );
   }
 
+  const stepElements = textElements.filter(
+    (element) => element.type === textType,
+  );
+
   function handlePrimaryClick() {
-    const firstEmpty = textElements.find(isBasicInfoEmpty);
+    const firstEmpty = stepElements.find(isBasicInfoEmpty);
 
     if (firstEmpty) {
       toast.error("기본정보를 모두 입력해 주세요.");
@@ -186,31 +204,25 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
     router.push(nextHref);
   }
 
-  const basicInfoElements = textElements.filter(
-    (element) => element.type === "기본정보",
-  );
-  const subtitleElements = textElements.filter(
-    (element) => element.type === "자막",
-  );
-  const missingBasicInfoCount = basicInfoElements.filter(
-    isBasicInfoEmpty,
-  ).length;
-  const filledCount = textElements.filter(
+  const missingBasicInfoCount = stepElements.filter(isBasicInfoEmpty).length;
+  const filledCount = stepElements.filter(
     (element) => trimBlankText(getValue(element)) !== "",
   ).length;
   const segments = textElements.map((element) => ({
-    name: element.name,
+    name: elementKey(element),
     filled: trimBlankText(getValue(element)) !== "",
   }));
 
   return (
     <div className="flex flex-col gap-4">
       <DraftStepBar
-        current={1}
+        current={textType === "기본정보" ? 1 : 2}
         templateId={templateId}
         templateName={draft?.templateName ?? ""}
         prevHref={prevHref}
-        primaryLabel="이 시안으로 주문"
+        primaryLabel={
+          textType === "기본정보" ? "다음: 자막 입력" : "이 시안으로 주문"
+        }
         onPrimaryClick={handlePrimaryClick}
         remainingLabel={
           missingBasicInfoCount > 0
@@ -229,59 +241,25 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
       >
         <div className="flex flex-col gap-8">
           <p className="text-muted-foreground text-sm">
-            {filledCount}/{textElements.length} 채움
+            {filledCount}/{stepElements.length} 채움
           </p>
 
-          {basicInfoElements.length > 0 && (
-            <section className="flex flex-col gap-4">
-              <h2 className="font-medium">기본정보</h2>
-              {basicInfoElements.map((element) => (
-                <label
-                  key={elementKey(element)}
-                  ref={(node) => {
-                    if (node) fieldNodesRef.current.set(elementKey(element), node);
-                    else fieldNodesRef.current.delete(elementKey(element));
-                  }}
-                  className="flex flex-col gap-1.5 text-sm font-medium"
-                >
-                  <div className="flex items-start gap-3">
-                    <ElementLabelButton
-                      label={removeHyphens(element.name)}
-                      onSelect={() => selectElement(element.name)}
-                    />
-                    <Input
-                      className="flex-1"
-                      value={getValue(element)}
-                      placeholder={element.text}
-                      onChange={(event) =>
-                        handleChange(elementKey(element), event.target.value)
-                      }
-                    />
-                    {element.name === activeElementName && (
-                      <PreviewingBadge />
-                    )}
-                  </div>
-                  {isBasicInfoEmpty(element) && (
-                    <p className="text-destructive text-xs font-normal">
-                      필수 입력입니다.
-                    </p>
-                  )}
-                </label>
-              ))}
-            </section>
-          )}
-
-          {subtitleElements.length > 0 && (
-            <section className="flex flex-col gap-4">
-              <h2 className="font-medium">자막</h2>
-              {subtitleElements.map((element) => (
-                <label
-                  key={elementKey(element)}
-                  className="flex items-start gap-3 text-sm font-medium"
-                >
+          <section className="flex flex-col gap-4">
+            <h2 className="font-medium">{textType}</h2>
+            {stepElements.map((element) => (
+              <label
+                key={elementKey(element)}
+                ref={(node) => {
+                  if (node)
+                    fieldNodesRef.current.set(elementKey(element), node);
+                  else fieldNodesRef.current.delete(elementKey(element));
+                }}
+                className="flex flex-col gap-1.5 text-sm font-medium"
+              >
+                <div className="flex items-start gap-3">
                   <ElementLabelButton
                     label={removeHyphens(element.name)}
-                    onSelect={() => selectElement(element.name)}
+                    onSelect={() => selectElement(elementKey(element))}
                   />
                   <Input
                     className="flex-1"
@@ -290,12 +268,20 @@ export function DraftTextStep({ templateId, prevHref, nextHref }: Props) {
                     onChange={(event) =>
                       handleChange(elementKey(element), event.target.value)
                     }
+                    onFocus={() => selectElement(elementKey(element))}
                   />
-                  {element.name === activeElementName && <PreviewingBadge />}
-                </label>
-              ))}
-            </section>
-          )}
+                  {elementKey(element) === activeElementName && (
+                    <PreviewingBadge />
+                  )}
+                </div>
+                {isBasicInfoEmpty(element) && (
+                  <p className="text-destructive text-xs font-normal">
+                    필수 입력입니다.
+                  </p>
+                )}
+              </label>
+            ))}
+          </section>
         </div>
 
         <div className="hidden min-w-0 md:block">

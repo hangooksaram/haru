@@ -3,10 +3,10 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const STEPS = ["사진", "텍스트", "결제"];
+const STEPS = ["사진", "기본정보", "자막", "결제"];
 
 type Props = {
-  current: 0 | 1;
+  current: 0 | 1 | 2;
   templateId: string;
   templateName: string;
   prevHref?: string;
@@ -22,8 +22,10 @@ function getStepHref(index: number, templateId: string) {
     case 0:
       return `/draft/${templateId}/photos`;
     case 1:
-      return `/draft/${templateId}/text`;
+      return `/draft/${templateId}/basic-info`;
     case 2:
+      return `/draft/${templateId}/subtitle`;
+    case 3:
       return `/draft/${templateId}/payment`;
     default:
       return null;
