@@ -10,12 +10,10 @@ export default async function DraftPhotosPage({ params, searchParams }: Props) {
   const { return: returnParam } = await searchParams;
 
   return (
-    <div className="flex flex-col gap-4 py-4">
-      <DraftPhotosStep
-        templateId={templateId}
-        nextHref={`/draft/${templateId}/basic-info`}
-        showPreviewShortcut={returnParam === "preview"}
-      />
-    </div>
+    <DraftPhotosStep
+      templateId={templateId}
+      nextHref={`/draft/${templateId}/basic-info`}
+      showPreviewShortcut={returnParam === "preview"}
+    />
   );
 }
