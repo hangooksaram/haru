@@ -257,10 +257,12 @@ export function DraftTextStep({
                 className="flex flex-col gap-1.5 text-sm font-medium"
               >
                 <div className="flex items-start gap-3">
-                  <ElementLabelButton
-                    label={removeHyphens(element.name)}
-                    onSelect={() => selectElement(elementKey(element))}
-                  />
+                  {textType === "기본정보" && (
+                    <ElementLabelButton
+                      label={removeHyphens(element.name)}
+                      onSelect={() => selectElement(elementKey(element))}
+                    />
+                  )}
                   <Input
                     className="flex-1"
                     value={getValue(element)}
