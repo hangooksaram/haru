@@ -31,7 +31,6 @@ import type { TemplateTextElement } from "@/features/template/types";
 
 const AUTOSAVE_DEBOUNCE_MS = 500;
 const EMPTY_BASIC_INFO_PREVIEW_TEXT = " ";
-const EMPTY_PHOTOS: DraftPhoto[] = [];
 const EMPTY_TEXT_ELEMENTS: TemplateTextElement[] = [];
 
 type Props = {
