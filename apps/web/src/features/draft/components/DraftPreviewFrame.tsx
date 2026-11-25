@@ -3,8 +3,6 @@
 import { Loader2 } from "lucide-react";
 import type { Ref } from "react";
 
-import { Skeleton } from "@/components/ui/skeleton";
-
 type Props = {
   containerRef: Ref<HTMLDivElement>;
   isLoading: boolean;
@@ -23,7 +21,19 @@ export function DraftPreviewFrame({
       <div ref={containerRef} className="h-full w-full" />
 
       {isLoading && !error && (
-        <Skeleton className="absolute inset-0 h-full w-full rounded-md" />
+        <div
+          role="status"
+          className="bg-foreground absolute inset-0 flex flex-col items-center justify-center gap-3 overflow-hidden rounded-md"
+        >
+          <div
+            aria-hidden
+            className="via-primary/30 absolute inset-0 animate-[draft-preview-shimmer_1.8s_ease-in-out_infinite] bg-linear-to-r from-transparent to-transparent"
+          />
+          <Loader2 className="text-primary relative h-8 w-8 animate-spin" />
+          <p className="text-background relative text-sm font-medium">
+            미리보기를 준비하고 있어요
+          </p>
+        </div>
       )}
 
       {isBuffering && !isLoading && !error && (

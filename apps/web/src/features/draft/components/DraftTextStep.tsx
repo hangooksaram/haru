@@ -8,10 +8,16 @@ import { toast } from "sonner";
 import { DraftStepBar } from "@/components/DraftStepBar";
 import { Input } from "@/components/ui/input";
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
-import { DraftPreviewPanel } from "@/features/draft/components/DraftPreviewPanel";
+import {
+  DraftEditorBody,
+  DraftEditorHeader,
+} from "@/features/draft/components/DraftEditorShell";
+import {
+  DraftPreviewBinding,
+  useDraftPreviewContext,
+} from "@/features/draft/components/DraftPreviewProvider";
 import { useCreateDraft } from "@/features/draft/hooks/useCreateDraft";
 import { useDraft } from "@/features/draft/hooks/useDraft";
-import { useDraftPreview } from "@/features/draft/hooks/useDraftPreview";
 import { useUpdateDraftTexts } from "@/features/draft/hooks/useUpdateDraftTexts";
 import { elementKey } from "@/features/draft/lib/elementKey";
 import { removeHyphens } from "@/features/draft/lib/removeHyphens";
@@ -20,9 +26,8 @@ import { trimBlankText } from "@/features/draft/lib/trimBlankText";
 import { useTemplateTextElements } from "@/features/template/hooks/useTemplateTextElements";
 import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
 
-import type { DraftPhoto, DraftTextInput } from "@/features/draft/types";
+import type { DraftTextInput } from "@/features/draft/types";
 import type { TemplateTextElement } from "@/features/template/types";
-import type { CSSProperties } from "react";
 
 const AUTOSAVE_DEBOUNCE_MS = 500;
 const EMPTY_BASIC_INFO_PREVIEW_TEXT = " ";
@@ -89,7 +94,6 @@ export function DraftTextStep({
   const [committedTexts, setCommittedTexts] = useState<Record<string, string>>(
     {},
   );
-  const [isPreviewCollapsed, setIsPreviewCollapsed] = useState(false);
   const hydratedDraftId = useRef<string | null>(null);
   const fieldNodesRef = useRef(new Map<string, HTMLElement>());
 
@@ -147,25 +151,14 @@ export function DraftTextStep({
     [elements, committedTexts],
   );
 
-  const {
-    containerRef: previewContainerRef,
-    isLoading: isPreviewLoading,
-    isBuffering: isPreviewBuffering,
-    error: previewError,
-    activeElementName,
-    selectElement,
-    replay,
-    isPlayingAll,
-    toggleAll,
-    playbackProgress,
-  } = useDraftPreview({
-    templateId,
-    photos: draft?.photos ?? EMPTY_PHOTOS,
-    texts: previewTexts,
-  });
+  const { activeElementName, selectElement } = useDraftPreviewContext();
 
   if (!draftId || isElementsLoading || isDraftLoading || !elements) {
-    return <p className="text-muted-foreground">불러오는 중...</p>;
+    return (
+      <DraftEditorBody>
+        <p className="text-muted-foreground">불러오는 중...</p>
+      </DraftEditorBody>
+    );
   }
 
   const textElements = elements;
@@ -222,94 +215,72 @@ export function DraftTextStep({
   }));
 
   return (
-    <div className="flex flex-col gap-4">
-      <DraftStepBar
-        current={textType === "기본정보" ? 1 : 2}
-        templateId={templateId}
-        templateName={draft?.templateName ?? ""}
-        prevHref={prevHref}
-        primaryLabel={
-          textType === "기본정보" ? "다음: 자막 입력" : "이 시안으로 주문"
-        }
-        onPrimaryClick={handlePrimaryClick}
-        remainingLabel={
-          missingBasicInfoCount > 0
-            ? `기본정보 ${missingBasicInfoCount}개 남음`
-            : undefined
-        }
-      />
+    <>
+      <DraftEditorHeader>
+        <DraftStepBar
+          current={textType === "기본정보" ? 1 : 2}
+          templateId={templateId}
+          templateName={draft?.templateName ?? ""}
+          prevHref={prevHref}
+          primaryLabel={
+            textType === "기본정보" ? "다음: 자막 입력" : "이 시안으로 주문"
+          }
+          onPrimaryClick={handlePrimaryClick}
+          remainingLabel={
+            missingBasicInfoCount > 0
+              ? `기본정보 ${missingBasicInfoCount}개 남음`
+              : undefined
+          }
+        />
+      </DraftEditorHeader>
 
-      <div
-        className="grid gap-6 md:[grid-template-columns:var(--preview-cols)] md:transition-[grid-template-columns] md:duration-[380ms] md:ease-[cubic-bezier(0.4,0,0.2,1)]"
-        style={
-          {
-            "--preview-cols": isPreviewCollapsed ? "1fr 0fr" : "4.5fr 5.5fr",
-          } as CSSProperties
-        }
-      >
-        <div className="flex flex-col gap-8">
-          <p className="text-muted-foreground text-sm">
-            {filledCount}/{stepElements.length} 채움
-          </p>
+      <DraftEditorBody className="gap-8">
+        <p className="text-muted-foreground text-sm">
+          {filledCount}/{stepElements.length} 채움
+        </p>
 
-          <section className="flex flex-col gap-4">
-            <h2 className="font-medium">{textType}</h2>
-            {stepElements.map((element) => (
-              <label
-                key={elementKey(element)}
-                ref={(node) => {
-                  if (node)
-                    fieldNodesRef.current.set(elementKey(element), node);
-                  else fieldNodesRef.current.delete(elementKey(element));
-                }}
-                className="flex flex-col gap-1.5 text-sm font-medium"
-              >
-                <div className="flex items-start gap-3">
+        <section className="flex flex-col gap-4">
+          <h2 className="font-medium">{textType}</h2>
+          {stepElements.map((element) => (
+            <label
+              key={elementKey(element)}
+              ref={(node) => {
+                if (node) fieldNodesRef.current.set(elementKey(element), node);
+                else fieldNodesRef.current.delete(elementKey(element));
+              }}
+              className="flex flex-col gap-1.5 text-sm font-medium"
+            >
+              <div className="flex items-start gap-3">
+                {textType === "기본정보" && (
                   <ElementLabelButton
                     label={removeHyphens(element.name)}
                     onSelect={() => selectElement(elementKey(element))}
                   />
-                  <Input
-                    className="flex-1"
-                    value={getValue(element)}
-                    placeholder={element.text}
-                    onChange={(event) =>
-                      handleChange(elementKey(element), event.target.value)
-                    }
-                    onFocus={() => selectElement(elementKey(element))}
-                  />
-                  {elementKey(element) === activeElementName && (
-                    <PreviewingBadge />
-                  )}
-                </div>
-                {isBasicInfoEmpty(element) && (
-                  <p className="text-destructive text-xs font-normal">
-                    필수 입력입니다.
-                  </p>
                 )}
-              </label>
-            ))}
-          </section>
-        </div>
+                <Input
+                  className="flex-1"
+                  value={getValue(element)}
+                  placeholder={element.text}
+                  onChange={(event) =>
+                    handleChange(elementKey(element), event.target.value)
+                  }
+                  onFocus={() => selectElement(elementKey(element))}
+                />
+                {elementKey(element) === activeElementName && (
+                  <PreviewingBadge />
+                )}
+              </div>
+              {isBasicInfoEmpty(element) && (
+                <p className="text-destructive text-xs font-normal">
+                  필수 입력입니다.
+                </p>
+              )}
+            </label>
+          ))}
+        </section>
+      </DraftEditorBody>
 
-        <div className="hidden min-w-0 md:block">
-          <div className="md:sticky md:top-[136px]">
-            <DraftPreviewPanel
-              containerRef={previewContainerRef}
-              isLoading={isPreviewLoading}
-              isBuffering={isPreviewBuffering}
-              error={previewError}
-              activeElementName={activeElementName}
-              segments={segments}
-              onReplay={replay}
-              isPlayingAll={isPlayingAll}
-              onToggleAll={toggleAll}
-              playbackProgress={playbackProgress}
-              onCollapsedChange={setIsPreviewCollapsed}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
+      <DraftPreviewBinding segments={segments} texts={previewTexts} />
+    </>
   );
 }

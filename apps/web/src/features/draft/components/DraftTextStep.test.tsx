@@ -17,8 +17,8 @@ const { useUpdateDraftTexts } = vi.hoisted(() => ({
 const { useTemplateTextElements } = vi.hoisted(() => ({
   useTemplateTextElements: vi.fn(),
 }));
-const { useDraftPreview } = vi.hoisted(() => ({
-  useDraftPreview: vi.fn(),
+const { useDraftPreviewContext } = vi.hoisted(() => ({
+  useDraftPreviewContext: vi.fn(),
 }));
 
 vi.mock("sonner", () => ({ toast }));
@@ -32,8 +32,9 @@ vi.mock("@/features/draft/hooks/useUpdateDraftTexts", () => ({
 vi.mock("@/features/template/hooks/useTemplateTextElements", () => ({
   useTemplateTextElements,
 }));
-vi.mock("@/features/draft/hooks/useDraftPreview", () => ({
-  useDraftPreview,
+vi.mock("@/features/draft/components/DraftPreviewProvider", () => ({
+  useDraftPreviewContext,
+  DraftPreviewBinding: () => null,
 }));
 
 function setup({
@@ -62,7 +63,7 @@ function setup({
     ],
     isLoading: false,
   });
-  useDraftPreview.mockReturnValue({
+  useDraftPreviewContext.mockReturnValue({
     containerRef: { current: null },
     isLoading: false,
     isBuffering: false,

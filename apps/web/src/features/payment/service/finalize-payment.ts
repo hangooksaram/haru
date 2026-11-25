@@ -13,19 +13,19 @@ function buildTossAuthHeader(): string {
   return `Basic ${Buffer.from(`${secretKey}:`).toString("base64")}`;
 }
 
-type ConfirmPaymentParams = {
+type FinalizePaymentParams = {
   orderId: string;
   paymentKey: string;
   amount: number;
   currentUserId: string | null;
 };
 
-export async function confirmPayment({
+export async function finalizePayment({
   orderId,
   paymentKey,
   amount,
   currentUserId,
-}: ConfirmPaymentParams): Promise<void> {
+}: FinalizePaymentParams): Promise<void> {
   const order = await prisma.order.findUnique({ where: { id: orderId } });
 
   if (!order) throw new OrderNotFoundError(orderId);
@@ -108,11 +108,11 @@ async function softDeleteDraft(draftId: string): Promise<void> {
 
     if (result.count === 0) {
       console.error(
-        "[confirmPayment] draft soft-delete matched 0 rows",
+        "[finalizePayment] draft soft-delete matched 0 rows",
         draftId,
       );
     }
   } catch (error) {
-    console.error("[confirmPayment] draft soft-delete failed", draftId, error);
+    console.error("[finalizePayment] draft soft-delete failed", draftId, error);
   }
 }

@@ -25,8 +25,8 @@ const { useReplaceDraftPhoto } = vi.hoisted(() => ({
 const { useSwapDraftPhotos } = vi.hoisted(() => ({
   useSwapDraftPhotos: vi.fn(),
 }));
-const { useDraftPreview } = vi.hoisted(() => ({
-  useDraftPreview: vi.fn(),
+const { useDraftPreviewContext } = vi.hoisted(() => ({
+  useDraftPreviewContext: vi.fn(),
 }));
 
 vi.mock("sonner", () => ({ toast }));
@@ -46,8 +46,9 @@ vi.mock("@/features/draft/hooks/useReplaceDraftPhoto", () => ({
 vi.mock("@/features/draft/hooks/useSwapDraftPhotos", () => ({
   useSwapDraftPhotos,
 }));
-vi.mock("@/features/draft/hooks/useDraftPreview", () => ({
-  useDraftPreview,
+vi.mock("@/features/draft/components/DraftPreviewProvider", () => ({
+  useDraftPreviewContext,
+  DraftPreviewBinding: () => null,
 }));
 
 function setup(draft: Draft, labels: string[]) {
@@ -69,7 +70,7 @@ function setup(draft: Draft, labels: string[]) {
   });
   useReplaceDraftPhoto.mockReturnValue({ mutate: vi.fn() });
   useSwapDraftPhotos.mockReturnValue({ mutate: vi.fn() });
-  useDraftPreview.mockReturnValue({
+  useDraftPreviewContext.mockReturnValue({
     containerRef: { current: null },
     isLoading: false,
     isBuffering: false,

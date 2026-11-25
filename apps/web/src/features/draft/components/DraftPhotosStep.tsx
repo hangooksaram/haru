@@ -9,10 +9,16 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
 import { DraftPhotoGrid } from "@/features/draft/components/DraftPhotoGrid";
-import { DraftPreviewPanel } from "@/features/draft/components/DraftPreviewPanel";
+import {
+  DraftEditorBody,
+  DraftEditorHeader,
+} from "@/features/draft/components/DraftEditorShell";
+import {
+  DraftPreviewBinding,
+  useDraftPreviewContext,
+} from "@/features/draft/components/DraftPreviewProvider";
 import { useCreateDraft } from "@/features/draft/hooks/useCreateDraft";
 import { useDraft } from "@/features/draft/hooks/useDraft";
-import { useDraftPreview } from "@/features/draft/hooks/useDraftPreview";
 import { useReplaceDraftPhoto } from "@/features/draft/hooks/useReplaceDraftPhoto";
 import { useSwapDraftPhotos } from "@/features/draft/hooks/useSwapDraftPhotos";
 import { useUploadDraftPhotos } from "@/features/draft/hooks/useUploadDraftPhotos";
@@ -21,11 +27,6 @@ import { useTemplatePhotoElements } from "@/features/template/hooks/useTemplateP
 
 import type { DraftPhotoGroup } from "@/features/draft/components/DraftPhotoGrid";
 import type { DraftPhotoSlotStatus } from "@/features/draft/components/DraftPhotoItem";
-import type { DraftPhoto, DraftSavedText } from "@/features/draft/types";
-import type { CSSProperties } from "react";
-
-const EMPTY_PHOTOS: DraftPhoto[] = [];
-const EMPTY_TEXTS: DraftSavedText[] = [];
 
 type Props = {
   templateId: string;
@@ -54,7 +55,6 @@ export function DraftPhotosStep({
     new Set(),
   );
   const [failedLabels, setFailedLabels] = useState<Set<string>>(new Set());
-  const [isPreviewCollapsed, setIsPreviewCollapsed] = useState(false);
   const pendingUploadLabelsRef = useRef<string[]>([]);
   const [isDraggingFileOverWindow, setIsDraggingFileOverWindow] =
     useState(false);
@@ -65,22 +65,7 @@ export function DraftPhotosStep({
   const replace = useReplaceDraftPhoto(draftId ?? "");
   const swap = useSwapDraftPhotos(draftId ?? "");
 
-  const {
-    containerRef: previewContainerRef,
-    isLoading: isPreviewLoading,
-    isBuffering: isPreviewBuffering,
-    error: previewError,
-    activeElementName,
-    selectElement,
-    replay,
-    isPlayingAll,
-    toggleAll,
-    playbackProgress,
-  } = useDraftPreview({
-    templateId,
-    photos: draft?.photos ?? EMPTY_PHOTOS,
-    texts: draft?.texts ?? EMPTY_TEXTS,
-  });
+  const { activeElementName, selectElement } = useDraftPreviewContext();
 
   const hasRequestedDraft = useRef(false);
 
@@ -149,14 +134,14 @@ export function DraftPhotosStep({
 
   if (!draftId || isDraftLoading || isLabelsLoading || !draft || !labels) {
     return (
-      <div className="flex flex-col gap-4">
+      <DraftEditorBody className="gap-4">
         <Skeleton className="h-5 w-16" />
         <div className="flex flex-col gap-3">
           {Array.from({ length: 4 }).map((_, index) => (
             <Skeleton key={index} className="h-24 rounded-xl" />
           ))}
         </div>
-      </div>
+      </DraftEditorBody>
     );
   }
 
@@ -306,125 +291,102 @@ export function DraftPhotosStep({
   const remainingCount = labelCount - photoCount;
 
   return (
-    <div className="flex flex-col gap-4">
-      <DraftStepBar
-        current={0}
-        templateId={templateId}
-        templateName={draft.templateName}
-        primaryLabel="다음: 기본정보 입력"
-        onPrimaryClick={handlePrimaryClick}
-        remainingLabel={
-          remainingCount > 0 ? `${remainingCount}장 남음` : undefined
-        }
-      />
+    <>
+      <DraftEditorHeader>
+        <DraftStepBar
+          current={0}
+          templateId={templateId}
+          templateName={draft.templateName}
+          primaryLabel="다음: 기본정보 입력"
+          onPrimaryClick={handlePrimaryClick}
+          remainingLabel={
+            remainingCount > 0 ? `${remainingCount}장 남음` : undefined
+          }
+        />
 
-      {showPreviewShortcut && (
-        <div>
-          <Button variant="outline" size="lg" onClick={handleGoToPreview}>
-            미리보기로 이동
-          </Button>
-        </div>
-      )}
-
-      <div
-        className="grid gap-6 md:[grid-template-columns:var(--preview-cols)] md:transition-[grid-template-columns] md:duration-[380ms] md:ease-[cubic-bezier(0.4,0,0.2,1)]"
-        style={
-          {
-            "--preview-cols": isPreviewCollapsed ? "1fr 0fr" : "6fr 4fr",
-          } as CSSProperties
-        }
-      >
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-wrap items-center gap-4 rounded-xl border p-4">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-primary text-2xl font-bold tabular-nums">
-                {photoCount}장
-              </span>
-              <span className="text-sm font-medium">완료</span>
-              <span className="text-muted-foreground text-sm">
-                / 전체 {labelCount}장
-              </span>
-            </div>
-            <div className="flex min-w-[160px] flex-1 flex-col gap-1.5">
-              <div
-                role="progressbar"
-                aria-label="사진 입력 진행"
-                aria-valuemin={0}
-                aria-valuemax={labelCount}
-                aria-valuenow={photoCount}
-                className="bg-muted h-2 overflow-hidden rounded-full"
-              >
-                <div
-                  className="bg-primary h-full rounded-full transition-[width]"
-                  style={{
-                    width: `${labelCount > 0 ? (photoCount / labelCount) * 100 : 0}%`,
-                  }}
-                />
-              </div>
-              <span className="text-muted-foreground text-sm">
-                남은 사진{" "}
-                <strong className="text-foreground">
-                  {Math.max(0, labelCount - photoCount)}장
-                </strong>
-              </span>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={upload.isPending}
-              onClick={() => batchFileInputRef.current?.click()}
-            >
-              한꺼번에 올리기
+        {showPreviewShortcut && (
+          <div>
+            <Button variant="outline" size="lg" onClick={handleGoToPreview}>
+              미리보기로 이동
             </Button>
-            <input
-              ref={batchFileInputRef}
-              type="file"
-              multiple
-              accept="image/jpeg,image/png,image/webp"
-              className="hidden"
-              onChange={(event) => {
-                const files = Array.from(event.target.files ?? []);
-                if (files.length > 0) handleUpload(undefined, files);
-                event.target.value = "";
-              }}
-            />
           </div>
-          {message && (
-            <p className="text-sm font-medium text-amber-600">{message}</p>
-          )}
-          <DraftPhotoGrid
-            groups={groups}
-            activeElementName={activeElementName}
-            onSwap={handleSwap}
-            onUpload={handleUpload}
-            onReplace={handleReplace}
-            onSelect={selectElement}
-            replacingPhotoId={replacingPhotoId}
-            uploadDisabled={upload.isPending}
-            highlightSlotName={highlightSlotName}
-            highlightToken={highlightToken}
+        )}
+      </DraftEditorHeader>
+
+      <DraftEditorBody className="gap-4">
+        <div className="flex flex-wrap items-center gap-4 rounded-xl border p-4">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-primary text-2xl font-bold tabular-nums">
+              {photoCount}장
+            </span>
+            <span className="text-sm font-medium">완료</span>
+            <span className="text-muted-foreground text-sm">
+              / 전체 {labelCount}장
+            </span>
+          </div>
+          <div className="flex min-w-[160px] flex-1 flex-col gap-1.5">
+            <div
+              role="progressbar"
+              aria-label="사진 입력 진행"
+              aria-valuemin={0}
+              aria-valuemax={labelCount}
+              aria-valuenow={photoCount}
+              className="bg-muted h-2 overflow-hidden rounded-full"
+            >
+              <div
+                className="bg-primary h-full rounded-full transition-[width]"
+                style={{
+                  width: `${labelCount > 0 ? (photoCount / labelCount) * 100 : 0}%`,
+                }}
+              />
+            </div>
+            <span className="text-muted-foreground text-sm">
+              남은 사진{" "}
+              <strong className="text-foreground">
+                {Math.max(0, labelCount - photoCount)}장
+              </strong>
+            </span>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={upload.isPending}
+            onClick={() => batchFileInputRef.current?.click()}
+          >
+            한꺼번에 올리기
+          </Button>
+          <input
+            ref={batchFileInputRef}
+            type="file"
+            multiple
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={(event) => {
+              const files = Array.from(event.target.files ?? []);
+              if (files.length > 0) handleUpload(undefined, files);
+              event.target.value = "";
+            }}
           />
         </div>
+        {message && (
+          <p className="text-sm font-medium text-amber-600">{message}</p>
+        )}
+        <DraftPhotoGrid
+          groups={groups}
+          activeElementName={activeElementName}
+          onSwap={handleSwap}
+          onUpload={handleUpload}
+          onReplace={handleReplace}
+          onSelect={selectElement}
+          replacingPhotoId={replacingPhotoId}
+          uploadDisabled={upload.isPending}
+          highlightSlotName={highlightSlotName}
+          highlightToken={highlightToken}
+        />
+      </DraftEditorBody>
 
-        <div className="hidden min-w-0 md:block">
-          <div className="md:sticky md:top-[136px]">
-            <DraftPreviewPanel
-              containerRef={previewContainerRef}
-              isLoading={isPreviewLoading}
-              isBuffering={isPreviewBuffering}
-              error={previewError}
-              activeElementName={activeElementName}
-              segments={segments}
-              onReplay={replay}
-              isPlayingAll={isPlayingAll}
-              onToggleAll={toggleAll}
-              playbackProgress={playbackProgress}
-              onCollapsedChange={setIsPreviewCollapsed}
-            />
-          </div>
-        </div>
-      </div>
+      <DraftPreviewBinding segments={segments} />
 
       {isDraggingFileOverWindow && (
         <div className="bg-primary/10 pointer-events-none fixed inset-0 z-50 hidden items-center justify-center md:flex">
@@ -433,6 +395,6 @@ export function DraftPhotosStep({
           </p>
         </div>
       )}
-    </div>
+    </>
   );
 }
