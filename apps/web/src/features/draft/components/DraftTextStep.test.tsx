@@ -116,7 +116,7 @@ describe("DraftTextStep", () => {
   });
 
   it("같은 시안에 다시 들어오면 서버에 자동 저장된 값을 입력창에 채운다", () => {
-    setup({ draftTexts: [{ name: "기본정보_상호명", text: "철수네 사진관" }] });
+    setup({ draftTexts: [{ name: "상호명", text: "철수네 사진관" }] });
 
     render(
       <DraftTextStep
@@ -132,7 +132,7 @@ describe("DraftTextStep", () => {
 
   it("복원한 값도 입력 검증(줄바꿈 제거)을 거친다", () => {
     setup({
-      draftTexts: [{ name: "기본정보_상호명", text: "철수네\n사진관" }],
+      draftTexts: [{ name: "상호명", text: "철수네\n사진관" }],
     });
 
     render(
@@ -149,7 +149,7 @@ describe("DraftTextStep", () => {
 
   it("기본정보가 비어 있으면 그 항목만 제외하고 자동 저장한다", async () => {
     const { mutate } = setup({
-      draftTexts: [{ name: "기본정보_상호명", text: "철수네 사진관" }],
+      draftTexts: [{ name: "상호명", text: "철수네 사진관" }],
     });
     const user = userEvent.setup({
       advanceTimers: vi.advanceTimersByTime,
@@ -210,7 +210,7 @@ describe("DraftTextStep", () => {
     );
     await user.click(screen.getByRole("button", { name: "상호명" }));
 
-    expect(selectElement).toHaveBeenCalledWith("기본정보_상호명");
+    expect(selectElement).toHaveBeenCalledWith("상호명");
   });
 
   it("입력칸에 포커스하면 미리보기를 해당 요소 위치로 이동시킨다", async () => {
@@ -229,7 +229,7 @@ describe("DraftTextStep", () => {
     );
     await user.click(screen.getByPlaceholderText("하루"));
 
-    expect(selectElement).toHaveBeenCalledWith("기본정보_상호명");
+    expect(selectElement).toHaveBeenCalledWith("상호명");
   });
 
   it("기본정보 스텝에서는 자막 입력을 보여주지 않는다", () => {
@@ -285,7 +285,7 @@ describe("DraftTextStep", () => {
   });
 
   it("미리보기가 보여주는 요소의 입력 옆에 미리보기 중을 보여준다", () => {
-    setup({ activeElementName: "기본정보_상호명" });
+    setup({ activeElementName: "상호명" });
 
     render(
       <DraftTextStep

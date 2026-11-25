@@ -30,6 +30,8 @@ import type { DraftTextInput } from "@/features/draft/types";
 import type { TemplateTextElement } from "@/features/template/types";
 
 const AUTOSAVE_DEBOUNCE_MS = 500;
+const EMPTY_BASIC_INFO_PREVIEW_TEXT = " ";
+const EMPTY_PHOTOS: DraftPhoto[] = [];
 const EMPTY_TEXT_ELEMENTS: TemplateTextElement[] = [];
 
 type Props = {
@@ -135,10 +137,17 @@ export function DraftTextStep({
   // 레퍼런스를 유지해 미리보기 쪽 setModifications가 불필요하게 재호출되지 않게 한다.
   const previewTexts = useMemo(
     () =>
-      (elements ?? EMPTY_TEXT_ELEMENTS).map((element) => ({
-        name: elementKey(element),
-        text: committedTexts[elementKey(element)] ?? "",
-      })),
+      (elements ?? EMPTY_TEXT_ELEMENTS).map((element) => {
+        const text = committedTexts[elementKey(element)] ?? "";
+        const isEmptyBasicInfo =
+          element.type === "기본정보" && trimBlankText(text) === "";
+
+        return {
+          name: elementKey(element),
+          // 빈 값을 보내면 {{placeholder}}가 그대로 노출되므로 임의 값을 보낸다.
+          text: isEmptyBasicInfo ? EMPTY_BASIC_INFO_PREVIEW_TEXT : text,
+        };
+      }),
     [elements, committedTexts],
   );
 
