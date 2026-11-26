@@ -1,5 +1,7 @@
 "use client";
 
+import { useSelectedLayoutSegment } from "next/navigation";
+
 import { DraftPreviewPanel } from "@/features/draft/components/DraftPreviewPanel";
 import { useDraftPreviewContext } from "@/features/draft/components/DraftPreviewProvider";
 import { cn } from "@/lib/utils";
@@ -59,18 +61,33 @@ export function DraftEditorShell({ children }: Props) {
     setIsCollapsed,
   } = useDraftPreviewContext();
 
+  // 기본정보 스텝은 미리보기를 보여주지 않는다. 다만 사진 단계 진입 시 로딩을 기다리지
+  // 않도록 DOM에는 남겨 두고 화면 밖에서 미리 로드한다. (언마운트·이동하면 iframe이 리로드된다)
+  const isPreviewHidden = useSelectedLayoutSegment() === "basic-info";
+
   return (
     <div
       className="grid gap-x-6 gap-y-4 py-4 md:[grid-template-columns:var(--preview-cols)] md:transition-[grid-template-columns] md:duration-[380ms] md:ease-[cubic-bezier(0.4,0,0.2,1)]"
       style={
         {
-          "--preview-cols": isCollapsed ? "1fr 0fr" : "4.5fr 5.5fr",
+          "--preview-cols": isPreviewHidden
+            ? "1fr"
+            : isCollapsed
+              ? "1fr 0fr"
+              : "4.5fr 5.5fr",
         } as CSSProperties
       }
     >
       {children}
 
-      <div className="hidden min-w-0 md:col-start-2 md:row-start-2 md:block">
+      <div
+        aria-hidden={isPreviewHidden}
+        className={cn(
+          "hidden min-w-0 md:col-start-2 md:row-start-2 md:block",
+          isPreviewHidden &&
+            "md:pointer-events-none md:invisible md:fixed md:top-0 md:left-0 md:w-[560px]",
+        )}
+      >
         <div className="md:sticky md:top-[136px]">
           <DraftPreviewPanel
             containerRef={containerRef}
@@ -84,6 +101,7 @@ export function DraftEditorShell({ children }: Props) {
             onToggleAll={toggleAll}
             playbackProgress={playbackProgress}
             onCollapsedChange={setIsCollapsed}
+            isHidden={isPreviewHidden}
           />
         </div>
       </div>

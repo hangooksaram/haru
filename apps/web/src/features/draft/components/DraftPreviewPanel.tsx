@@ -29,6 +29,8 @@ type Props = {
   onToggleAll: () => void;
   playbackProgress: number;
   onCollapsedChange?: (collapsed: boolean) => void;
+  // 화면에는 보이지 않게 두고 로드만 해 둔다. 접힌 상태(phase)는 그대로 유지된다.
+  isHidden?: boolean;
 };
 
 export function DraftPreviewPanel({
@@ -43,6 +45,7 @@ export function DraftPreviewPanel({
   onToggleAll,
   playbackProgress,
   onCollapsedChange,
+  isHidden = false,
 }: Props) {
   const [phase, setPhase] = useState<Phase>("visible");
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -75,7 +78,7 @@ export function DraftPreviewPanel({
 
   return (
     <>
-      {phase === "hidden" && (
+      {phase === "hidden" && !isHidden && (
         <button
           type="button"
           onClick={handleShow}
