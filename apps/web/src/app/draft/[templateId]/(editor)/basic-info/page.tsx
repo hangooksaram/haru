@@ -1,4 +1,4 @@
-import { DraftTextStep } from "@/features/draft/components/DraftTextStep";
+import { DraftBasicInfoStep } from "@/features/draft/components/DraftBasicInfoStep";
 
 type Props = {
   params: Promise<{ templateId: string }>;
@@ -8,11 +8,9 @@ export default async function DraftBasicInfoPage({ params }: Props) {
   const { templateId } = await params;
 
   return (
-    <DraftTextStep
-      textType="기본정보"
+    <DraftBasicInfoStep
       templateId={templateId}
-      prevHref={`/draft/${templateId}/photos`}
-      nextHref={`/draft/${templateId}/subtitle`}
+      nextHref={`/draft/${templateId}/photos`}
     />
   );
 }

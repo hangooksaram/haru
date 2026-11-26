@@ -59,7 +59,7 @@ describe("EditingDraftCard", () => {
       "draft-1",
     );
     expect(acknowledge).toHaveBeenCalledWith("draft-1");
-    expect(push).toHaveBeenCalledWith("/draft/template-1/photos");
+    expect(push).toHaveBeenCalledWith("/draft/template-1/basic-info");
   });
 
   it("이미 같은 draftId가 저장되어 있으면 다시 저장하지 않는다", async () => {
@@ -70,6 +70,6 @@ describe("EditingDraftCard", () => {
     await user.click(screen.getByRole("button", { name: /프로포즈/ }));
 
     expect(writeStoredDraftId).not.toHaveBeenCalled();
-    expect(push).toHaveBeenCalledWith("/draft/template-1/photos");
+    expect(push).toHaveBeenCalledWith("/draft/template-1/basic-info");
   });
 });

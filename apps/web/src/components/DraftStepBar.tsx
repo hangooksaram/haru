@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const STEPS = ["사진", "기본정보", "자막", "결제"];
+const STEPS = ["기본정보", "사진", "자막", "결제"];
 
 type Props = {
   current: 0 | 1 | 2;
@@ -20,9 +20,9 @@ type Props = {
 function getStepHref(index: number, templateId: string) {
   switch (index) {
     case 0:
-      return `/draft/${templateId}/photos`;
-    case 1:
       return `/draft/${templateId}/basic-info`;
+    case 1:
+      return `/draft/${templateId}/photos`;
     case 2:
       return `/draft/${templateId}/subtitle`;
     case 3:

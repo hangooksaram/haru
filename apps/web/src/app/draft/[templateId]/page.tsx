@@ -7,5 +7,5 @@ type Props = {
 export default async function DraftTemplatePage({ params }: Props) {
   const { templateId } = await params;
 
-  redirect(`/draft/${templateId}/photos`);
+  redirect(`/draft/${templateId}/basic-info`);
 }

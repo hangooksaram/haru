@@ -1,4 +1,4 @@
-import { DraftTextStep } from "@/features/draft/components/DraftTextStep";
+import { DraftSubtitleStep } from "@/features/draft/components/DraftSubtitleStep";
 
 type Props = {
   params: Promise<{ templateId: string }>;
@@ -8,10 +8,9 @@ export default async function DraftSubtitlePage({ params }: Props) {
   const { templateId } = await params;
 
   return (
-    <DraftTextStep
-      textType="자막"
+    <DraftSubtitleStep
       templateId={templateId}
-      prevHref={`/draft/${templateId}/basic-info`}
+      prevHref={`/draft/${templateId}/photos`}
       nextHref={`/draft/${templateId}/preview`}
     />
   );

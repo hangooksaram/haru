@@ -11,8 +11,11 @@ const { toast } = vi.hoisted(() => ({
 }));
 const { useRouter } = vi.hoisted(() => ({ useRouter: vi.fn() }));
 const { useDraftId } = vi.hoisted(() => ({ useDraftId: vi.fn() }));
-const { useCreateDraft } = vi.hoisted(() => ({ useCreateDraft: vi.fn() }));
 const { useDraft } = vi.hoisted(() => ({ useDraft: vi.fn() }));
+const { useRequireBasicInfo } = vi.hoisted(() => ({
+  useRequireBasicInfo: vi.fn(),
+}));
+const { useTemplate } = vi.hoisted(() => ({ useTemplate: vi.fn() }));
 const { useTemplatePhotoElements } = vi.hoisted(() => ({
   useTemplatePhotoElements: vi.fn(),
 }));
@@ -32,8 +35,11 @@ const { useDraftPreviewContext } = vi.hoisted(() => ({
 vi.mock("sonner", () => ({ toast }));
 vi.mock("next/navigation", () => ({ useRouter }));
 vi.mock("@/features/draft/components/DraftIdProvider", () => ({ useDraftId }));
-vi.mock("@/features/draft/hooks/useCreateDraft", () => ({ useCreateDraft }));
+vi.mock("@/features/draft/hooks/useRequireBasicInfo", () => ({
+  useRequireBasicInfo,
+}));
 vi.mock("@/features/draft/hooks/useDraft", () => ({ useDraft }));
+vi.mock("@/features/template/hooks/useTemplate", () => ({ useTemplate }));
 vi.mock("@/features/template/hooks/useTemplatePhotoElements", () => ({
   useTemplatePhotoElements,
 }));
@@ -61,8 +67,10 @@ function setup(draft: Draft, labels: string[]) {
     setDraftId: vi.fn(),
     clearDraftId: vi.fn(),
   });
-  useCreateDraft.mockReturnValue({ mutate: vi.fn() });
   useDraft.mockReturnValue({ data: draft, isLoading: false, error: null });
+  useTemplate.mockReturnValue({
+    data: { id: "template-1", name: "하루 템플릿" },
+  });
   useTemplatePhotoElements.mockReturnValue({ data: labels, isLoading: false });
   useUploadDraftPhotos.mockReturnValue({
     mutate: uploadMutate,
@@ -110,10 +118,11 @@ describe("DraftPhotosStep", () => {
     render(
       <DraftPhotosStep
         templateId="template-1"
+        prevHref="/prev"
         nextHref="/next"
       />,
     );
-    await user.click(screen.getByRole("button", { name: "다음: 기본정보 입력" }));
+    await user.click(screen.getByRole("button", { name: "다음: 자막 입력" }));
 
     expect(push).not.toHaveBeenCalled();
     expect(toast.error).toHaveBeenCalledWith("사진을 모두 업로드해 주세요.");
@@ -126,10 +135,11 @@ describe("DraftPhotosStep", () => {
     render(
       <DraftPhotosStep
         templateId="template-1"
+        prevHref="/prev"
         nextHref="/next"
       />,
     );
-    await user.click(screen.getByRole("button", { name: "다음: 기본정보 입력" }));
+    await user.click(screen.getByRole("button", { name: "다음: 자막 입력" }));
 
     expect(push).toHaveBeenCalledWith("/next");
   });
@@ -141,6 +151,7 @@ describe("DraftPhotosStep", () => {
     render(
       <DraftPhotosStep
         templateId="template-1"
+        prevHref="/prev"
         nextHref="/next"
       />,
     );
@@ -156,6 +167,7 @@ describe("DraftPhotosStep", () => {
     render(
       <DraftPhotosStep
         templateId="template-1"
+        prevHref="/prev"
         nextHref="/next"
       />,
     );
@@ -170,6 +182,7 @@ describe("DraftPhotosStep", () => {
     render(
       <DraftPhotosStep
         templateId="template-1"
+        prevHref="/prev"
         nextHref="/next"
       />,
     );
@@ -192,6 +205,7 @@ describe("DraftPhotosStep", () => {
     render(
       <DraftPhotosStep
         templateId="template-1"
+        prevHref="/prev"
         nextHref="/next"
       />,
     );

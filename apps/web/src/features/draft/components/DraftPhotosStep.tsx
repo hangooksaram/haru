@@ -17,12 +17,13 @@ import {
   DraftPreviewBinding,
   useDraftPreviewContext,
 } from "@/features/draft/components/DraftPreviewProvider";
-import { useCreateDraft } from "@/features/draft/hooks/useCreateDraft";
 import { useDraft } from "@/features/draft/hooks/useDraft";
+import { useRequireBasicInfo } from "@/features/draft/hooks/useRequireBasicInfo";
 import { useReplaceDraftPhoto } from "@/features/draft/hooks/useReplaceDraftPhoto";
 import { useSwapDraftPhotos } from "@/features/draft/hooks/useSwapDraftPhotos";
 import { useUploadDraftPhotos } from "@/features/draft/hooks/useUploadDraftPhotos";
 import { groupPhotoLabels } from "@/features/draft/lib/groupPhotoLabels";
+import { useTemplate } from "@/features/template/hooks/useTemplate";
 import { useTemplatePhotoElements } from "@/features/template/hooks/useTemplatePhotoElements";
 
 import type { DraftPhotoGroup } from "@/features/draft/components/DraftPhotoGrid";
@@ -30,19 +31,21 @@ import type { DraftPhotoSlotStatus } from "@/features/draft/components/DraftPhot
 
 type Props = {
   templateId: string;
+  prevHref: string;
   nextHref: string;
   showPreviewShortcut?: boolean;
 };
 
 export function DraftPhotosStep({
   templateId,
+  prevHref,
   nextHref,
   showPreviewShortcut,
 }: Props) {
   const router = useRouter();
-  const { draftId, setDraftId } = useDraftId();
-  const { mutate: createDraft } = useCreateDraft();
+  const { draftId } = useDraftId();
   const { data: draft, isLoading: isDraftLoading } = useDraft(draftId ?? null);
+  const { data: template } = useTemplate(templateId);
   const { data: labels, isLoading: isLabelsLoading } =
     useTemplatePhotoElements(templateId);
   const [message, setMessage] = useState<string | null>(null);
@@ -67,19 +70,7 @@ export function DraftPhotosStep({
 
   const { activeElementName, selectElement } = useDraftPreviewContext();
 
-  const hasRequestedDraft = useRef(false);
-
-  useEffect(() => {
-    if (draftId === undefined || draftId) return;
-    if (hasRequestedDraft.current) return;
-    hasRequestedDraft.current = true;
-    createDraft(templateId, {
-      onSuccess: (created) => setDraftId(created.id),
-      onError: () => {
-        hasRequestedDraft.current = false;
-      },
-    });
-  }, [draftId, templateId, createDraft, setDraftId]);
+  useRequireBasicInfo(templateId);
 
   // 화면 전체에 파일을 놓으면 빈 라벨부터 순서대로 채운다. 드래그 중에만 안내를 보여준다.
   useEffect(() => {
@@ -294,10 +285,11 @@ export function DraftPhotosStep({
     <>
       <DraftEditorHeader>
         <DraftStepBar
-          current={0}
+          current={1}
           templateId={templateId}
-          templateName={draft.templateName}
-          primaryLabel="다음: 기본정보 입력"
+          templateName={template?.name ?? ""}
+          prevHref={prevHref}
+          primaryLabel="다음: 자막 입력"
           onPrimaryClick={handlePrimaryClick}
           remainingLabel={
             remainingCount > 0 ? `${remainingCount}장 남음` : undefined

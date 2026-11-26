@@ -25,7 +25,7 @@ const TITLE = "작성 중이던 시안이 있어요";
 
 function setup({
   draftId = "draft-1",
-  draft = { id: "draft-1", photos: [{ id: "photo-1" }] },
+  draft = { id: "draft-1", texts: [{ name: "신랑", text: "홍길동" }] },
   isFreshlyCreated = false,
   pathname = "/draft/template-1/photos",
   mutate = vi.fn(),
@@ -97,8 +97,8 @@ describe("DraftResumeDialog", () => {
     expect(screen.queryByText(TITLE)).not.toBeInTheDocument();
   });
 
-  it("사진이 한 장도 없는 시안이면 모달을 보여주지 않는다", () => {
-    setup({ draft: { id: "draft-1", photos: [] } });
+  it("입력된 텍스트가 없는 시안이면 모달을 보여주지 않는다", () => {
+    setup({ draft: { id: "draft-1", texts: [] } });
 
     render(<DraftResumeDialog />);
 

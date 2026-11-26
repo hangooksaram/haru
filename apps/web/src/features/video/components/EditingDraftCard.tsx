@@ -30,7 +30,7 @@ export function EditingDraftCard({ draft }: Props) {
       writeStoredDraftId(draft.templateId, userId, draft.id);
     }
     acknowledge(draft.id);
-    router.push(`/draft/${draft.templateId}/photos`);
+    router.push(`/draft/${draft.templateId}/basic-info`);
   }
 
   return (

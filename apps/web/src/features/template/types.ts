@@ -20,3 +20,10 @@ export type TemplateTextElement = {
   name: string;
   text: string;
 };
+
+export type TemplateLang = "ko" | "en";
+
+// GET /templates/{templateId} 응답. summary는 요청 언어로 이미 골라서 내려준다.
+export type TemplateDetail = Omit<Template, "summary"> & {
+  summary: string | null;
+};
