@@ -1,44 +1,107 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 
 import { DraftStepBar } from "@/components/DraftStepBar";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
 import { DraftVideoPreview } from "@/features/draft/components/DraftVideoPreview";
 import { useDraft } from "@/features/draft/hooks/useDraft";
+import { elementKey } from "@/features/draft/lib/elementKey";
+import { trimBlankText } from "@/features/draft/lib/trimBlankText";
 import { useCreateOrderWithGuestResume } from "@/features/order/hooks/useCreateOrderWithGuestResume";
 import { useTemplate } from "@/features/template/hooks/useTemplate";
+import { useTemplateTextElements } from "@/features/template/hooks/useTemplateTextElements";
 import { useVideoRequestValidation } from "@/features/video/hooks/useVideoRequestValidation";
 
+import { PaymentSummaryCard } from "./PaymentSummaryCard";
 import { PaymentWidget } from "./PaymentWidget";
+
+import type { PaymentSummaryItem } from "./PaymentSummaryCard";
+import type { Draft } from "@/features/draft/types";
+import type { TemplateTextElement } from "@/features/template/types";
 
 type Props = {
   templateId: string;
 };
 
-type EditItem = {
-  label: string;
-  href: string;
+type PreviewProps = {
+  templateId: string;
+  draft: Draft | undefined;
+  isValidating: boolean;
 };
+
+function PaymentPreview({ templateId, draft, isValidating }: PreviewProps) {
+  if (isValidating) {
+    return (
+      <p className="text-muted-foreground">영상 요청 내용을 확인하는 중...</p>
+    );
+  }
+
+  if (!draft) return <p className="text-muted-foreground">불러오는 중...</p>;
+
+  return (
+    <DraftVideoPreview
+      templateId={templateId}
+      photos={draft.photos}
+      texts={draft.texts}
+    />
+  );
+}
+
+function buildSummaryItems(
+  templateId: string,
+  templateName: string,
+  draft: Draft | undefined,
+  textElements: TemplateTextElement[],
+): PaymentSummaryItem[] {
+  const textByKey = new Map(
+    (draft?.texts ?? []).map(({ name, text }) => [name, trimBlankText(text)]),
+  );
+  const filledTexts = (type: TemplateTextElement["type"]) =>
+    textElements
+      .filter((element) => element.type === type)
+      .map((element) => textByKey.get(elementKey(element)) ?? "")
+      .filter((text) => text !== "");
+
+  return [
+    {
+      label: "템플릿",
+      value: templateName,
+      href: "/templates",
+      actionLabel: "변경",
+    },
+    {
+      label: "기본정보",
+      value: filledTexts("기본정보").join(" · "),
+      href: `/draft/${templateId}/basic-info?return=payment`,
+      actionLabel: "수정",
+    },
+    {
+      label: "사진",
+      value: draft ? `${draft.photos.length}장` : "",
+      href: `/draft/${templateId}/photos?return=payment`,
+      actionLabel: "수정",
+    },
+    {
+      label: "자막",
+      value: `${filledTexts("자막").length}개 입력`,
+      href: `/draft/${templateId}/subtitle`,
+      actionLabel: "수정",
+    },
+  ];
+}
 
 export function PaymentStep({ templateId }: Props) {
   const { draftId } = useDraftId();
   const { data: draft } = useDraft(draftId ?? null);
   const { data: template } = useTemplate(templateId);
+  const { data: textElements } = useTemplateTextElements(templateId);
   const [orderId, setOrderId] = useState<string | null>(null);
   const validation = useVideoRequestValidation(draftId ?? null);
   const { handleOrderClick, message, isPending } =
@@ -48,82 +111,51 @@ export function PaymentStep({ templateId }: Props) {
       setOrderId,
     );
 
+  const templateName = template?.name ?? "";
   const price = template?.price;
-
-  const editItems: EditItem[] = [
-    { label: "템플릿", href: "/templates" },
-    {
-      label: "기본정보",
-      href: `/draft/${templateId}/basic-info?return=payment`,
-    },
-    { label: "사진", href: `/draft/${templateId}/photos?return=payment` },
-    { label: "자막", href: `/draft/${templateId}/subtitle` },
-  ];
+  const validationErrors =
+    validation.data?.passed === false ? validation.data.errors : null;
 
   return (
     <div className="flex flex-col gap-4 py-4">
       <DraftStepBar
         current={3}
         templateId={templateId}
-        templateName={template?.name ?? ""}
+        templateName={templateName}
         prevHref={`/draft/${templateId}/subtitle`}
-        primaryLabel={
-          price != null
-            ? `${price.toLocaleString("ko-KR")}원 결제하기`
-            : "결제하기"
-        }
-        onPrimaryClick={handleOrderClick}
-        primaryPending={isPending || validation.isPending}
-        guidanceText="결제 후 주문이 확정돼요"
       />
 
-      {message && (
-        <p className="text-sm font-medium text-amber-600">{message}</p>
-      )}
-
-      {validation.data && !validation.data.passed && (
-        <ul className="text-destructive list-disc pl-5 text-sm">
-          {validation.data.errors.map((error, index) => (
-            <li key={index}>{error}</li>
-          ))}
-        </ul>
-      )}
-
-      {validation.isError && (
-        <p className="text-destructive text-sm">
-          영상 요청 내용을 확인하지 못했습니다.
-        </p>
-      )}
-
-      {validation.isPending ? (
-        <p className="text-muted-foreground">영상 요청 내용을 확인하는 중...</p>
-      ) : draft ? (
-        <div className="w-1/2">
-          <DraftVideoPreview
+      <div className="grid items-start gap-6 md:grid-cols-[minmax(0,5.5fr)_minmax(0,4.5fr)]">
+        <section aria-label="영상 미리보기" className="min-w-0">
+          <PaymentPreview
             templateId={templateId}
-            photos={draft.photos}
-            texts={draft.texts}
+            draft={draft}
+            isValidating={validation.isPending}
           />
-        </div>
-      ) : (
-        <p className="text-muted-foreground">불러오는 중...</p>
-      )}
+        </section>
 
-      <div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="lg">
-              수정하기
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            {editItems.map((item) => (
-              <DropdownMenuItem key={item.label} asChild>
-                <Link href={item.href}>{item.label}</Link>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <PaymentSummaryCard
+          templateName={templateName}
+          price={price}
+          items={buildSummaryItems(
+            templateId,
+            templateName,
+            draft,
+            textElements ?? [],
+          )}
+          payLabel={
+            price != null
+              ? `${price.toLocaleString("ko-KR")}원 결제하기`
+              : "결제하기"
+          }
+          onPayClick={handleOrderClick}
+          isPayDisabled={
+            isPending || validation.isPending || validationErrors !== null
+          }
+          message={message}
+          validationErrors={validationErrors}
+          isValidationError={validation.isError}
+        />
       </div>
 
       <Dialog

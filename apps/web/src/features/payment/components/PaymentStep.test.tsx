@@ -14,6 +14,9 @@ const { useCreateOrderWithGuestResume } = vi.hoisted(() => ({
 vi.mock("@/features/draft/components/DraftIdProvider", () => ({ useDraftId }));
 vi.mock("@/features/draft/hooks/useDraft", () => ({ useDraft }));
 vi.mock("@/features/template/hooks/useTemplate", () => ({ useTemplate }));
+vi.mock("@/features/template/hooks/useTemplateTextElements", () => ({
+  useTemplateTextElements: () => ({ data: [] }),
+}));
 vi.mock("@/features/draft/components/DraftVideoPreview", () => ({
   DraftVideoPreview: () => <div data-testid="video-preview" />,
 }));
@@ -69,37 +72,33 @@ describe("PaymentStep", () => {
     expect(screen.getByTestId("video-preview")).toBeInTheDocument();
   });
 
-  it("수정할 항목(템플릿·기본정보·사진·자막)을 골라 해당 단계로 이동한다", async () => {
+  it("수정할 항목(템플릿·기본정보·사진·자막)을 골라 해당 단계로 이동한다", () => {
     setup();
-    const user = userEvent.setup();
 
     render(<PaymentStep templateId="template-1" />);
-    await user.click(screen.getByRole("button", { name: "수정하기" }));
 
-    expect(screen.getByRole("menuitem", { name: "템플릿" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "템플릿 변경" })).toHaveAttribute(
       "href",
       "/templates",
     );
-    expect(screen.getByRole("menuitem", { name: "기본정보" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "기본정보 수정" })).toHaveAttribute(
       "href",
       "/draft/template-1/basic-info?return=payment",
     );
-    expect(screen.getByRole("menuitem", { name: "사진" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "사진 수정" })).toHaveAttribute(
       "href",
       "/draft/template-1/photos?return=payment",
     );
-    expect(screen.getByRole("menuitem", { name: "자막" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "자막 수정" })).toHaveAttribute(
       "href",
       "/draft/template-1/subtitle",
     );
   });
 
-  it("결제 스텝에서 직접 수정하지 않는다", async () => {
+  it("결제 스텝에서 직접 수정하지 않는다", () => {
     setup();
-    const user = userEvent.setup();
 
     render(<PaymentStep templateId="template-1" />);
-    await user.click(screen.getByRole("button", { name: "수정하기" }));
 
     expect(screen.queryAllByRole("textbox")).toHaveLength(0);
   });
