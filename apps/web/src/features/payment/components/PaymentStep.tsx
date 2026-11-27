@@ -76,6 +76,7 @@ function buildSummaryItems(
       value: templateName,
       href: "/templates",
       actionLabel: "변경",
+      note: "다른 템플릿을 고르면 새로 작성해요. 지금 내용은 저장돼 있어요.",
     },
     {
       label: "기본정보",

@@ -8,6 +8,7 @@ export type PaymentSummaryItem = {
   value: string;
   href: string;
   actionLabel: string;
+  note?: string;
 };
 
 type Props = {
@@ -65,6 +66,11 @@ export function PaymentSummaryCard({
             >
               {item.actionLabel}
             </Link>
+            {item.note && (
+              <p className="text-muted-foreground col-span-full text-[11px]">
+                {item.note}
+              </p>
+            )}
           </li>
         ))}
       </ul>
