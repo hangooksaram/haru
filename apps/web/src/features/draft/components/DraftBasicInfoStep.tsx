@@ -16,7 +16,6 @@ import { useCreateDraftOnEntry } from "@/features/draft/hooks/useCreateDraftOnEn
 import { elementKey } from "@/features/draft/lib/elementKey";
 import { removeHyphens } from "@/features/draft/lib/removeHyphens";
 import { trimBlankText } from "@/features/draft/lib/trimBlankText";
-import { useCreateOrderWithGuestResume } from "@/features/order/hooks/useCreateOrderWithGuestResume";
 import { useTemplate } from "@/features/template/hooks/useTemplate";
 
 import type { DraftPreviewSegment } from "@/features/draft/components/DraftPreviewPanel";
@@ -37,14 +36,6 @@ export function DraftBasicInfoStep({
   returnToPayment,
 }: Props) {
   const router = useRouter();
-  const {
-    handleOrderClick,
-    message: orderMessage,
-    isPending: isOrderPending,
-  } = useCreateOrderWithGuestResume(
-    templateId,
-    `/draft/${templateId}/basic-info?return=payment`,
-  );
   const { data: template } = useTemplate(templateId);
   useCreateDraftOnEntry(templateId);
   const {
@@ -94,8 +85,7 @@ export function DraftBasicInfoStep({
 
     if (!(await saveBeforeNext())) return;
 
-    if (returnToPayment) await handleOrderClick();
-    else router.push(nextHref);
+    router.push(returnToPayment ? `/draft/${templateId}/payment` : nextHref);
   }
 
   const missingCount = basicInfoElements.filter(isEmpty).length;
@@ -110,7 +100,7 @@ export function DraftBasicInfoStep({
           templateName={template?.name ?? ""}
           primaryLabel={returnToPayment ? "결제로 돌아가기" : "다음: 사진"}
           onPrimaryClick={handlePrimaryClick}
-          primaryPending={isSubmitting || isOrderPending}
+          primaryPending={isSubmitting}
           remainingLabel={
             missingCount > 0 ? `기본정보 ${missingCount}개 남음` : undefined
           }
@@ -154,10 +144,6 @@ export function DraftBasicInfoStep({
             </label>
           ))}
         </section>
-
-        {orderMessage && (
-          <p className="text-sm font-medium text-amber-600">{orderMessage}</p>
-        )}
       </DraftEditorBody>
 
       <DraftPreviewBinding segments={EMPTY_SEGMENTS} texts={previewTexts} />

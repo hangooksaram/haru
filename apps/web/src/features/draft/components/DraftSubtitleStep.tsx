@@ -1,6 +1,7 @@
 "use client";
 
 import { Eye } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import { DraftStepBar } from "@/components/DraftStepBar";
 import { Input } from "@/components/ui/input";
@@ -16,7 +17,6 @@ import { useDraftTexts } from "@/features/draft/hooks/useDraftTexts";
 import { useRequireBasicInfo } from "@/features/draft/hooks/useRequireBasicInfo";
 import { elementKey } from "@/features/draft/lib/elementKey";
 import { trimBlankText } from "@/features/draft/lib/trimBlankText";
-import { useCreateOrderWithGuestResume } from "@/features/order/hooks/useCreateOrderWithGuestResume";
 import { useTemplate } from "@/features/template/hooks/useTemplate";
 
 type Props = {
@@ -36,11 +36,7 @@ function PreviewingBadge() {
 
 export function DraftSubtitleStep({ templateId, prevHref }: Props) {
   useRequireBasicInfo(templateId);
-  const {
-    handleOrderClick,
-    message: orderMessage,
-    isPending: isOrderPending,
-  } = useCreateOrderWithGuestResume(templateId, `/draft/${templateId}/subtitle`);
+  const router = useRouter();
   const { data: template } = useTemplate(templateId);
   const {
     isLoading,
@@ -66,7 +62,7 @@ export function DraftSubtitleStep({ templateId, prevHref }: Props) {
   );
 
   async function handlePrimaryClick() {
-    if (await saveBeforeNext()) await handleOrderClick();
+    if (await saveBeforeNext()) router.push(`/draft/${templateId}/payment`);
   }
 
   const filledCount = subtitleElements.filter(
@@ -85,9 +81,9 @@ export function DraftSubtitleStep({ templateId, prevHref }: Props) {
           templateId={templateId}
           templateName={template?.name ?? ""}
           prevHref={prevHref}
-          primaryLabel="이 시안으로 주문"
+          primaryLabel="다음: 결제"
           onPrimaryClick={handlePrimaryClick}
-          primaryPending={isSubmitting || isOrderPending}
+          primaryPending={isSubmitting}
         />
       </DraftEditorHeader>
 
@@ -120,10 +116,6 @@ export function DraftSubtitleStep({ templateId, prevHref }: Props) {
             </label>
           ))}
         </section>
-
-        {orderMessage && (
-          <p className="text-sm font-medium text-amber-600">{orderMessage}</p>
-        )}
       </DraftEditorBody>
 
       <DraftPreviewBinding segments={segments} texts={previewTexts} />

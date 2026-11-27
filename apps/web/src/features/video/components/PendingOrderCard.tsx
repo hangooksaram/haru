@@ -22,9 +22,7 @@ export function PendingOrderCard({ order }: Props) {
         </span>
       </div>
       <Button asChild size="sm">
-        <Link href={`/draft/${order.templateId}/payment?orderId=${order.id}`}>
-          구매
-        </Link>
+        <Link href={`/draft/${order.templateId}/payment`}>구매</Link>
       </Button>
     </div>
   );

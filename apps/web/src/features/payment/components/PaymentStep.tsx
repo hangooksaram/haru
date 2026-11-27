@@ -20,14 +20,14 @@ import {
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
 import { DraftVideoPreview } from "@/features/draft/components/DraftVideoPreview";
 import { useDraft } from "@/features/draft/hooks/useDraft";
-import { OrderPaymentSummary } from "@/features/order/components/OrderPaymentSummary";
+import { useCreateOrderWithGuestResume } from "@/features/order/hooks/useCreateOrderWithGuestResume";
 import { useTemplate } from "@/features/template/hooks/useTemplate";
+import { useVideoRequestValidation } from "@/features/video/hooks/useVideoRequestValidation";
 
 import { PaymentWidget } from "./PaymentWidget";
 
 type Props = {
   templateId: string;
-  orderId: string;
 };
 
 type EditItem = {
@@ -35,11 +35,20 @@ type EditItem = {
   href: string;
 };
 
-export function PaymentStep({ templateId, orderId }: Props) {
+export function PaymentStep({ templateId }: Props) {
   const { draftId } = useDraftId();
   const { data: draft } = useDraft(draftId ?? null);
   const { data: template } = useTemplate(templateId);
-  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const validation = useVideoRequestValidation(draftId ?? null);
+  const { handleOrderClick, message, isPending } =
+    useCreateOrderWithGuestResume(
+      templateId,
+      `/draft/${templateId}/payment`,
+      setOrderId,
+    );
+
+  const price = template?.price;
 
   const editItems: EditItem[] = [
     { label: "템플릿", href: "/templates" },
@@ -58,13 +67,37 @@ export function PaymentStep({ templateId, orderId }: Props) {
         templateId={templateId}
         templateName={template?.name ?? ""}
         prevHref={`/draft/${templateId}/subtitle`}
-        primaryLabel="결제하기"
-        onPrimaryClick={() => setIsPaymentOpen(true)}
+        primaryLabel={
+          price != null
+            ? `${price.toLocaleString("ko-KR")}원 결제하기`
+            : "결제하기"
+        }
+        onPrimaryClick={handleOrderClick}
+        primaryPending={isPending || validation.isPending}
+        guidanceText="결제 후 주문이 확정돼요"
       />
 
-      <OrderPaymentSummary orderId={orderId} />
+      {message && (
+        <p className="text-sm font-medium text-amber-600">{message}</p>
+      )}
 
-      {draft ? (
+      {validation.data && !validation.data.passed && (
+        <ul className="text-destructive list-disc pl-5 text-sm">
+          {validation.data.errors.map((error, index) => (
+            <li key={index}>{error}</li>
+          ))}
+        </ul>
+      )}
+
+      {validation.isError && (
+        <p className="text-destructive text-sm">
+          영상 요청 내용을 확인하지 못했습니다.
+        </p>
+      )}
+
+      {validation.isPending ? (
+        <p className="text-muted-foreground">영상 요청 내용을 확인하는 중...</p>
+      ) : draft ? (
         <div className="w-1/2">
           <DraftVideoPreview
             templateId={templateId}
@@ -93,12 +126,19 @@ export function PaymentStep({ templateId, orderId }: Props) {
         </DropdownMenu>
       </div>
 
-      <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
+      <Dialog
+        open={orderId !== null}
+        onOpenChange={(open) => {
+          if (!open) setOrderId(null);
+        }}
+      >
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>결제</DialogTitle>
           </DialogHeader>
-          <PaymentWidget orderId={orderId} templateId={templateId} />
+          {orderId && (
+            <PaymentWidget orderId={orderId} templateId={templateId} />
+          )}
         </DialogContent>
       </Dialog>
     </div>

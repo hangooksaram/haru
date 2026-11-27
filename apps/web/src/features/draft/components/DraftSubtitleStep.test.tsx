@@ -21,16 +21,10 @@ const { useTemplate } = vi.hoisted(() => ({ useTemplate: vi.fn() }));
 const { useTemplateTextElements } = vi.hoisted(() => ({
   useTemplateTextElements: vi.fn(),
 }));
-const { useCreateOrderWithGuestResume } = vi.hoisted(() => ({
-  useCreateOrderWithGuestResume: vi.fn(),
-}));
 const { useDraftPreviewContext } = vi.hoisted(() => ({
   useDraftPreviewContext: vi.fn(),
 }));
 
-vi.mock("@/features/order/hooks/useCreateOrderWithGuestResume", () => ({
-  useCreateOrderWithGuestResume,
-}));
 vi.mock("sonner", () => ({ toast }));
 vi.mock("next/navigation", () => ({ useRouter }));
 vi.mock("@/features/draft/components/DraftIdProvider", () => ({ useDraftId }));
@@ -65,12 +59,6 @@ function setup({
   const setDraftId = vi.fn();
   const selectElement = vi.fn();
   const push = vi.fn();
-  const handleOrderClick = vi.fn();
-  useCreateOrderWithGuestResume.mockReturnValue({
-    handleOrderClick,
-    message: null,
-    isPending: false,
-  });
 
   useRouter.mockReturnValue({ push });
   useDraftId.mockReturnValue({ draftId, setDraftId });
@@ -104,7 +92,7 @@ function setup({
     playbackProgress: 0,
   });
 
-  return { mutate, createDraft, setDraftId, selectElement, push, handleOrderClick };
+  return { mutate, createDraft, setDraftId, selectElement, push };
 }
 
 describe("DraftSubtitleStep", () => {
@@ -119,12 +107,7 @@ describe("DraftSubtitleStep", () => {
   it("기본정보 완료 여부를 확인한다", () => {
     setup();
 
-    render(
-      <DraftSubtitleStep
-        templateId="template-1"
-        prevHref="/prev"
-      />,
-    );
+    render(<DraftSubtitleStep templateId="template-1" prevHref="/prev" />);
 
     expect(useRequireBasicInfo).toHaveBeenCalledWith("template-1");
   });
@@ -132,12 +115,7 @@ describe("DraftSubtitleStep", () => {
   it("자막 스텝에서는 기본정보 입력을 보여주지 않는다", () => {
     setup();
 
-    render(
-      <DraftSubtitleStep
-        templateId="template-1"
-        prevHref="/prev"
-      />,
-    );
+    render(<DraftSubtitleStep templateId="template-1" prevHref="/prev" />);
 
     expect(screen.getByPlaceholderText("첫 장면")).toBeInTheDocument();
     expect(screen.queryByPlaceholderText("하루")).not.toBeInTheDocument();
@@ -149,12 +127,7 @@ describe("DraftSubtitleStep", () => {
     });
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
 
-    render(
-      <DraftSubtitleStep
-        templateId="template-1"
-        prevHref="/prev"
-      />,
-    );
+    render(<DraftSubtitleStep templateId="template-1" prevHref="/prev" />);
     await user.type(screen.getByPlaceholderText("첫 장면"), "안녕");
     await vi.advanceTimersByTimeAsync(500);
 
@@ -170,12 +143,7 @@ describe("DraftSubtitleStep", () => {
   it("시안이 없으면 시안을 만들지 않고 입력창도 보여주지 않는다", async () => {
     const { createDraft, mutate } = setup({ draftId: null });
 
-    render(
-      <DraftSubtitleStep
-        templateId="template-1"
-        prevHref="/prev"
-      />,
-    );
+    render(<DraftSubtitleStep templateId="template-1" prevHref="/prev" />);
     await vi.advanceTimersByTimeAsync(1000);
 
     expect(createDraft).not.toHaveBeenCalled();
@@ -187,12 +155,7 @@ describe("DraftSubtitleStep", () => {
     const { selectElement } = setup();
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
 
-    render(
-      <DraftSubtitleStep
-        templateId="template-1"
-        prevHref="/prev"
-      />,
-    );
+    render(<DraftSubtitleStep templateId="template-1" prevHref="/prev" />);
     await user.click(screen.getByPlaceholderText("첫 장면"));
 
     expect(selectElement).toHaveBeenCalledWith("자막_1");
@@ -201,30 +164,21 @@ describe("DraftSubtitleStep", () => {
   it("미리보기가 보여주는 자막 요소의 입력 옆에 미리보기 중을 보여준다", () => {
     setup({ activeElementName: "자막_1" });
 
-    render(
-      <DraftSubtitleStep
-        templateId="template-1"
-        prevHref="/prev"
-      />,
-    );
+    render(<DraftSubtitleStep templateId="template-1" prevHref="/prev" />);
 
     expect(screen.getByText("미리보기 중")).toBeInTheDocument();
   });
 
-  it("자막은 비어 있어도 이 시안으로 주문할 수 있다", async () => {
-    const { push, handleOrderClick } = setup();
+  it("자막은 비어 있어도 주문을 만들지 않고 결제 단계로 이동할 수 있다", async () => {
+    const { push } = setup();
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
 
-    render(
-      <DraftSubtitleStep
-        templateId="template-1"
-        prevHref="/prev"
-      />,
-    );
-    await user.click(screen.getByRole("button", { name: "이 시안으로 주문" }));
+    render(<DraftSubtitleStep templateId="template-1" prevHref="/prev" />);
+    await user.click(screen.getByRole("button", { name: "다음: 결제" }));
 
     expect(toast.error).not.toHaveBeenCalled();
-    await waitFor(() => expect(handleOrderClick).toHaveBeenCalled());
-    expect(push).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(push).toHaveBeenCalledWith("/draft/template-1/payment"),
+    );
   });
 });

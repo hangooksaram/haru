@@ -13,9 +13,11 @@ function pendingOrderKey(templateId: string): string {
 }
 
 // loginReturnPath: 비회원이 로그인한 뒤 돌아와 주문을 이어갈 페이지 경로
+// onCreated: 주문 생성 후 동작. 없으면 주문번호가 담긴 결제 페이지로 이동한다.
 export function useCreateOrderWithGuestResume(
   templateId: string,
   loginReturnPath: string,
+  onCreated?: (orderId: string) => void,
 ) {
   const router = useRouter();
   const { draftId, acknowledgeResume } = useDraftId();
@@ -27,14 +29,15 @@ export function useCreateOrderWithGuestResume(
       setMessage(null);
       try {
         const order = await createOrder.mutateAsync(id);
-        router.push(`/draft/${templateId}/payment?orderId=${order.id}`);
+        if (onCreated) onCreated(order.id);
+        else router.push(`/draft/${templateId}/payment?orderId=${order.id}`);
       } catch (error) {
         setMessage(
           error instanceof Error ? error.message : "주문 생성에 실패했습니다.",
         );
       }
     },
-    [createOrder, router, templateId],
+    [createOrder, router, templateId, onCreated],
   );
 
   // 비회원이 주문 버튼을 누르면 로그인 후 이 페이지로 돌아오는데,

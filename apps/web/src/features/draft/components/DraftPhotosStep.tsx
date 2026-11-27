@@ -23,7 +23,6 @@ import { useReplaceDraftPhoto } from "@/features/draft/hooks/useReplaceDraftPhot
 import { useSwapDraftPhotos } from "@/features/draft/hooks/useSwapDraftPhotos";
 import { useUploadDraftPhotos } from "@/features/draft/hooks/useUploadDraftPhotos";
 import { groupPhotoLabels } from "@/features/draft/lib/groupPhotoLabels";
-import { useCreateOrderWithGuestResume } from "@/features/order/hooks/useCreateOrderWithGuestResume";
 import { useTemplate } from "@/features/template/hooks/useTemplate";
 import { useTemplatePhotoElements } from "@/features/template/hooks/useTemplatePhotoElements";
 
@@ -46,14 +45,6 @@ export function DraftPhotosStep({
   returnToPayment,
 }: Props) {
   const router = useRouter();
-  const {
-    handleOrderClick,
-    message: orderMessage,
-    isPending: isOrderPending,
-  } = useCreateOrderWithGuestResume(
-    templateId,
-    `/draft/${templateId}/photos?return=payment`,
-  );
   const { draftId } = useDraftId();
   const { data: draft, isLoading: isDraftLoading } = useDraft(draftId ?? null);
   const { data: template } = useTemplate(templateId);
@@ -258,8 +249,7 @@ export function DraftPhotosStep({
   function handlePrimaryClick() {
     if (!validatePhotoCount()) return;
 
-    if (returnToPayment) handleOrderClick();
-    else router.push(nextHref);
+    router.push(returnToPayment ? `/draft/${templateId}/payment` : nextHref);
   }
 
   function handleGoToPreview() {
@@ -303,7 +293,6 @@ export function DraftPhotosStep({
           prevHref={prevHref}
           primaryLabel={returnToPayment ? "결제로 돌아가기" : "다음: 자막 입력"}
           onPrimaryClick={handlePrimaryClick}
-          primaryPending={isOrderPending}
           remainingLabel={
             remainingCount > 0 ? `${remainingCount}장 남음` : undefined
           }
@@ -315,10 +304,6 @@ export function DraftPhotosStep({
               미리보기로 이동
             </Button>
           </div>
-        )}
-
-        {orderMessage && (
-          <p className="text-sm font-medium text-amber-600">{orderMessage}</p>
         )}
       </DraftEditorHeader>
 
