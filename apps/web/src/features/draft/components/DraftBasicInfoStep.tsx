@@ -93,7 +93,6 @@ export function DraftBasicInfoStep({
   }
 
   const missingCount = basicInfoElements.filter(isEmpty).length;
-  const filledCount = basicInfoElements.length - missingCount;
 
   return (
     <>
@@ -114,10 +113,6 @@ export function DraftBasicInfoStep({
       </DraftEditorHeader>
 
       <DraftEditorBody className="gap-8">
-        <p className="text-muted-foreground text-sm">
-          {filledCount}/{basicInfoElements.length} 채움
-        </p>
-
         <section className="flex flex-col gap-4">
           <h2 className="font-medium">기본정보</h2>
           {basicInfoElements.map((element) => (
