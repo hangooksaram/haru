@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useIsAnonymousUser } from "@/features/auth/hooks/useIsAnonymousUser";
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
 import { DraftVideoPreview } from "@/features/draft/components/DraftVideoPreview";
 import { useDraft } from "@/features/draft/hooks/useDraft";
@@ -102,6 +103,7 @@ export function PaymentStep({ templateId }: Props) {
   const { data: draft } = useDraft(draftId ?? null);
   const { data: template } = useTemplate(templateId);
   const { data: textElements } = useTemplateTextElements(templateId);
+  const isAnonymous = useIsAnonymousUser();
   const [orderId, setOrderId] = useState<string | null>(null);
   const validation = useVideoRequestValidation(draftId ?? null);
   const { handleOrderClick, message, isPending } =
@@ -152,6 +154,7 @@ export function PaymentStep({ templateId }: Props) {
           isPayDisabled={
             isPending || validation.isPending || validationErrors !== null
           }
+          showLoginNotice={isAnonymous === true}
           message={message}
           validationErrors={validationErrors}
           isValidationError={validation.isError}

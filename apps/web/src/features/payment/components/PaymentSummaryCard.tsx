@@ -1,3 +1,4 @@
+import { Info } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ type Props = {
   payLabel: string;
   onPayClick: () => void;
   isPayDisabled: boolean;
+  showLoginNotice: boolean;
   message: string | null;
   validationErrors: string[] | null;
   isValidationError: boolean;
@@ -28,6 +30,7 @@ export function PaymentSummaryCard({
   payLabel,
   onPayClick,
   isPayDisabled,
+  showLoginNotice,
   message,
   validationErrors,
   isValidationError,
@@ -92,6 +95,13 @@ export function PaymentSummaryCard({
             {price.toLocaleString("ko-KR")}원
           </span>
         </div>
+      )}
+
+      {showLoginNotice && (
+        <p className="bg-brand-soft flex items-start gap-2 rounded-lg px-3 py-2.5 text-xs">
+          <Info className="text-brand-deep mt-0.5 size-3.5 shrink-0" />
+          결제하려면 간편 로그인이 필요해요. 작성한 내용은 그대로 유지돼요.
+        </p>
       )}
 
       {message && (

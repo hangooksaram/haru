@@ -17,6 +17,9 @@ vi.mock("@/features/template/hooks/useTemplate", () => ({ useTemplate }));
 vi.mock("@/features/template/hooks/useTemplateTextElements", () => ({
   useTemplateTextElements: () => ({ data: [] }),
 }));
+vi.mock("@/features/auth/hooks/useIsAnonymousUser", () => ({
+  useIsAnonymousUser: () => false,
+}));
 vi.mock("@/features/draft/components/DraftVideoPreview", () => ({
   DraftVideoPreview: () => <div data-testid="video-preview" />,
 }));
