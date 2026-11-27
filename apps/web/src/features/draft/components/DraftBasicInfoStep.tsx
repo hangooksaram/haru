@@ -11,6 +11,7 @@ import {
   DraftEditorHeader,
 } from "@/features/draft/components/DraftEditorShell";
 import { DraftPreviewBinding } from "@/features/draft/components/DraftPreviewProvider";
+import { DraftSaveStatus } from "@/features/draft/components/DraftSaveStatus";
 import { useDraftTexts } from "@/features/draft/hooks/useDraftTexts";
 import { useCreateDraftOnEntry } from "@/features/draft/hooks/useCreateDraftOnEntry";
 import { elementKey } from "@/features/draft/lib/elementKey";
@@ -43,6 +44,7 @@ export function DraftBasicInfoStep({
     elements,
     previewTexts,
     isSubmitting,
+    saveStatus,
     getValue,
     changeValue,
     saveBeforeNext,
@@ -113,6 +115,8 @@ export function DraftBasicInfoStep({
       </DraftEditorHeader>
 
       <DraftEditorBody className="gap-8">
+        <DraftSaveStatus status={saveStatus} />
+
         <section className="flex flex-col gap-4">
           <h2 className="font-medium">기본정보</h2>
           {basicInfoElements.map((element) => (

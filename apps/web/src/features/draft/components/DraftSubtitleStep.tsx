@@ -13,6 +13,7 @@ import {
   DraftPreviewBinding,
   useDraftPreviewContext,
 } from "@/features/draft/components/DraftPreviewProvider";
+import { DraftSaveStatus } from "@/features/draft/components/DraftSaveStatus";
 import { useDraftTexts } from "@/features/draft/hooks/useDraftTexts";
 import { useRequireBasicInfo } from "@/features/draft/hooks/useRequireBasicInfo";
 import { elementKey } from "@/features/draft/lib/elementKey";
@@ -43,6 +44,7 @@ export function DraftSubtitleStep({ templateId, prevHref }: Props) {
     elements,
     previewTexts,
     isSubmitting,
+    saveStatus,
     getValue,
     changeValue,
     saveBeforeNext,
@@ -88,9 +90,12 @@ export function DraftSubtitleStep({ templateId, prevHref }: Props) {
       </DraftEditorHeader>
 
       <DraftEditorBody className="gap-8">
-        <p className="text-muted-foreground text-sm">
-          {filledCount}/{subtitleElements.length} 채움
-        </p>
+        <div className="flex items-center justify-between gap-4">
+          <p className="text-muted-foreground text-sm">
+            {filledCount}/{subtitleElements.length} 채움
+          </p>
+          <DraftSaveStatus status={saveStatus} />
+        </div>
 
         <section className="flex flex-col gap-4">
           <h2 className="font-medium">자막</h2>

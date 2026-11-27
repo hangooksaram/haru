@@ -375,6 +375,9 @@ export function DraftPhotosStep({
             }}
           />
         </div>
+        <p className="text-muted-foreground text-xs">
+          사진은 올리는 즉시 저장돼요.
+        </p>
         {message && (
           <p className="text-sm font-medium text-amber-600">{message}</p>
         )}

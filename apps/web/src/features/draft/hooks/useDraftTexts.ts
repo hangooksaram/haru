@@ -19,6 +19,8 @@ const AUTOSAVE_DEBOUNCE_MS = 500;
 const EMPTY_BASIC_INFO_PREVIEW_TEXT = " ";
 const EMPTY_TEXT_ELEMENTS: TemplateTextElement[] = [];
 
+export type DraftTextSaveStatus = "idle" | "saving" | "saved" | "error";
+
 // 기본정보·자막 입력 화면이 함께 쓰는 입력값 관리 훅이다.
 // 입력값 상태, 서버에 저장된 값 복원, 자동 저장을 맡는다. 시안은 만들지 않는다.
 export function useDraftTexts(templateId: string) {
@@ -28,6 +30,7 @@ export function useDraftTexts(templateId: string) {
   const { data: draft, isLoading: isDraftLoading } = useDraft(draftId ?? null);
   const { mutateAsync: updateTexts } = useUpdateDraftTexts();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<DraftTextSaveStatus>("idle");
   const [values, setValues] = useState<Record<string, string>>({});
   // 미리보기에는 입력을 마친(디바운스 저장된) 값만 반영한다. 매 타이핑마다 반영하지 않는다.
   const [debouncedValues, setDebouncedValues] = useState<
@@ -58,7 +61,14 @@ export function useDraftTexts(templateId: string) {
     setDebouncedValues(nextValues);
 
     if (!draftId) return;
-    await updateTexts({ draftId, texts: payload });
+    setSaveStatus("saving");
+    try {
+      await updateTexts({ draftId, texts: payload });
+      setSaveStatus("saved");
+    } catch (error) {
+      setSaveStatus("error");
+      throw error;
+    }
   }
 
   const saveTexts = useDebouncedCallback(
@@ -119,6 +129,7 @@ export function useDraftTexts(templateId: string) {
     elements: textElements,
     previewTexts,
     isSubmitting,
+    saveStatus,
     getValue,
     changeValue,
     saveBeforeNext,
