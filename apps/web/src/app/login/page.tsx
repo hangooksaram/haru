@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { Separator } from "@/components/ui/separator";
 import { LoginForm } from "@/features/auth/components/LoginForm";
+import { PaymentLoginContext } from "@/features/auth/components/PaymentLoginContext";
 import { SocialLoginButtons } from "@/features/auth/components/SocialLoginButtons";
 
 type Props = {
@@ -21,6 +22,7 @@ export default async function LoginPage({ searchParams }: Props) {
         haru<span className="text-brand-deep">.</span>
       </div>
       <div className="flex flex-col gap-6">
+        <PaymentLoginContext next={next} />
         <SocialLoginButtons next={next} />
         <div className="flex items-center gap-3">
           <Separator className="flex-1" />

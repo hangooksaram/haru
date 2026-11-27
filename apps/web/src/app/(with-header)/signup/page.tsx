@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { PaymentLoginContext } from "@/features/auth/components/PaymentLoginContext";
 import { SignUpForm } from "@/features/auth/components/SignUpForm";
 import { SocialLoginButtons } from "@/features/auth/components/SocialLoginButtons";
 
@@ -19,6 +20,7 @@ export default async function SignUpPage({ searchParams }: Props) {
           <CardTitle>회원가입</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
+          <PaymentLoginContext next={next} />
           <SignUpForm next={next} />
           <Separator />
           <SocialLoginButtons next={next} />
