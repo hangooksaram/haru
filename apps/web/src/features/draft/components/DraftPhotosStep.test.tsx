@@ -15,6 +15,9 @@ const { useDraft } = vi.hoisted(() => ({ useDraft: vi.fn() }));
 const { useRequireBasicInfo } = vi.hoisted(() => ({
   useRequireBasicInfo: vi.fn(),
 }));
+const { useCreateOrderWithGuestResume } = vi.hoisted(() => ({
+  useCreateOrderWithGuestResume: vi.fn(),
+}));
 const { useTemplate } = vi.hoisted(() => ({ useTemplate: vi.fn() }));
 const { useTemplatePhotoElements } = vi.hoisted(() => ({
   useTemplatePhotoElements: vi.fn(),
@@ -32,6 +35,9 @@ const { useDraftPreviewContext } = vi.hoisted(() => ({
   useDraftPreviewContext: vi.fn(),
 }));
 
+vi.mock("@/features/order/hooks/useCreateOrderWithGuestResume", () => ({
+  useCreateOrderWithGuestResume,
+}));
 vi.mock("sonner", () => ({ toast }));
 vi.mock("next/navigation", () => ({ useRouter }));
 vi.mock("@/features/draft/components/DraftIdProvider", () => ({ useDraftId }));
@@ -59,6 +65,12 @@ vi.mock("@/features/draft/components/DraftPreviewProvider", () => ({
 
 function setup(draft: Draft, labels: string[]) {
   const push = vi.fn();
+  const handleOrderClick = vi.fn();
+  useCreateOrderWithGuestResume.mockReturnValue({
+    handleOrderClick,
+    message: null,
+    isPending: false,
+  });
   const selectElement = vi.fn();
   const uploadMutate = vi.fn();
   useRouter.mockReturnValue({ push });
@@ -91,7 +103,7 @@ function setup(draft: Draft, labels: string[]) {
     playbackProgress: 0,
   });
 
-  return { push, selectElement, uploadMutate };
+  return { push, selectElement, uploadMutate, handleOrderClick };
 }
 
 function createDraft(photoNames: string[]): Draft {
@@ -142,6 +154,27 @@ describe("DraftPhotosStep", () => {
     await user.click(screen.getByRole("button", { name: "다음: 자막 입력" }));
 
     expect(push).toHaveBeenCalledWith("/next");
+  });
+
+  it("결제 화면에서 수정하러 온 경우 사진을 모두 올리면 주문을 만들어 결제로 돌아간다", async () => {
+    const { push, handleOrderClick } = setup(createDraft(["1", "2"]), [
+      "1",
+      "2",
+    ]);
+    const user = userEvent.setup();
+
+    render(
+      <DraftPhotosStep
+        templateId="template-1"
+        prevHref="/prev"
+        nextHref="/next"
+        returnToPayment
+      />,
+    );
+    await user.click(screen.getByRole("button", { name: "결제로 돌아가기" }));
+
+    expect(handleOrderClick).toHaveBeenCalled();
+    expect(push).not.toHaveBeenCalled();
   });
 
   it("사진이 채워진 요소를 클릭하면 미리보기를 해당 요소 위치로 이동시킨다", async () => {

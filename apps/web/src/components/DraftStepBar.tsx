@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 const STEPS = ["기본정보", "사진", "자막", "결제"];
 
 type Props = {
-  current: 0 | 1 | 2;
+  current: 0 | 1 | 2 | 3;
   templateId: string;
   templateName: string;
   prevHref?: string;

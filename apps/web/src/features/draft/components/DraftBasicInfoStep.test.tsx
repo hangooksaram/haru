@@ -15,10 +15,16 @@ const { useUpdateDraftTexts } = vi.hoisted(() => ({
   useUpdateDraftTexts: vi.fn(),
 }));
 const { useTemplate } = vi.hoisted(() => ({ useTemplate: vi.fn() }));
+const { useCreateOrderWithGuestResume } = vi.hoisted(() => ({
+  useCreateOrderWithGuestResume: vi.fn(),
+}));
 const { useTemplateTextElements } = vi.hoisted(() => ({
   useTemplateTextElements: vi.fn(),
 }));
 
+vi.mock("@/features/order/hooks/useCreateOrderWithGuestResume", () => ({
+  useCreateOrderWithGuestResume,
+}));
 vi.mock("sonner", () => ({ toast }));
 vi.mock("next/navigation", () => ({ useRouter }));
 vi.mock("@/features/draft/components/DraftIdProvider", () => ({ useDraftId }));
@@ -51,6 +57,12 @@ function setup({
     ) => options.onSuccess({ id: "new-draft" }),
   );
   const push = vi.fn();
+  const handleOrderClick = vi.fn();
+  useCreateOrderWithGuestResume.mockReturnValue({
+    handleOrderClick,
+    message: null,
+    isPending: false,
+  });
 
   useRouter.mockReturnValue({ push });
   useDraftId.mockReturnValue({ draftId, setDraftId });
@@ -72,7 +84,7 @@ function setup({
     isLoading: false,
   });
 
-  return { mutate, createDraft, setDraftId, push };
+  return { mutate, createDraft, setDraftId, push, handleOrderClick };
 }
 
 describe("DraftBasicInfoStep", () => {
@@ -200,5 +212,24 @@ describe("DraftBasicInfoStep", () => {
     render(<DraftBasicInfoStep templateId="template-1" nextHref="/next" />);
 
     expect(createDraft).not.toHaveBeenCalled();
+  });
+
+  it("결제 화면에서 수정하러 온 경우 저장한 뒤 주문을 만들어 결제로 돌아간다", async () => {
+    const { push, handleOrderClick } = setup({
+      draftTexts: [{ name: "상호명", text: "철수네 사진관" }],
+    });
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+    render(
+      <DraftBasicInfoStep
+        templateId="template-1"
+        nextHref="/next"
+        returnToPayment
+      />,
+    );
+    await user.click(screen.getByRole("button", { name: "결제로 돌아가기" }));
+
+    await waitFor(() => expect(handleOrderClick).toHaveBeenCalled());
+    expect(push).not.toHaveBeenCalled();
   });
 });

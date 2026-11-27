@@ -31,7 +31,7 @@ export function DraftPreviewStep({ templateId }: Props) {
   const { data: textElements, isLoading: isTextElementsLoading } =
     useTemplateTextElements(templateId);
   const { handleOrderClick, message, isPending } =
-    useCreateOrderWithGuestResume(templateId);
+    useCreateOrderWithGuestResume(templateId, `/draft/${templateId}/preview`);
 
   if (
     !draftId ||

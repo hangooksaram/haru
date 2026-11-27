@@ -15,6 +15,7 @@ export default async function DraftPhotosPage({ params, searchParams }: Props) {
       prevHref={`/draft/${templateId}/basic-info`}
       nextHref={`/draft/${templateId}/subtitle`}
       showPreviewShortcut={returnParam === "preview"}
+      returnToPayment={returnParam === "payment"}
     />
   );
 }

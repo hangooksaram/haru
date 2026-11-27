@@ -11,7 +11,6 @@ export default async function DraftSubtitlePage({ params }: Props) {
     <DraftSubtitleStep
       templateId={templateId}
       prevHref={`/draft/${templateId}/photos`}
-      nextHref={`/draft/${templateId}/preview`}
     />
   );
 }

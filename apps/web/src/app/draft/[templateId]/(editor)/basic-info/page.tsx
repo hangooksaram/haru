@@ -2,15 +2,21 @@ import { DraftBasicInfoStep } from "@/features/draft/components/DraftBasicInfoSt
 
 type Props = {
   params: Promise<{ templateId: string }>;
+  searchParams: Promise<{ return?: string }>;
 };
 
-export default async function DraftBasicInfoPage({ params }: Props) {
+export default async function DraftBasicInfoPage({
+  params,
+  searchParams,
+}: Props) {
   const { templateId } = await params;
+  const { return: returnParam } = await searchParams;
 
   return (
     <DraftBasicInfoStep
       templateId={templateId}
       nextHref={`/draft/${templateId}/photos`}
+      returnToPayment={returnParam === "payment"}
     />
   );
 }

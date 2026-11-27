@@ -12,7 +12,11 @@ function pendingOrderKey(templateId: string): string {
   return `haru:pendingOrder:${templateId}`;
 }
 
-export function useCreateOrderWithGuestResume(templateId: string) {
+// loginReturnPath: 비회원이 로그인한 뒤 돌아와 주문을 이어갈 페이지 경로
+export function useCreateOrderWithGuestResume(
+  templateId: string,
+  loginReturnPath: string,
+) {
   const router = useRouter();
   const { draftId, acknowledgeResume } = useDraftId();
   const createOrder = useCreateOrderFromDraft();
@@ -60,9 +64,7 @@ export function useCreateOrderWithGuestResume(templateId: string) {
 
     if (data.user?.is_anonymous) {
       sessionStorage.setItem(pendingOrderKey(templateId), draftId);
-      router.push(
-        `/login?next=${encodeURIComponent(`/draft/${templateId}/preview`)}`,
-      );
+      router.push(`/login?next=${encodeURIComponent(loginReturnPath)}`);
       return;
     }
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { Eye } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 import { DraftStepBar } from "@/components/DraftStepBar";
 import { Input } from "@/components/ui/input";
@@ -17,12 +16,12 @@ import { useDraftTexts } from "@/features/draft/hooks/useDraftTexts";
 import { useRequireBasicInfo } from "@/features/draft/hooks/useRequireBasicInfo";
 import { elementKey } from "@/features/draft/lib/elementKey";
 import { trimBlankText } from "@/features/draft/lib/trimBlankText";
+import { useCreateOrderWithGuestResume } from "@/features/order/hooks/useCreateOrderWithGuestResume";
 import { useTemplate } from "@/features/template/hooks/useTemplate";
 
 type Props = {
   templateId: string;
   prevHref: string;
-  nextHref: string;
 };
 
 // 입력 폼에 미리보기가 보여주는 요소를 표시한다.
@@ -35,9 +34,13 @@ function PreviewingBadge() {
   );
 }
 
-export function DraftSubtitleStep({ templateId, prevHref, nextHref }: Props) {
-  const router = useRouter();
+export function DraftSubtitleStep({ templateId, prevHref }: Props) {
   useRequireBasicInfo(templateId);
+  const {
+    handleOrderClick,
+    message: orderMessage,
+    isPending: isOrderPending,
+  } = useCreateOrderWithGuestResume(templateId, `/draft/${templateId}/subtitle`);
   const { data: template } = useTemplate(templateId);
   const {
     isLoading,
@@ -63,7 +66,7 @@ export function DraftSubtitleStep({ templateId, prevHref, nextHref }: Props) {
   );
 
   async function handlePrimaryClick() {
-    if (await saveBeforeNext()) router.push(nextHref);
+    if (await saveBeforeNext()) await handleOrderClick();
   }
 
   const filledCount = subtitleElements.filter(
@@ -84,7 +87,7 @@ export function DraftSubtitleStep({ templateId, prevHref, nextHref }: Props) {
           prevHref={prevHref}
           primaryLabel="이 시안으로 주문"
           onPrimaryClick={handlePrimaryClick}
-          primaryPending={isSubmitting}
+          primaryPending={isSubmitting || isOrderPending}
         />
       </DraftEditorHeader>
 
@@ -117,6 +120,10 @@ export function DraftSubtitleStep({ templateId, prevHref, nextHref }: Props) {
             </label>
           ))}
         </section>
+
+        {orderMessage && (
+          <p className="text-sm font-medium text-amber-600">{orderMessage}</p>
+        )}
       </DraftEditorBody>
 
       <DraftPreviewBinding segments={segments} texts={previewTexts} />

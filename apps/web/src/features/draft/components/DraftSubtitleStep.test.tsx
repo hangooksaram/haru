@@ -21,10 +21,16 @@ const { useTemplate } = vi.hoisted(() => ({ useTemplate: vi.fn() }));
 const { useTemplateTextElements } = vi.hoisted(() => ({
   useTemplateTextElements: vi.fn(),
 }));
+const { useCreateOrderWithGuestResume } = vi.hoisted(() => ({
+  useCreateOrderWithGuestResume: vi.fn(),
+}));
 const { useDraftPreviewContext } = vi.hoisted(() => ({
   useDraftPreviewContext: vi.fn(),
 }));
 
+vi.mock("@/features/order/hooks/useCreateOrderWithGuestResume", () => ({
+  useCreateOrderWithGuestResume,
+}));
 vi.mock("sonner", () => ({ toast }));
 vi.mock("next/navigation", () => ({ useRouter }));
 vi.mock("@/features/draft/components/DraftIdProvider", () => ({ useDraftId }));
@@ -59,6 +65,12 @@ function setup({
   const setDraftId = vi.fn();
   const selectElement = vi.fn();
   const push = vi.fn();
+  const handleOrderClick = vi.fn();
+  useCreateOrderWithGuestResume.mockReturnValue({
+    handleOrderClick,
+    message: null,
+    isPending: false,
+  });
 
   useRouter.mockReturnValue({ push });
   useDraftId.mockReturnValue({ draftId, setDraftId });
@@ -92,7 +104,7 @@ function setup({
     playbackProgress: 0,
   });
 
-  return { mutate, createDraft, setDraftId, selectElement, push };
+  return { mutate, createDraft, setDraftId, selectElement, push, handleOrderClick };
 }
 
 describe("DraftSubtitleStep", () => {
@@ -111,7 +123,6 @@ describe("DraftSubtitleStep", () => {
       <DraftSubtitleStep
         templateId="template-1"
         prevHref="/prev"
-        nextHref="/next"
       />,
     );
 
@@ -125,7 +136,6 @@ describe("DraftSubtitleStep", () => {
       <DraftSubtitleStep
         templateId="template-1"
         prevHref="/prev"
-        nextHref="/next"
       />,
     );
 
@@ -143,7 +153,6 @@ describe("DraftSubtitleStep", () => {
       <DraftSubtitleStep
         templateId="template-1"
         prevHref="/prev"
-        nextHref="/next"
       />,
     );
     await user.type(screen.getByPlaceholderText("첫 장면"), "안녕");
@@ -165,7 +174,6 @@ describe("DraftSubtitleStep", () => {
       <DraftSubtitleStep
         templateId="template-1"
         prevHref="/prev"
-        nextHref="/next"
       />,
     );
     await vi.advanceTimersByTimeAsync(1000);
@@ -183,7 +191,6 @@ describe("DraftSubtitleStep", () => {
       <DraftSubtitleStep
         templateId="template-1"
         prevHref="/prev"
-        nextHref="/next"
       />,
     );
     await user.click(screen.getByPlaceholderText("첫 장면"));
@@ -198,7 +205,6 @@ describe("DraftSubtitleStep", () => {
       <DraftSubtitleStep
         templateId="template-1"
         prevHref="/prev"
-        nextHref="/next"
       />,
     );
 
@@ -206,19 +212,19 @@ describe("DraftSubtitleStep", () => {
   });
 
   it("자막은 비어 있어도 이 시안으로 주문할 수 있다", async () => {
-    const { push } = setup();
+    const { push, handleOrderClick } = setup();
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
 
     render(
       <DraftSubtitleStep
         templateId="template-1"
         prevHref="/prev"
-        nextHref="/next"
       />,
     );
     await user.click(screen.getByRole("button", { name: "이 시안으로 주문" }));
 
     expect(toast.error).not.toHaveBeenCalled();
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/next"));
+    await waitFor(() => expect(handleOrderClick).toHaveBeenCalled());
+    expect(push).not.toHaveBeenCalled();
   });
 });
