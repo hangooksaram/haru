@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 
-import { TemplateCard } from "@/components/TemplateCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { filterTemplates } from "@/features/template/lib/filterTemplates";

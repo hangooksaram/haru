@@ -83,26 +83,3 @@ export async function getCreatomateTemplate(
 
   return (await response.json()) as CreatomateTemplateDetail;
 }
-
-// Creatomate 에디터에서 템플릿 태그를 `price:12000`, `category:결혼` 형식으로 입력한다.
-export function parseCreatomateTemplateTags(tags: string[]): {
-  price?: number;
-  category?: string;
-} {
-  const result: { price?: number; category?: string } = {};
-
-  for (const tag of tags) {
-    const [key, ...rest] = tag.split(":");
-    const value = rest.join(":").trim();
-    if (value === "") continue;
-
-    if (key.trim() === "price") {
-      const price = Number(value);
-      if (Number.isFinite(price)) result.price = price;
-    } else if (key.trim() === "category") {
-      result.category = value;
-    }
-  }
-
-  return result;
-}

@@ -24,10 +24,6 @@ type Props = {
   error: string | null;
   activeElementName: string | null;
   segments: DraftPreviewSegment[];
-  onReplay: () => void;
-  isPlayingAll: boolean;
-  onToggleAll: () => void;
-  playbackProgress: number;
   onCollapsedChange?: (collapsed: boolean) => void;
   // 화면에는 보이지 않게 두고 로드만 해 둔다. 접힌 상태(phase)는 그대로 유지된다.
   isHidden?: boolean;
@@ -40,10 +36,6 @@ export function DraftPreviewPanel({
   error,
   activeElementName,
   segments,
-  onReplay,
-  isPlayingAll,
-  onToggleAll,
-  playbackProgress,
   onCollapsedChange,
   isHidden = false,
 }: Props) {

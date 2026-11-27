@@ -53,10 +53,6 @@ export function DraftEditorShell({ children }: Props) {
     error,
     activeElementName,
     segments,
-    replay,
-    isPlayingAll,
-    toggleAll,
-    playbackProgress,
     isCollapsed,
     setIsCollapsed,
   } = useDraftPreviewContext();
@@ -96,10 +92,6 @@ export function DraftEditorShell({ children }: Props) {
             error={error}
             activeElementName={activeElementName}
             segments={segments}
-            onReplay={replay}
-            isPlayingAll={isPlayingAll}
-            onToggleAll={toggleAll}
-            playbackProgress={playbackProgress}
             onCollapsedChange={setIsCollapsed}
             isHidden={isPreviewHidden}
           />
