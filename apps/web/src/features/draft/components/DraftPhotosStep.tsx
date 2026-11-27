@@ -33,7 +33,6 @@ type Props = {
   templateId: string;
   prevHref: string;
   nextHref: string;
-  showPreviewShortcut?: boolean;
   returnToPayment?: boolean;
 };
 
@@ -41,7 +40,6 @@ export function DraftPhotosStep({
   templateId,
   prevHref,
   nextHref,
-  showPreviewShortcut,
   returnToPayment,
 }: Props) {
   const router = useRouter();
@@ -252,12 +250,6 @@ export function DraftPhotosStep({
     router.push(returnToPayment ? `/draft/${templateId}/payment` : nextHref);
   }
 
-  function handleGoToPreview() {
-    if (!validatePhotoCount()) return;
-
-    router.push(`/draft/${templateId}/preview`);
-  }
-
   const photoByLabel = new Map(
     draft.photos.map((photo) => [photo.name, photo]),
   );
@@ -297,14 +289,6 @@ export function DraftPhotosStep({
             remainingCount > 0 ? `${remainingCount}장 남음` : undefined
           }
         />
-
-        {showPreviewShortcut && (
-          <div>
-            <Button variant="outline" size="lg" onClick={handleGoToPreview}>
-              미리보기로 이동
-            </Button>
-          </div>
-        )}
       </DraftEditorHeader>
 
       <DraftEditorBody className="gap-4">
