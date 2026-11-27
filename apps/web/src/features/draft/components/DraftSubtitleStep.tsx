@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { DraftStepBar } from "@/components/DraftStepBar";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   DraftEditorBody,
   DraftEditorHeader,
@@ -53,8 +54,11 @@ export function DraftSubtitleStep({ templateId, prevHref }: Props) {
 
   if (isLoading) {
     return (
-      <DraftEditorBody>
-        <p className="text-muted-foreground">불러오는 중...</p>
+      <DraftEditorBody className="gap-4">
+        <Skeleton className="h-4 w-24" />
+        {Array.from({ length: 4 }).map((_, index) => (
+          <Skeleton key={index} className="h-9 rounded-md" />
+        ))}
       </DraftEditorBody>
     );
   }

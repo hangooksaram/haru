@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useIsAnonymousUser } from "@/features/auth/hooks/useIsAnonymousUser";
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
 import { DraftVideoPreview } from "@/features/draft/components/DraftVideoPreview";
@@ -44,7 +45,7 @@ function PaymentPreview({ templateId, draft, isValidating }: PreviewProps) {
     );
   }
 
-  if (!draft) return <p className="text-muted-foreground">불러오는 중...</p>;
+  if (!draft) return <Skeleton className="aspect-video w-full rounded-xl" />;
 
   return (
     <DraftVideoPreview
