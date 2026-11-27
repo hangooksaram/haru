@@ -1,3 +1,4 @@
+import { ResetDatabaseButton } from "@/features/debug/components/ResetDatabaseButton";
 import { TemplateList } from "@/features/template/components/TemplateList";
 import { getTemplatesWithSyncStatus } from "@/features/template/service/template-sync";
 
@@ -6,10 +7,16 @@ export default async function AdminTemplatesPage() {
 
   return (
     <div className="mx-auto max-w-5xl p-6">
-      <h1 className="text-xl font-semibold">템플릿</h1>
-      <p className="text-muted-foreground mt-1 text-sm">
-        Creatomate 템플릿을 서비스 DB로 가져오거나 최신 상태로 업데이트합니다.
-      </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold">템플릿</h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Creatomate 템플릿을 서비스 DB로 가져오거나 최신 상태로
+            업데이트합니다.
+          </p>
+        </div>
+        <ResetDatabaseButton />
+      </div>
       <TemplateList templates={templates} />
     </div>
   );
