@@ -58,6 +58,8 @@ export function DraftPhotosStep({
     new Set(),
   );
   const [failedLabels, setFailedLabels] = useState<Set<string>>(new Set());
+  // 저화질 경고는 서버에 저장하지 않으므로 이번 방문에서 올린 사진에만 표시한다.
+  const [blurryLabels, setBlurryLabels] = useState<Set<string>>(new Set());
   const pendingUploadLabelsRef = useRef<string[]>([]);
   const [isDraggingFileOverWindow, setIsDraggingFileOverWindow] =
     useState(false);
@@ -139,6 +141,16 @@ export function DraftPhotosStep({
   const photoCount = draft.photos.length;
   const labelCount = labels.length;
 
+  function markBlurry(labelsToMark: string[], isBlurry: boolean) {
+    setBlurryLabels((prev) => {
+      const next = new Set(prev);
+      labelsToMark.forEach((name) =>
+        isBlurry ? next.add(name) : next.delete(name),
+      );
+      return next;
+    });
+  }
+
   function clearPendingLabels(labelsToClear: string[]) {
     setUploadingLabels((prev) => {
       const next = new Set(prev);
@@ -168,6 +180,11 @@ export function DraftPhotosStep({
         onSuccess: (result) => {
           clearPendingLabels(pendingUploadLabelsRef.current);
           setFailedLabels((prev) => new Set([...prev, ...result.failedLabels]));
+          markBlurry(
+            result.added.map((photo) => photo.name),
+            false,
+          );
+          markBlurry(result.blurryLabels, true);
 
           const notes: string[] = [];
           if (result.rejectedCount > 0) {
@@ -180,9 +197,9 @@ export function DraftPhotosStep({
               `${result.failedLabels.length}장은 업로드에 실패했습니다. 다시 시도해 주세요.`,
             );
           }
-          if (result.blurryWarningCount > 0) {
+          if (result.blurryLabels.length > 0) {
             notes.push(
-              `${result.blurryWarningCount}장은 해상도가 낮아 화질이 흐릴 수 있습니다.`,
+              `${result.blurryLabels.length}장은 해상도가 낮아 화질이 흐릴 수 있습니다. (저화질 표시)`,
             );
           }
           if (notes.length > 0) setMessage(notes.join(" "));
@@ -207,9 +224,7 @@ export function DraftPhotosStep({
       { photoId, file },
       {
         onSuccess: (result) => {
-          if (result.isBlurryWarning) {
-            setMessage("해상도가 낮아 화질이 흐릴 수 있습니다.");
-          }
+          markBlurry([result.name], result.isBlurryWarning);
         },
         onError: (error) => {
           setMessage(
@@ -225,6 +240,14 @@ export function DraftPhotosStep({
 
   function handleSwap(from: string, to: string) {
     setMessage(null);
+    setBlurryLabels((prev) => {
+      const next = new Set(prev);
+      next.delete(from);
+      next.delete(to);
+      if (prev.has(from)) next.add(to);
+      if (prev.has(to)) next.add(from);
+      return next;
+    });
     swap.mutate({ from, to });
   }
 
@@ -263,7 +286,12 @@ export function DraftPhotosStep({
           ? "failed"
           : "empty";
 
-      return { name, photo: photoByLabel.get(name) ?? null, status };
+      return {
+        name,
+        photo: photoByLabel.get(name) ?? null,
+        status,
+        isBlurry: blurryLabels.has(name),
+      };
     }),
   }));
   const segments = groups.flatMap((group) =>

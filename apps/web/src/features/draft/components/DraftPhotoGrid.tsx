@@ -26,6 +26,7 @@ export type DraftPhotoGroup = {
     name: string;
     photo: DraftPhoto | null;
     status: DraftPhotoSlotStatus;
+    isBlurry?: boolean;
   }[];
 };
 
@@ -161,6 +162,7 @@ export function DraftPhotoGrid({
                       : removeHyphens(slot.name.slice(group.label.length + 1)),
                   photo: slot.photo,
                   status: slot.status,
+                  isBlurry: slot.isBlurry,
                 }))}
                 onUpload={onUpload}
                 onReplace={onReplace}

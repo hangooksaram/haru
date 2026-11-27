@@ -11,7 +11,7 @@ import type { Draft, DraftPhoto } from "@/features/draft/types";
 type UploadResult = {
   added: DraftPhoto[];
   rejectedCount: number;
-  blurryWarningCount: number;
+  blurryLabels: string[];
   failedLabels: string[];
 };
 
@@ -98,14 +98,16 @@ async function confirmUploads(
   return added;
 }
 
-function countBlurryWarnings(
+function findBlurryLabels(
   added: DraftPhoto[],
   succeeded: UploadedSlot[],
-): number {
-  return added.filter(
-    (photo) =>
-      succeeded.find((item) => item.label === photo.name)?.isBlurryWarning,
-  ).length;
+): string[] {
+  return added
+    .filter(
+      (photo) =>
+        succeeded.find((item) => item.label === photo.name)?.isBlurryWarning,
+    )
+    .map((photo) => photo.name);
 }
 
 export function useUploadDraftPhotos(draftId: string) {
@@ -133,7 +135,7 @@ export function useUploadDraftPhotos(draftId: string) {
       return {
         added,
         rejectedCount,
-        blurryWarningCount: countBlurryWarnings(added, succeeded),
+        blurryLabels: findBlurryLabels(added, succeeded),
         failedLabels,
       };
     },

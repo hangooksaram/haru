@@ -17,6 +17,7 @@ type Props = {
   caption?: string;
   photo: DraftPhoto | null;
   status: DraftPhotoSlotStatus;
+  isBlurry?: boolean;
   onReplace: (file: File) => void;
   onUpload: (files: File[]) => void;
   onSelect: () => void;
@@ -30,6 +31,7 @@ export function DraftPhotoItem({
   caption,
   photo,
   status,
+  isBlurry,
   onReplace,
   onUpload,
   onSelect,
@@ -96,6 +98,14 @@ export function DraftPhotoItem({
       >
         ⠿
       </div>
+      {isBlurry && (
+        <span
+          title="해상도가 낮아 화질이 흐릴 수 있습니다."
+          className="absolute top-1 left-1 rounded bg-amber-500 px-1 py-0.5 text-[10px] leading-none font-bold text-white"
+        >
+          저화질
+        </span>
+      )}
       <CheckCircle2
         className="absolute right-1 bottom-1 h-5 w-5 rounded-full bg-emerald-500 text-white"
         aria-hidden="true"

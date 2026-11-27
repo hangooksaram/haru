@@ -16,6 +16,7 @@ export type DraftPhotoLabelCardSlot = {
   caption: string;
   photo: DraftPhoto | null;
   status: DraftPhotoSlotStatus;
+  isBlurry?: boolean;
 };
 
 type Props = {
@@ -94,6 +95,7 @@ export function DraftPhotoLabelCard({
               caption={slot.caption}
               photo={slot.photo}
               status={slot.status}
+              isBlurry={slot.isBlurry}
               isReplacing={slot.photo?.id === replacingPhotoId}
               onReplace={(file) => {
                 if (slot.photo) onReplace(slot.photo.id, file);
