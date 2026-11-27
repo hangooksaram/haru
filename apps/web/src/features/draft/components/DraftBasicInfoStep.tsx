@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { DraftStepBar } from "@/components/DraftStepBar";
@@ -48,6 +48,9 @@ export function DraftBasicInfoStep({
     saveBeforeNext,
   } = useDraftTexts(templateId);
   const fieldNodesRef = useRef(new Map<string, HTMLElement>());
+  // 처음 들어왔을 때부터 빈 칸마다 에러를 띄우지 않도록, 건드리고 벗어난 칸이나 다음을 누른 뒤에만 보여준다.
+  const [touchedKeys, setTouchedKeys] = useState<Set<string>>(new Set());
+  const [hasTriedNext, setHasTriedNext] = useState(false);
 
   if (isLoading) {
     return (
@@ -69,6 +72,7 @@ export function DraftBasicInfoStep({
     const firstEmpty = basicInfoElements.find(isEmpty);
 
     if (firstEmpty) {
+      setHasTriedNext(true);
       toast.error("기본정보를 모두 입력해 주세요.");
 
       const node = fieldNodesRef.current.get(elementKey(firstEmpty));
@@ -134,13 +138,19 @@ export function DraftBasicInfoStep({
                   onChange={(event) =>
                     changeValue(elementKey(element), event.target.value)
                   }
+                  onBlur={() =>
+                    setTouchedKeys((prev) =>
+                      new Set(prev).add(elementKey(element)),
+                    )
+                  }
                 />
               </div>
-              {isEmpty(element) && (
-                <p className="text-destructive text-xs font-normal">
-                  필수 입력입니다.
-                </p>
-              )}
+              {isEmpty(element) &&
+                (hasTriedNext || touchedKeys.has(elementKey(element))) && (
+                  <p className="text-destructive text-xs font-normal">
+                    필수 입력입니다.
+                  </p>
+                )}
             </label>
           ))}
         </section>
