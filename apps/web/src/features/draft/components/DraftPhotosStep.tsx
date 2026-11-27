@@ -327,7 +327,7 @@ export function DraftPhotosStep({
           </div>
           <Button
             type="button"
-            variant="outline"
+            variant={photoCount === 0 ? "default" : "outline"}
             size="sm"
             disabled={upload.isPending}
             onClick={() => batchFileInputRef.current?.click()}
