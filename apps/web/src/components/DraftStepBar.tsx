@@ -10,8 +10,8 @@ type Props = {
   templateId: string;
   templateName: string;
   prevHref?: string;
-  primaryLabel: string;
-  onPrimaryClick: () => void;
+  primaryLabel?: string;
+  onPrimaryClick?: () => void;
   primaryPending?: boolean;
   remainingLabel?: string;
   guidanceText?: string;
@@ -129,13 +129,15 @@ export function DraftStepBar({
             {remainingLabel}
           </span>
         )}
-        <Button
-          className="h-[38px] shrink-0 px-4 text-[13px] font-bold whitespace-nowrap"
-          onClick={onPrimaryClick}
-          disabled={primaryPending}
-        >
-          {primaryLabel}
-        </Button>
+        {primaryLabel && onPrimaryClick && (
+          <Button
+            className="h-[38px] shrink-0 px-4 text-[13px] font-bold whitespace-nowrap"
+            onClick={onPrimaryClick}
+            disabled={primaryPending}
+          >
+            {primaryLabel}
+          </Button>
+        )}
       </div>
     </div>
   );
