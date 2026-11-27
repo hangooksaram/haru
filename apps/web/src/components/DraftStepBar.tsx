@@ -44,7 +44,7 @@ export function DraftStepBar({
   guidanceText,
 }: Props) {
   return (
-    <div className="bg-background sticky top-16 z-40 flex h-14 items-center gap-4 border-b">
+    <div className="bg-background sticky top-16 z-40 flex h-14 items-center gap-4 border-b lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
       <span
         title={templateName}
         className="max-w-40 shrink-0 truncate text-[13px] font-medium sm:max-w-60"
@@ -52,7 +52,7 @@ export function DraftStepBar({
         {templateName}
       </span>
 
-      <ol className="hidden min-w-0 flex-1 items-center justify-center gap-2 lg:flex">
+      <ol className="hidden items-center justify-center gap-2 lg:flex">
         {STEPS.map((label, index) => {
           const isCompleted = index < current;
           const isCurrent = index === current;
@@ -105,19 +105,22 @@ export function DraftStepBar({
         })}
       </ol>
 
-      <div className="ml-auto flex shrink-0 items-center gap-3">
+      <div className="ml-auto flex min-w-0 items-center justify-end gap-3">
         {prevHref && (
           <Button
             asChild
             variant="ghost"
             size="sm"
-            className="text-muted-foreground"
+            className="text-muted-foreground shrink-0"
           >
             <Link href={prevHref}>← 이전</Link>
           </Button>
         )}
         {guidanceText && (
-          <p className="text-muted-foreground hidden max-w-48 text-[11px] lg:block">
+          <p
+            title={guidanceText}
+            className="text-muted-foreground hidden max-w-48 min-w-0 truncate text-[11px] lg:block"
+          >
             {guidanceText}
           </p>
         )}

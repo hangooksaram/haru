@@ -67,7 +67,7 @@ export function DraftEditorShell({ children }: Props) {
 
   return (
     <div
-      className="grid gap-x-6 gap-y-4 py-4 md:[grid-template-columns:var(--preview-cols)] md:transition-[grid-template-columns] md:duration-[380ms] md:ease-[cubic-bezier(0.4,0,0.2,1)]"
+      className="grid gap-x-6 gap-y-4 pb-4 md:[grid-template-columns:var(--preview-cols)] md:transition-[grid-template-columns] md:duration-[380ms] md:ease-[cubic-bezier(0.4,0,0.2,1)]"
       style={
         {
           "--preview-cols": isPreviewHidden
