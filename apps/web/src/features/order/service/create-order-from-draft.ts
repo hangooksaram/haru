@@ -4,6 +4,9 @@ import { Prisma, prisma } from "@haru/db";
 
 import { DraftNotFoundError } from "@/features/draft/errors";
 import { assertDraftOwner } from "@/features/draft/lib/assertDraftOwner";
+import { VideoRequestInvalidError } from "@/features/video/errors";
+import { isVideoRequestValid } from "@/features/video/lib/isVideoRequestValid";
+import { validateVideoRequest } from "@/features/video/service/validate-video-request";
 
 import { decideOrderCreationAction } from "../lib/decideOrderCreationAction";
 import { generateOrderNumber } from "../lib/generateOrderNumber";
@@ -11,7 +14,10 @@ import {
   OrderCreationConflictError,
   TemplatePriceNotSetError,
 } from "../errors";
-import { copyDraftPhotoToOrderPhoto } from "./order-photo-storage";
+import {
+  copyDraftPhotoToOrderPhoto,
+  removeOrderPhotoFiles,
+} from "./order-photo-storage";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 type DraftPhotoInput = { storagePath: string; position: number; name: string };
@@ -48,71 +54,119 @@ async function copyOrderPhotosToStorage(
 }
 
 // draft를 "converting"으로 잠근다. 잠그기 성공하면 true, 이미 누가 선점했으면 false.
-async function lockDraft(
-  draftId: string,
-  currentStatus: "editing" | "converted",
-): Promise<boolean> {
+// converting은 복사 중에만 유지하며(수정 차단·클린업 삭제 방지), 끝나면 editing으로 되돌린다.
+async function lockDraft(draftId: string): Promise<boolean> {
   const result = await prisma.draft.updateMany({
-    where: { id: draftId, status: currentStatus },
+    where: { id: draftId, status: "editing" },
     data: { status: "converting" },
   });
   return result.count > 0;
 }
 
-// 복사/주문 생성이 실패했을 때, draft 상태를 잠그기 전 상태로 되돌려 락을 푼다.
-async function unlockDraftAfterFailure(
-  draftId: string,
-  statusBeforeLock: "editing" | "converted",
-): Promise<void> {
+async function unlockDraft(draftId: string): Promise<void> {
   await prisma.draft.updateMany({
     where: { id: draftId, status: "converting" },
-    data: { status: statusBeforeLock },
+    data: { status: "editing" },
   });
 }
 
-// 주문 행 생성까지는 끝났지만 실제 파일 복사가 실패했을 때, 만든 주문 행을 지우고
-// draft를 "converted"에서 잠그기 전 상태로 되돌린다.
-async function rollbackOrderAfterCopyFailure(
-  orderId: string,
-  draftId: string,
-  statusBeforeLock: "editing" | "converted",
-): Promise<void> {
-  await prisma.$transaction([
-    prisma.order.delete({ where: { id: orderId } }),
-    prisma.draft.update({
-      where: { id: draftId },
-      data: { status: statusBeforeLock },
-    }),
-  ]);
-}
-
-async function createOrderAndConvertDraft(params: {
-  orderId: string;
+type OrderSource = {
   draftId: string;
   userId: string | null;
   templateId: string;
   price: number;
   texts: Prisma.InputJsonValue;
   photos: DraftPhotoInput[];
-}): Promise<void> {
+};
+
+async function createNewOrder(
+  supabase: SupabaseClient,
+  source: OrderSource,
+): Promise<{ id: string }> {
+  const orderId = randomUUID();
+  const photoCopyPaths = computeOrderPhotoCopyPaths(orderId, source.photos);
+
+  await prisma.order.create({
+    data: {
+      id: orderId,
+      userId: source.userId,
+      draftId: source.draftId,
+      templateId: source.templateId,
+      orderNumber: generateOrderNumber(),
+      price: source.price,
+      texts: source.texts,
+      photos: {
+        create: photoCopyPaths.map(({ storagePath, position, name }) => ({
+          storagePath,
+          position,
+          name,
+        })),
+      },
+    },
+  });
+
+  try {
+    // order_photos 복사를 허용하는 스토리지 RLS 정책은 orders 행의 존재를 기준으로
+    // 소유권을 확인하므로, 주문 행을 먼저 만든 뒤에 실제 파일을 복사해야 한다.
+    await copyOrderPhotosToStorage(supabase, photoCopyPaths);
+  } catch (error) {
+    await prisma.order.delete({ where: { id: orderId } });
+    throw error;
+  }
+
+  return { id: orderId };
+}
+
+// 기존 대기 주문의 사진·텍스트 복사본과 금액을 현재 시안 기준으로 덮어쓴다.
+async function overwriteExistingOrder(
+  supabase: SupabaseClient,
+  existingOrder: { id: string; photos: { storagePath: string }[] },
+  source: OrderSource,
+): Promise<{ id: string }> {
+  const photoCopyPaths = computeOrderPhotoCopyPaths(
+    existingOrder.id,
+    source.photos,
+  );
+
+  try {
+    await copyOrderPhotosToStorage(supabase, photoCopyPaths);
+  } catch (error) {
+    // 새로 복사하다 만 파일만 정리하고, 기존 주문은 그대로 둔다.
+    await removeOrderPhotoFiles(
+      supabase,
+      photoCopyPaths.map((photo) => photo.storagePath),
+    ).catch(() => undefined);
+    throw error;
+  }
+
   await prisma.$transaction([
-    prisma.order.create({
+    prisma.orderPhoto.deleteMany({ where: { orderId: existingOrder.id } }),
+    prisma.order.update({
+      where: { id: existingOrder.id },
       data: {
-        id: params.orderId,
-        userId: params.userId,
-        draftId: params.draftId,
-        templateId: params.templateId,
-        orderNumber: generateOrderNumber(),
-        price: params.price,
-        texts: params.texts,
-        photos: { create: params.photos },
+        templateId: source.templateId,
+        price: source.price,
+        texts: source.texts,
+        photos: {
+          create: photoCopyPaths.map(({ storagePath, position, name }) => ({
+            storagePath,
+            position,
+            name,
+          })),
+        },
       },
     }),
-    prisma.draft.update({
-      where: { id: params.draftId },
-      data: { status: "converted" },
-    }),
   ]);
+
+  // DB 반영이 끝난 뒤 이전 복사 파일을 지운다. 주문은 이미 최신 상태라 실패해도 중단하지 않는다.
+  await removeOrderPhotoFiles(
+    supabase,
+    existingOrder.photos.map((photo) => photo.storagePath),
+  ).catch((error) => {
+    console.error("[createOrderFromDraft] 이전 주문 사진 삭제 실패", error);
+  });
+
+  return { id: existingOrder.id };
 }
 
 export async function createOrderFromDraft(
@@ -135,69 +189,50 @@ export async function createOrderFromDraft(
     throw new OrderCreationConflictError(draftId);
   }
 
+  const videoValidation = await validateVideoRequest(supabase, {
+    templateId: draft.templateId,
+    texts: draft.texts as { name: string; text: string }[],
+    photos: draft.photos,
+  });
+  if (!isVideoRequestValid(videoValidation)) {
+    throw new VideoRequestInvalidError(videoValidation.errors.join("; "));
+  }
+
   const templatePrice = draft.template.price;
   if (templatePrice == null) {
     throw new TemplatePriceNotSetError(draft.templateId);
   }
 
-  const existingOrder = await prisma.order.findFirst({
-    where: { draftId },
-    orderBy: { createdAt: "desc" },
-  });
-
-  const action = decideOrderCreationAction(
-    draft.status,
-    existingOrder?.status ?? null,
-  );
-
-  if (action === "reuse") {
-    // existingOrder는 action이 "reuse"일 때 항상 존재한다 (decideOrderCreationAction 참고).
-    return { id: existingOrder!.id };
-  }
-
-  const isLocked = await lockDraft(draftId, draft.status);
+  const isLocked = await lockDraft(draftId);
   if (!isLocked) {
     throw new OrderCreationConflictError(draftId);
   }
 
-  const orderId = randomUUID();
-  const photoCopyPaths = computeOrderPhotoCopyPaths(orderId, draft.photos);
-
   try {
-    if (action === "cancel_and_create" && existingOrder) {
-      await prisma.order.update({
-        where: { id: existingOrder.id },
-        data: { status: "canceled" },
-      });
-    }
+    const existingOrder = await prisma.order.findFirst({
+      where: { draftId, status: "pending_payment" },
+      include: { photos: true },
+    });
 
-    await createOrderAndConvertDraft({
-      orderId,
+    const source: OrderSource = {
       draftId: draft.id,
       userId: draft.userId,
       templateId: draft.templateId,
       price: templatePrice,
       // drafts.texts는 스키마상 NOT NULL(default "[]")이라 null일 수 없다.
       texts: draft.texts as Prisma.InputJsonValue,
-      photos: photoCopyPaths.map(({ storagePath, position, name }) => ({
-        storagePath,
-        position,
-        name,
-      })),
-    });
-  } catch (error) {
-    await unlockDraftAfterFailure(draftId, draft.status);
-    throw error;
-  }
+      photos: draft.photos,
+    };
 
-  try {
-    // order_photos 복사를 허용하는 스토리지 RLS 정책은 orders 행의 존재를 기준으로
-    // 소유권을 확인하므로, 주문 행을 먼저 만든 뒤에 실제 파일을 복사해야 한다.
-    await copyOrderPhotosToStorage(supabase, photoCopyPaths);
-  } catch (error) {
-    await rollbackOrderAfterCopyFailure(orderId, draftId, draft.status);
-    throw error;
-  }
+    if (
+      existingOrder &&
+      decideOrderCreationAction(existingOrder.status) === "reuse"
+    ) {
+      return await overwriteExistingOrder(supabase, existingOrder, source);
+    }
 
-  return { id: orderId };
+    return await createNewOrder(supabase, source);
+  } finally {
+    await unlockDraft(draftId);
+  }
 }

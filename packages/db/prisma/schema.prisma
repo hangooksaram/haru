@@ -47,7 +47,6 @@ model User {
 enum DraftStatus {
   editing
   converting
-  converted
 }
 
 model Draft {

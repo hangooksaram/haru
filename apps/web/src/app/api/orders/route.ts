@@ -9,6 +9,7 @@ import {
   TemplatePriceNotSetError,
 } from "@/features/order/errors";
 import { createOrderFromDraft } from "@/features/order/service/create-order-from-draft";
+import { VideoRequestInvalidError } from "@/features/video/errors";
 import { createServerClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
@@ -51,6 +52,13 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: "주문 생성이 진행 중입니다. 잠시 후 다시 시도해주세요." },
         { status: 409 },
+      );
+    }
+
+    if (error instanceof VideoRequestInvalidError) {
+      return NextResponse.json(
+        { error: "영상 요청 검증에 실패했습니다." },
+        { status: 422 },
       );
     }
 

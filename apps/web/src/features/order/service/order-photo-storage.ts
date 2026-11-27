@@ -15,3 +15,17 @@ export async function copyDraftPhotoToOrderPhoto(
 
   if (error) throw error;
 }
+
+// 정책: 대기 주문을 재사용할 때 기존 복사 파일을 지우고 새로 복사한다.
+export async function removeOrderPhotoFiles(
+  supabase: SupabaseClient,
+  paths: string[],
+): Promise<void> {
+  if (paths.length === 0) return;
+
+  const { error } = await supabase.storage
+    .from(DRAFT_PHOTOS_BUCKET)
+    .remove(paths);
+
+  if (error) throw error;
+}
