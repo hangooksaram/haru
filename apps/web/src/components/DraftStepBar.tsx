@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const STEPS = ["기본정보", "사진", "자막", "결제"];
+const STEPS = ["기본정보", "사진", "자막", "확인·결제"];
 
 type Props = {
   current: 0 | 1 | 2 | 3;
