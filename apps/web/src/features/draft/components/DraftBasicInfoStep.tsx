@@ -102,7 +102,9 @@ export function DraftBasicInfoStep({
           current={0}
           templateId={templateId}
           templateName={template?.name ?? ""}
-          primaryLabel={returnToPayment ? "결제로 돌아가기" : "다음: 사진"}
+          primaryLabel={
+            returnToPayment ? "결제로 돌아가기" : "다음: 사진 올리기"
+          }
           onPrimaryClick={handlePrimaryClick}
           primaryPending={isSubmitting}
           remainingLabel={

@@ -142,7 +142,7 @@ describe("DraftBasicInfoStep", () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
 
     render(<DraftBasicInfoStep templateId="template-1" nextHref="/next" />);
-    await user.click(screen.getByRole("button", { name: "다음: 사진" }));
+    await user.click(screen.getByRole("button", { name: "다음: 사진 올리기" }));
 
     await waitFor(() =>
       expect(toast.error).toHaveBeenCalledWith(
@@ -159,7 +159,7 @@ describe("DraftBasicInfoStep", () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
 
     render(<DraftBasicInfoStep templateId="template-1" nextHref="/next" />);
-    await user.click(screen.getByRole("button", { name: "다음: 사진" }));
+    await user.click(screen.getByRole("button", { name: "다음: 사진 올리기" }));
 
     await waitFor(() => expect(push).toHaveBeenCalledWith("/next"));
     expect(mutate).toHaveBeenCalledWith({
