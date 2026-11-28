@@ -1,4 +1,4 @@
-import { Check } from "lucide-react";
+import { CloudAlert, CloudCheck, LoaderCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -8,30 +8,42 @@ type Props = {
   status: DraftTextSaveStatus;
 };
 
-const STATUS_TEXT: Record<Exclude<DraftTextSaveStatus, "idle">, string> = {
+const STATUS_TEXT: Record<DraftTextSaveStatus, string> = {
+  idle: "자동 저장돼요",
   saving: "저장 중…",
   saved: "자동 저장됨",
   error: "저장 실패",
 };
 
+const STATUS_STYLE: Record<DraftTextSaveStatus, string> = {
+  idle: "bg-muted text-muted-foreground",
+  saving: "bg-muted text-muted-foreground",
+  saved: "bg-emerald-50 text-emerald-700",
+  error: "bg-destructive/10 text-destructive",
+};
+
 // 입력이 자동 저장된다는 걸 보여줘 나갔다 와도 된다는 안심을 준다.
 export function DraftSaveStatus({ status }: Props) {
-  if (status === "idle") {
-    return (
-      <p className="text-muted-foreground text-xs">입력하면 자동 저장돼요.</p>
-    );
-  }
-
   return (
     <p
       aria-live="polite"
       className={cn(
-        "flex items-center gap-1 text-xs",
-        status === "error" ? "text-destructive" : "text-muted-foreground",
+        "inline-flex h-6 shrink-0 items-center gap-1 rounded-full px-2 text-xs font-medium whitespace-nowrap",
+        STATUS_STYLE[status],
       )}
     >
-      {status === "saved" && <Check className="size-3" aria-hidden="true" />}
+      <StatusIcon status={status} />
       {STATUS_TEXT[status]}
     </p>
   );
+}
+
+function StatusIcon({ status }: Props) {
+  if (status === "saving") {
+    return <LoaderCircle className="size-3.5 animate-spin" aria-hidden="true" />;
+  }
+  if (status === "error") {
+    return <CloudAlert className="size-3.5" aria-hidden="true" />;
+  }
+  return <CloudCheck className="size-3.5" aria-hidden="true" />;
 }

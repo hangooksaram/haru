@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+import type { ReactNode } from "react";
+
 const STEPS = ["기본정보", "사진", "자막", "확인·결제"];
 
 type Props = {
@@ -15,6 +17,7 @@ type Props = {
   primaryPending?: boolean;
   remainingLabel?: string;
   guidanceText?: string;
+  saveStatus?: ReactNode;
 };
 
 function getStepHref(index: number, templateId: string) {
@@ -42,15 +45,19 @@ export function DraftStepBar({
   primaryPending,
   remainingLabel,
   guidanceText,
+  saveStatus,
 }: Props) {
   return (
     <div className="bg-background sticky top-16 z-40 flex h-14 items-center gap-4 border-b lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
-      <span
-        title={templateName}
-        className="max-w-40 shrink-0 truncate text-[13px] font-medium sm:max-w-60"
-      >
-        {templateName}
-      </span>
+      <div className="flex min-w-0 items-center gap-2">
+        <span
+          title={templateName}
+          className="max-w-40 shrink-0 truncate text-[13px] font-medium sm:max-w-60"
+        >
+          {templateName}
+        </span>
+        {saveStatus && <div className="hidden sm:block">{saveStatus}</div>}
+      </div>
 
       <ol className="hidden items-center justify-center gap-2 lg:flex">
         {STEPS.map((label, index) => {

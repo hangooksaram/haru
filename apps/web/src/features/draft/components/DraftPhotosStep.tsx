@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
 import { DraftPhotoGrid } from "@/features/draft/components/DraftPhotoGrid";
+import { DraftSaveStatus } from "@/features/draft/components/DraftSaveStatus";
 import {
   DraftEditorBody,
   DraftEditorHeader,
@@ -28,6 +29,7 @@ import { useTemplatePhotoElements } from "@/features/template/hooks/useTemplateP
 
 import type { DraftPhotoGroup } from "@/features/draft/components/DraftPhotoGrid";
 import type { DraftPhotoSlotStatus } from "@/features/draft/components/DraftPhotoItem";
+import type { DraftTextSaveStatus } from "@/features/draft/hooks/useDraftTexts";
 
 type Props = {
   templateId: string;
@@ -251,6 +253,22 @@ export function DraftPhotosStep({
     swap.mutate({ from, to });
   }
 
+  // 업로드·교체·순서 변경 중 가장 최근 요청의 결과를 보여준다.
+  // 일부 사진만 실패한 업로드도 저장 완료로 보이면 안 되므로 실패로 본다.
+  function getPhotoSaveStatus(): DraftTextSaveStatus {
+    const mutations = [upload, replace, swap];
+    if (mutations.some((mutation) => mutation.isPending)) return "saving";
+
+    const latest = mutations.reduce((a, b) =>
+      b.submittedAt > a.submittedAt ? b : a,
+    );
+    if (latest.isError) return "error";
+    if (latest === upload && upload.data?.failedLabels.length) return "error";
+    if (latest.isSuccess) return "saved";
+
+    return "idle";
+  }
+
   function validatePhotoCount(): boolean {
     if (photoCount < labelCount) {
       toast.error("사진을 모두 업로드해 주세요.");
@@ -316,6 +334,7 @@ export function DraftPhotosStep({
           remainingLabel={
             remainingCount > 0 ? `${remainingCount}장 남음` : undefined
           }
+          saveStatus={<DraftSaveStatus status={getPhotoSaveStatus()} />}
         />
       </DraftEditorHeader>
 
@@ -375,9 +394,6 @@ export function DraftPhotosStep({
             }}
           />
         </div>
-        <p className="text-muted-foreground text-xs">
-          사진은 올리는 즉시 저장돼요.
-        </p>
         {message && (
           <p className="text-sm font-medium text-amber-600">{message}</p>
         )}

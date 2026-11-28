@@ -90,16 +90,14 @@ export function DraftSubtitleStep({ templateId, prevHref }: Props) {
           primaryLabel="다음: 결제"
           onPrimaryClick={handlePrimaryClick}
           primaryPending={isSubmitting}
+          saveStatus={<DraftSaveStatus status={saveStatus} />}
         />
       </DraftEditorHeader>
 
       <DraftEditorBody className="gap-8">
-        <div className="flex items-center justify-between gap-4">
-          <p className="text-muted-foreground text-sm">
-            {filledCount}/{subtitleElements.length} 채움
-          </p>
-          <DraftSaveStatus status={saveStatus} />
-        </div>
+        <p className="text-muted-foreground text-sm">
+          {filledCount}/{subtitleElements.length} 채움
+        </p>
 
         <section className="flex flex-col gap-4">
           <h2 className="font-medium">자막</h2>
