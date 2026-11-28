@@ -6,16 +6,18 @@ import {
   InvalidDraftTextError,
 } from "@/features/draft/errors";
 import { assertDraftOwner } from "@/features/draft/lib/assertDraftOwner";
+import { isLaterDraftStep } from "@/features/draft/lib/isLaterDraftStep";
 import { resolveDraftTextElement } from "@/features/draft/lib/resolveDraftTextElement";
 import { trimBlankText } from "@/features/draft/lib/trimBlankText";
 import { extractSortedTextElements } from "@/features/template/lib/extractSortedTextElements";
 
-import type { DraftTextInput } from "@/features/draft/types";
+import type { DraftStep, DraftTextInput } from "@/features/draft/types";
 
 export async function updateDraftTexts(
   draftId: string,
   texts: DraftTextInput[],
   currentUserId: string | null,
+  lastStep?: DraftStep,
 ): Promise<void> {
   const draft = await prisma.draft.findUnique({
     where: { id: draftId },
@@ -53,6 +55,12 @@ export async function updateDraftTexts(
 
   await prisma.draft.update({
     where: { id: draftId },
-    data: { texts: resolved },
+    data: {
+      texts: resolved,
+      // 정책: 다음 버튼으로 넘어갈 때 함께 받은 단계가 기존 last_step보다 뒤일 때만 갱신한다.
+      ...(lastStep && isLaterDraftStep(lastStep, draft.lastStep)
+        ? { lastStep }
+        : {}),
+    },
   });
 }

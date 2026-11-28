@@ -23,6 +23,7 @@ import { useDraft } from "@/features/draft/hooks/useDraft";
 import { useRequireBasicInfo } from "@/features/draft/hooks/useRequireBasicInfo";
 import { useReplaceDraftPhoto } from "@/features/draft/hooks/useReplaceDraftPhoto";
 import { useSwapDraftPhotos } from "@/features/draft/hooks/useSwapDraftPhotos";
+import { useUpdateDraftLastStep } from "@/features/draft/hooks/useUpdateDraftLastStep";
 import { useUploadDraftPhotos } from "@/features/draft/hooks/useUploadDraftPhotos";
 import { groupPhotoLabels } from "@/features/draft/lib/groupPhotoLabels";
 import { useTemplate } from "@/features/template/hooks/useTemplate";
@@ -49,6 +50,7 @@ export function DraftPhotosStep({
   const [isNavigating, setIsNavigating] = useState(false);
   const { draftId } = useDraftId();
   const { data: draft, isLoading: isDraftLoading } = useDraft(draftId ?? null);
+  const { mutate: updateLastStep } = useUpdateDraftLastStep();
   const { data: template } = useTemplate(templateId);
   const { data: labels, isLoading: isLabelsLoading } =
     useTemplatePhotoElements(templateId);
@@ -290,6 +292,14 @@ export function DraftPhotosStep({
   function handlePrimaryClick() {
     if (!validatePhotoCount()) return;
 
+    // 사진은 올릴 때마다 저장돼 다음 버튼에 저장 요청이 없으므로 last_step만 따로 저장한다.
+    // 정책: 저장에 실패해도 단계 이동은 막지 않는다.
+    if (draftId) {
+      updateLastStep({
+        draftId,
+        lastStep: returnToPayment ? "payment" : "subtitle",
+      });
+    }
     setIsNavigating(true);
     router.push(returnToPayment ? `/draft/${templateId}/payment` : nextHref);
   }
@@ -329,6 +339,7 @@ export function DraftPhotosStep({
           current={1}
           templateId={templateId}
           templateName={template?.name ?? ""}
+          lastStep={draft?.lastStep}
           prevHref={prevHref}
           primaryLabel={returnToPayment ? "결제로 돌아가기" : "다음: 자막 입력"}
           onPrimaryClick={handlePrimaryClick}

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -16,6 +16,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
+import { DRAFT_STEP_SEGMENTS } from "@/features/draft/constants";
 import { useDeleteDraft } from "@/features/draft/hooks/useDeleteDraft";
 import { useDraft } from "@/features/draft/hooks/useDraft";
 
@@ -25,6 +26,7 @@ export function DraftResumeDialog() {
   const { data: draft } = useDraft(draftId ?? null);
   const { mutate: deleteDraft, isPending, error } = useDeleteDraft();
   const queryClient = useQueryClient();
+  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -53,8 +55,13 @@ export function DraftResumeDialog() {
     !isPaymentStep &&
     !isReturnFromPayment;
 
+  // 정책: 이어서 작성을 선택하면 그 시안의 last_step(필수 항목이 빈 단계가 있으면 그 첫 단계)으로 이동한다.
   function handleResume() {
     acknowledgeResume();
+    if (!draft) return;
+
+    const resumePath = `/draft/${draft.templateId}/${DRAFT_STEP_SEGMENTS[draft.resumeStep]}`;
+    if (pathname !== resumePath) router.push(resumePath);
   }
 
   function handleRestart() {

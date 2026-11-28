@@ -6,6 +6,7 @@ import {
   DraftNotFoundError,
   InvalidDraftTextError,
 } from "@/features/draft/errors";
+import { isDraftStep } from "@/features/draft/lib/isDraftStep";
 import { updateDraftTexts } from "@/features/draft/service/update-draft-texts";
 import { createServerClient } from "@/lib/supabase/server";
 
@@ -32,10 +33,18 @@ export async function PUT(request: Request, { params }: Params) {
   const { draftId } = await params;
   const body = await request.json();
   const texts = body?.texts;
+  const lastStep = body?.lastStep;
 
   if (!isValidTextsPayload(texts)) {
     return NextResponse.json(
       { error: "texts가 올바르지 않습니다." },
+      { status: 400 },
+    );
+  }
+
+  if (lastStep !== undefined && !isDraftStep(lastStep)) {
+    return NextResponse.json(
+      { error: "lastStep이 올바르지 않습니다." },
       { status: 400 },
     );
   }
@@ -51,7 +60,7 @@ export async function PUT(request: Request, { params }: Params) {
     const supabase = await createServerClient();
     const { data } = await supabase.auth.getUser();
 
-    await updateDraftTexts(draftId, texts, data.user?.id ?? null);
+    await updateDraftTexts(draftId, texts, data.user?.id ?? null, lastStep);
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {

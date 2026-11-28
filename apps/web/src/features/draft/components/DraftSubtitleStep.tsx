@@ -50,6 +50,7 @@ export function DraftSubtitleStep({ templateId, prevHref }: Props) {
     getValue,
     changeValue,
     saveBeforeNext,
+    lastStep,
   } = useDraftTexts(templateId);
   const { activeElementName, selectElement } = useDraftPreviewContext();
 
@@ -69,7 +70,9 @@ export function DraftSubtitleStep({ templateId, prevHref }: Props) {
   );
 
   async function handlePrimaryClick() {
-    if (await saveBeforeNext()) router.push(`/draft/${templateId}/payment`);
+    if (await saveBeforeNext("payment")) {
+      router.push(`/draft/${templateId}/payment`);
+    }
   }
 
   const filledCount = subtitleElements.filter(
@@ -87,6 +90,7 @@ export function DraftSubtitleStep({ templateId, prevHref }: Props) {
           current={2}
           templateId={templateId}
           templateName={template?.name ?? ""}
+          lastStep={lastStep}
           prevHref={prevHref}
           primaryLabel="다음: 결제"
           onPrimaryClick={handlePrimaryClick}

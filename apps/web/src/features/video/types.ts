@@ -1,8 +1,11 @@
+import type { DraftStep } from "@/features/draft/types";
+
 export type EditingDraftVideo = {
   id: string;
   templateId: string;
   templateName: string;
   updatedAt: Date;
+  resumeStep: DraftStep;
 };
 
 export type PendingOrderVideo = {

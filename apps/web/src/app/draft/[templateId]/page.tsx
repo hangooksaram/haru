@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { DraftEntryRedirect } from "@/features/draft/components/DraftEntryRedirect";
 
 type Props = {
   params: Promise<{ templateId: string }>;
@@ -7,5 +7,5 @@ type Props = {
 export default async function DraftTemplatePage({ params }: Props) {
   const { templateId } = await params;
 
-  redirect(`/draft/${templateId}/basic-info`);
+  return <DraftEntryRedirect templateId={templateId} />;
 }

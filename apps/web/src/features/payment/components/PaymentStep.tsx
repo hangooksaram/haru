@@ -123,6 +123,7 @@ export function PaymentStep({ templateId }: Props) {
         current={3}
         templateId={templateId}
         templateName={templateName}
+        lastStep={draft?.lastStep}
         prevHref={`/draft/${templateId}/subtitle`}
       />
 

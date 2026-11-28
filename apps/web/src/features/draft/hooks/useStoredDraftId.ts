@@ -25,6 +25,20 @@ export function writeStoredDraftId(
   localStorage.setItem(getStorageKey(templateId, currentUserId), draftId);
 }
 
+// useStoredDraftId가 이 템플릿에 들어갔을 때 쓰게 될 기존 시안(본인 키 또는 옮겨 올 키)을 미리 찾는다.
+export function findStoredDraftId(
+  templateId: string,
+  currentUserId: string | null,
+): string | null {
+  const ownKey = getStorageKey(templateId, currentUserId);
+
+  return (
+    localStorage.getItem(ownKey) ??
+    findMigratableDraftId(templateId, ownKey)?.draftId ??
+    null
+  );
+}
+
 export function findMigratableDraftId(
   templateId: string,
   ownKey: string,

@@ -12,7 +12,7 @@ import { trimBlankText } from "@/features/draft/lib/trimBlankText";
 import { useTemplateTextElements } from "@/features/template/hooks/useTemplateTextElements";
 import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
 
-import type { DraftTextInput } from "@/features/draft/types";
+import type { DraftStep, DraftTextInput } from "@/features/draft/types";
 import type { TemplateTextElement } from "@/features/template/types";
 
 const AUTOSAVE_DEBOUNCE_MS = 500;
@@ -50,7 +50,10 @@ export function useDraftTexts(templateId: string) {
     setDebouncedValues(restored);
   }, [draftId, draft]);
 
-  async function persistTexts(nextValues: Record<string, string>) {
+  async function persistTexts(
+    nextValues: Record<string, string>,
+    lastStep?: DraftStep,
+  ) {
     const payload: DraftTextInput[] = textElements.flatMap((element) => {
       const text = nextValues[elementKey(element)] ?? "";
       if (element.type === "기본정보" && trimBlankText(text) === "") {
@@ -63,7 +66,7 @@ export function useDraftTexts(templateId: string) {
     if (!draftId) return;
     setSaveStatus("saving");
     try {
-      await updateTexts({ draftId, texts: payload });
+      await updateTexts({ draftId, texts: payload, lastStep });
       setSaveStatus("saved");
     } catch (error) {
       setSaveStatus("error");
@@ -110,11 +113,12 @@ export function useDraftTexts(templateId: string) {
   }
 
   // 디바운스 대기 중인 입력도 이동 전에 저장한다.
+  // 넘어갈 단계(nextStep)를 함께 보내 last_step으로 저장한다.
   // 저장에 성공하면 true를 돌려준다. 성공하면 이동할 때까지 주 버튼을 잠근 채로 둔다.
-  async function saveBeforeNext(): Promise<boolean> {
+  async function saveBeforeNext(nextStep: DraftStep): Promise<boolean> {
     setIsSubmitting(true);
     try {
-      await persistTexts(values);
+      await persistTexts(values, nextStep);
     } catch {
       toast.error("저장에 실패했습니다. 다시 시도해 주세요.");
       setIsSubmitting(false);
@@ -133,5 +137,6 @@ export function useDraftTexts(templateId: string) {
     getValue,
     changeValue,
     saveBeforeNext,
+    lastStep: draft?.lastStep,
   };
 }

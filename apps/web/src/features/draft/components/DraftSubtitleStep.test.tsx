@@ -25,6 +25,11 @@ const { useDraftPreviewContext } = vi.hoisted(() => ({
   useDraftPreviewContext: vi.fn(),
 }));
 
+vi.mock("@/features/draft/components/TemplateSwitcher", () => ({
+  TemplateSwitcher: ({ templateName }: { templateName: string }) => (
+    <span>{templateName}</span>
+  ),
+}));
 vi.mock("sonner", () => ({ toast }));
 vi.mock("next/navigation", () => ({ useRouter }));
 vi.mock("@/features/draft/components/DraftIdProvider", () => ({ useDraftId }));
@@ -179,6 +184,19 @@ describe("DraftSubtitleStep", () => {
     expect(toast.error).not.toHaveBeenCalled();
     await waitFor(() =>
       expect(push).toHaveBeenCalledWith("/draft/template-1/payment"),
+    );
+  });
+
+  it("다음 버튼으로 결제 단계로 넘어가면 결제 단계를 last_step으로 함께 보낸다", async () => {
+    const { push, mutate } = setup();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+    render(<DraftSubtitleStep templateId="template-1" prevHref="/prev" />);
+    await user.click(screen.getByRole("button", { name: "다음: 결제" }));
+
+    await waitFor(() => expect(push).toHaveBeenCalled());
+    expect(mutate).toHaveBeenLastCalledWith(
+      expect.objectContaining({ lastStep: "payment" }),
     );
   });
 });

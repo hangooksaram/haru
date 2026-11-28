@@ -1,6 +1,7 @@
 import { prisma } from "@haru/db";
 
 import { assertDraftOwner } from "@/features/draft/lib/assertDraftOwner";
+import { resolveDraftResumeStep } from "@/features/draft/lib/resolveDraftResumeStep";
 
 import { getDraftPhotoSignedUrl } from "./draft-photo-storage";
 
@@ -16,7 +17,7 @@ export async function getDraft(
     where: { id: draftId },
     include: {
       photos: { orderBy: { position: "asc" } },
-      template: { select: { name: true } },
+      template: { select: { name: true, elements: true } },
     },
   });
 
@@ -41,5 +42,12 @@ export async function getDraft(
     status: draft.status,
     photos,
     texts: draft.texts as DraftSavedText[],
+    lastStep: draft.lastStep,
+    resumeStep: resolveDraftResumeStep({
+      lastStep: draft.lastStep,
+      templateElements: draft.template.elements,
+      texts: draft.texts as DraftSavedText[],
+      photoNames: draft.photos.map(({ name }) => name),
+    }),
   };
 }

@@ -4,16 +4,21 @@ import { describe, expect, it, vi } from "vitest";
 
 import { DraftResumeDialog } from "./DraftResumeDialog";
 
-const { usePathname, useSearchParams } = vi.hoisted(() => ({
+const { usePathname, useSearchParams, push } = vi.hoisted(() => ({
   usePathname: vi.fn(),
   useSearchParams: vi.fn(),
+  push: vi.fn(),
 }));
 const { useQueryClient } = vi.hoisted(() => ({ useQueryClient: vi.fn() }));
 const { useDraftId } = vi.hoisted(() => ({ useDraftId: vi.fn() }));
 const { useDraft } = vi.hoisted(() => ({ useDraft: vi.fn() }));
 const { useDeleteDraft } = vi.hoisted(() => ({ useDeleteDraft: vi.fn() }));
 
-vi.mock("next/navigation", () => ({ usePathname, useSearchParams }));
+vi.mock("next/navigation", () => ({
+  usePathname,
+  useSearchParams,
+  useRouter: () => ({ push }),
+}));
 vi.mock("@tanstack/react-query", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@tanstack/react-query")>()),
   useQueryClient,
@@ -28,7 +33,12 @@ const TITLE = "작성 중이던 시안이 있어요";
 
 function setup({
   draftId = "draft-1",
-  draft = { id: "draft-1", texts: [{ name: "신랑", text: "홍길동" }] },
+  draft = {
+    id: "draft-1",
+    templateId: "template-1",
+    resumeStep: "photos",
+    texts: [{ name: "신랑", text: "홍길동" }],
+  },
   isFreshlyCreated = false,
   pathname = "/draft/template-1/photos",
   search = "",
@@ -48,6 +58,7 @@ function setup({
   const clearDraftId = vi.fn();
   const removeQueries = vi.fn();
   const acknowledgeResume = vi.fn();
+  push.mockReset();
 
   usePathname.mockReturnValue(pathname);
   useSearchParams.mockReturnValue(new URLSearchParams(search));
@@ -110,6 +121,34 @@ describe("DraftResumeDialog", () => {
 
     expect(screen.queryByText(TITLE)).not.toBeInTheDocument();
     expect(acknowledgeResume).toHaveBeenCalled();
+  });
+
+  it("'이어서 작성'을 선택하면 그 시안의 last_step(필수 항목이 빈 단계가 있으면 그 첫 단계)으로 이동한다", async () => {
+    setup({
+      pathname: "/draft/template-1/basic-info",
+      draft: {
+        id: "draft-1",
+        templateId: "template-1",
+        resumeStep: "subtitle",
+        texts: [{ name: "신랑", text: "홍길동" }],
+      },
+    });
+    const user = userEvent.setup();
+
+    render(<DraftResumeDialog />);
+    await user.click(screen.getByRole("button", { name: "이어서 작성" }));
+
+    expect(push).toHaveBeenCalledWith("/draft/template-1/subtitle");
+  });
+
+  it("이동할 단계에 이미 있으면 이동하지 않는다", async () => {
+    setup({ pathname: "/draft/template-1/photos" });
+    const user = userEvent.setup();
+
+    render(<DraftResumeDialog />);
+    await user.click(screen.getByRole("button", { name: "이어서 작성" }));
+
+    expect(push).not.toHaveBeenCalled();
   });
 
   it("입력된 텍스트가 없는 시안이면 모달을 보여주지 않는다", () => {

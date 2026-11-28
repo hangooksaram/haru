@@ -50,6 +50,7 @@ export function DraftBasicInfoStep({
     getValue,
     changeValue,
     saveBeforeNext,
+    lastStep,
   } = useDraftTexts(templateId);
   const fieldNodesRef = useRef(new Map<string, HTMLElement>());
   // 처음 들어왔을 때부터 빈 칸마다 에러를 띄우지 않도록, 건드리고 벗어난 칸이나 다음을 누른 뒤에만 보여준다.
@@ -94,7 +95,9 @@ export function DraftBasicInfoStep({
       return;
     }
 
-    if (!(await saveBeforeNext())) return;
+    if (!(await saveBeforeNext(returnToPayment ? "payment" : "photos"))) {
+      return;
+    }
 
     router.push(returnToPayment ? `/draft/${templateId}/payment` : nextHref);
   }
@@ -108,6 +111,7 @@ export function DraftBasicInfoStep({
           current={0}
           templateId={templateId}
           templateName={template?.name ?? ""}
+          lastStep={lastStep}
           primaryLabel={
             returnToPayment ? "결제로 돌아가기" : "다음: 사진 올리기"
           }

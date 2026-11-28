@@ -28,10 +28,18 @@ const { useReplaceDraftPhoto } = vi.hoisted(() => ({
 const { useSwapDraftPhotos } = vi.hoisted(() => ({
   useSwapDraftPhotos: vi.fn(),
 }));
+const { useUpdateDraftLastStep } = vi.hoisted(() => ({
+  useUpdateDraftLastStep: vi.fn(),
+}));
 const { useDraftPreviewContext } = vi.hoisted(() => ({
   useDraftPreviewContext: vi.fn(),
 }));
 
+vi.mock("@/features/draft/components/TemplateSwitcher", () => ({
+  TemplateSwitcher: ({ templateName }: { templateName: string }) => (
+    <span>{templateName}</span>
+  ),
+}));
 vi.mock("sonner", () => ({ toast }));
 vi.mock("next/navigation", () => ({ useRouter }));
 vi.mock("@/features/draft/components/DraftIdProvider", () => ({ useDraftId }));
@@ -52,6 +60,9 @@ vi.mock("@/features/draft/hooks/useReplaceDraftPhoto", () => ({
 vi.mock("@/features/draft/hooks/useSwapDraftPhotos", () => ({
   useSwapDraftPhotos,
 }));
+vi.mock("@/features/draft/hooks/useUpdateDraftLastStep", () => ({
+  useUpdateDraftLastStep,
+}));
 vi.mock("@/features/draft/components/DraftPreviewProvider", () => ({
   useDraftPreviewContext,
   DraftPreviewBinding: () => null,
@@ -61,7 +72,9 @@ function setup(draft: Draft, labels: string[]) {
   const push = vi.fn();
   const selectElement = vi.fn();
   const uploadMutate = vi.fn();
+  const updateLastStep = vi.fn();
   useRouter.mockReturnValue({ push });
+  useUpdateDraftLastStep.mockReturnValue({ mutate: updateLastStep });
   useDraftId.mockReturnValue({
     draftId: "draft-1",
     setDraftId: vi.fn(),
@@ -91,7 +104,7 @@ function setup(draft: Draft, labels: string[]) {
     playbackProgress: 0,
   });
 
-  return { push, selectElement, uploadMutate };
+  return { push, selectElement, uploadMutate, updateLastStep };
 }
 
 function createDraft(photoNames: string[]): Draft {
@@ -107,6 +120,8 @@ function createDraft(photoNames: string[]): Draft {
       url: `/photo-${index}.jpg`,
     })),
     texts: [],
+    lastStep: "photos",
+    resumeStep: "photos",
   };
 }
 
@@ -130,6 +145,45 @@ describe("DraftPhotosStep", () => {
 
   it("템플릿의 사진 개수만큼 올리면 다음으로 이동한다", async () => {
     const { push } = setup(createDraft(["1", "2"]), ["1", "2"]);
+    const user = userEvent.setup();
+
+    render(
+      <DraftPhotosStep
+        templateId="template-1"
+        prevHref="/prev"
+        nextHref="/next"
+      />,
+    );
+    await user.click(screen.getByRole("button", { name: "다음: 자막 입력" }));
+
+    expect(push).toHaveBeenCalledWith("/next");
+  });
+
+  it("다음 버튼으로 자막 단계로 넘어가면 자막 단계를 last_step으로 저장한다", async () => {
+    const { push, updateLastStep } = setup(createDraft(["1", "2"]), ["1", "2"]);
+    const user = userEvent.setup();
+
+    render(
+      <DraftPhotosStep
+        templateId="template-1"
+        prevHref="/prev"
+        nextHref="/next"
+      />,
+    );
+    await user.click(screen.getByRole("button", { name: "다음: 자막 입력" }));
+
+    expect(updateLastStep).toHaveBeenCalledWith({
+      draftId: "draft-1",
+      lastStep: "subtitle",
+    });
+    expect(push).toHaveBeenCalledWith("/next");
+  });
+
+  it("last_step 저장 결과를 기다리지 않고 다음 단계로 이동한다", async () => {
+    const { push, updateLastStep } = setup(createDraft(["1", "2"]), ["1", "2"]);
+    updateLastStep.mockImplementation((_variables, options) =>
+      options?.onError?.(new Error("저장 실패")),
+    );
     const user = userEvent.setup();
 
     render(

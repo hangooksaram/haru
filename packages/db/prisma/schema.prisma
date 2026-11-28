@@ -49,6 +49,14 @@ enum DraftStatus {
   converting
 }
 
+// 유저가 가장 멀리 진행한 시안 단계. 앞 단계로 돌아가도 줄지 않고, 시안을 다시 열 때 이 단계로 보낸다.
+enum DraftStep {
+  basic_info
+  photos
+  subtitle
+  payment
+}
+
 model Draft {
   id         String      @id @default(cuid())
   // 인증 기능이 아직 없어 users 테이블과의 관계는 연결하지 않음. 추후 인증 구현 시 FK로 연결.
@@ -60,6 +68,7 @@ model Draft {
   deletedAt  DateTime?   @map("deleted_at")
   // 시안 텍스트 전체 배열. 요소는 { name, text }이며 name은 요소 전체 이름(Creatomate modifications key).
   texts      Json        @default("[]")
+  lastStep   DraftStep   @default(basic_info) @map("last_step")
 
   template Template     @relation(fields: [templateId], references: [id])
   photos   DraftPhoto[]

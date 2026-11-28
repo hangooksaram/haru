@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 
 import { useCurrentUserId } from "@/features/auth/hooks/useCurrentUserId";
 import { useDraftAcknowledged } from "@/features/draft/components/DraftAcknowledgedProvider";
+import { DRAFT_STEP_SEGMENTS } from "@/features/draft/constants";
 import {
   readStoredDraftId,
   writeStoredDraftId,
@@ -30,7 +31,10 @@ export function EditingDraftCard({ draft }: Props) {
       writeStoredDraftId(draft.templateId, userId, draft.id);
     }
     acknowledge(draft.id);
-    router.push(`/draft/${draft.templateId}/basic-info`);
+    // 정책: 작성 중 영상 카드를 누르면 그 시안의 last_step(필수 항목이 빈 단계가 있으면 그 첫 단계)으로 이동한다.
+    router.push(
+      `/draft/${draft.templateId}/${DRAFT_STEP_SEGMENTS[draft.resumeStep]}`,
+    );
   }
 
   return (

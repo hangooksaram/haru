@@ -19,6 +19,11 @@ const { useTemplateTextElements } = vi.hoisted(() => ({
   useTemplateTextElements: vi.fn(),
 }));
 
+vi.mock("@/features/draft/components/TemplateSwitcher", () => ({
+  TemplateSwitcher: ({ templateName }: { templateName: string }) => (
+    <span>{templateName}</span>
+  ),
+}));
 vi.mock("sonner", () => ({ toast }));
 vi.mock("next/navigation", () => ({ useRouter }));
 vi.mock("@/features/draft/components/DraftIdProvider", () => ({ useDraftId }));
@@ -152,7 +157,7 @@ describe("DraftBasicInfoStep", () => {
     expect(push).not.toHaveBeenCalled();
   });
 
-  it("기본정보를 모두 입력하면 저장한 뒤 다음으로 이동한다", async () => {
+  it("기본정보를 모두 입력하면 저장한 뒤 다음으로 이동하고, 다음 단계를 last_step으로 함께 보낸다", async () => {
     const { push, mutate } = setup({
       draftTexts: [{ name: "상호명", text: "철수네 사진관" }],
     });
@@ -168,6 +173,7 @@ describe("DraftBasicInfoStep", () => {
         { type: "기본정보", name: "상호명", text: "철수네 사진관" },
         { type: "자막", name: "1", text: "" },
       ],
+      lastStep: "photos",
     });
   });
 

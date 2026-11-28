@@ -2,8 +2,11 @@ import Link from "next/link";
 import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { TemplateSwitcher } from "@/features/draft/components/TemplateSwitcher";
+import { DRAFT_STEP_ORDER } from "@/features/draft/constants";
 import { cn } from "@/lib/utils";
 
+import type { DraftStep } from "@/features/draft/types";
 import type { ReactNode } from "react";
 
 const STEPS = ["기본정보", "사진", "자막", "확인·결제"];
@@ -12,6 +15,8 @@ type Props = {
   current: 0 | 1 | 2 | 3;
   templateId: string;
   templateName: string;
+  // 가장 멀리 진행한 단계. 스테퍼에서 이 단계까지 눌러 이동할 수 있다.
+  lastStep?: DraftStep;
   prevHref?: string;
   primaryLabel?: string;
   onPrimaryClick?: () => void;
@@ -39,6 +44,7 @@ export function DraftStepBar({
   current,
   templateId,
   templateName,
+  lastStep,
   prevHref,
   primaryLabel,
   onPrimaryClick,
@@ -46,15 +52,15 @@ export function DraftStepBar({
   guidanceText,
   saveStatus,
 }: Props) {
+  const reachedIndex = Math.max(
+    current,
+    DRAFT_STEP_ORDER.indexOf(lastStep ?? "basic_info"),
+  );
+
   return (
     <div className="bg-background sticky top-16 z-40 flex h-16 items-center gap-4 border-b lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
       <div className="flex min-w-0 items-center gap-2">
-        <span
-          title={templateName}
-          className="max-w-40 shrink-0 truncate text-base font-medium sm:max-w-60"
-        >
-          {templateName}
-        </span>
+        <TemplateSwitcher templateId={templateId} templateName={templateName} />
         {saveStatus && <div className="hidden sm:block">{saveStatus}</div>}
       </div>
 
@@ -63,7 +69,9 @@ export function DraftStepBar({
           const isCompleted = index < current;
           const isCurrent = index === current;
           const isLast = index === STEPS.length - 1;
-          const href = isCompleted ? getStepHref(index, templateId) : null;
+          const isReached = index <= reachedIndex;
+          const href =
+            isReached && !isCurrent ? getStepHref(index, templateId) : null;
 
           return (
             <li
@@ -80,7 +88,7 @@ export function DraftStepBar({
                   />
                   <StepLabel
                     label={label}
-                    isCompleted={isCompleted}
+                    isReached={isReached}
                     isCurrent={isCurrent}
                   />
                 </Link>
@@ -93,7 +101,7 @@ export function DraftStepBar({
                   />
                   <StepLabel
                     label={label}
-                    isCompleted={isCompleted}
+                    isReached={isReached}
                     isCurrent={isCurrent}
                   />
                 </div>
@@ -185,18 +193,18 @@ function StepCircle({ index, isCompleted, isCurrent }: StepCircleProps) {
 
 type StepLabelProps = {
   label: string;
-  isCompleted: boolean;
+  isReached: boolean;
   isCurrent: boolean;
 };
 
-function StepLabel({ label, isCompleted, isCurrent }: StepLabelProps) {
+function StepLabel({ label, isReached, isCurrent }: StepLabelProps) {
   return (
     <span
       className={cn(
         "text-base whitespace-nowrap",
         isCurrent
           ? "text-foreground font-semibold"
-          : isCompleted
+          : isReached
             ? "text-foreground font-medium"
             : "text-muted-foreground font-medium",
       )}

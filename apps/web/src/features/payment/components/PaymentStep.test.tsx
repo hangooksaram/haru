@@ -11,6 +11,11 @@ const { useCreateOrderWithGuestResume } = vi.hoisted(() => ({
   useCreateOrderWithGuestResume: vi.fn(),
 }));
 
+vi.mock("@/features/draft/components/TemplateSwitcher", () => ({
+  TemplateSwitcher: ({ templateName }: { templateName: string }) => (
+    <span>{templateName}</span>
+  ),
+}));
 vi.mock("@/features/draft/components/DraftIdProvider", () => ({ useDraftId }));
 vi.mock("@/features/draft/hooks/useDraft", () => ({ useDraft }));
 vi.mock("@/features/template/hooks/useTemplate", () => ({ useTemplate }));

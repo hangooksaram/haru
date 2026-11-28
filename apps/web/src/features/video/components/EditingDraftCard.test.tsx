@@ -31,6 +31,7 @@ const draft = {
   templateId: "template-1",
   templateName: "프로포즈",
   updatedAt: new Date("2026-11-01"),
+  resumeStep: "subtitle" as const,
 };
 
 function setup({ storedDraftId }: { storedDraftId: string | null }) {
@@ -39,14 +40,17 @@ function setup({ storedDraftId }: { storedDraftId: string | null }) {
 
   useRouter.mockReturnValue({ push });
   useCurrentUserId.mockReturnValue("user-1");
-  useDraftAcknowledged.mockReturnValue({ acknowledge, isAcknowledged: vi.fn() });
+  useDraftAcknowledged.mockReturnValue({
+    acknowledge,
+    isAcknowledged: vi.fn(),
+  });
   readStoredDraftId.mockReturnValue(storedDraftId);
 
   return { push, acknowledge };
 }
 
 describe("EditingDraftCard", () => {
-  it("로컬 저장소에 같은 draftId가 없으면 저장하고 이어서 작성하러 이동한다", async () => {
+  it("로컬 저장소에 같은 draftId가 없으면 저장하고 last_step(필수 항목이 빈 단계가 있으면 그 첫 단계)으로 이동한다", async () => {
     const { push, acknowledge } = setup({ storedDraftId: "other-draft" });
     const user = userEvent.setup();
 
@@ -59,7 +63,7 @@ describe("EditingDraftCard", () => {
       "draft-1",
     );
     expect(acknowledge).toHaveBeenCalledWith("draft-1");
-    expect(push).toHaveBeenCalledWith("/draft/template-1/basic-info");
+    expect(push).toHaveBeenCalledWith("/draft/template-1/subtitle");
   });
 
   it("이미 같은 draftId가 저장되어 있으면 다시 저장하지 않는다", async () => {
@@ -70,6 +74,6 @@ describe("EditingDraftCard", () => {
     await user.click(screen.getByRole("button", { name: /프로포즈/ }));
 
     expect(writeStoredDraftId).not.toHaveBeenCalled();
-    expect(push).toHaveBeenCalledWith("/draft/template-1/basic-info");
+    expect(push).toHaveBeenCalledWith("/draft/template-1/subtitle");
   });
 });
