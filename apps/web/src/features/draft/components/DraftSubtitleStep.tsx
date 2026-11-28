@@ -106,7 +106,7 @@ export function DraftSubtitleStep({ templateId, prevHref }: Props) {
               key={elementKey(element)}
               className="flex flex-col gap-1.5 text-base font-medium"
             >
-              <div className="flex items-start gap-3">
+              <div className="flex items-center gap-3">
                 <Input
                   className="flex-1"
                   value={getValue(element)}

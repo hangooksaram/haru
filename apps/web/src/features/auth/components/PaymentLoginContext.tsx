@@ -24,13 +24,13 @@ export async function PaymentLoginContext({ next }: Props) {
   const templateName = await getTemplateName(templateId);
 
   return (
-    <div className="flex flex-col gap-2 rounded-xl border p-4">
+    <div className="bg-muted flex flex-col gap-2 rounded-xl p-4">
       <p className="text-sm font-bold">로그인하면 바로 결제로 이어져요</p>
       <p className="text-muted-foreground text-xs">
         작성한 시안은 그대로 유지돼요.
       </p>
       {templateName && (
-        <div className="flex items-center gap-2 border-t border-dashed pt-2 text-xs">
+        <div className="border-foreground/15 flex items-center gap-2 border-t border-dashed pt-2 text-xs">
           <span className="min-w-0 truncate font-medium">{templateName}</span>
           <span className="bg-brand-soft text-brand-deep ml-auto shrink-0 rounded-md px-1.5 py-0.5 font-semibold">
             영상 제작 중

@@ -17,7 +17,7 @@ export function FaqSection() {
       </h2>
       <div className="grid gap-5 sm:grid-cols-2">
         {FAQS.map((faq) => (
-          <div key={faq.question} className="rounded-2xl border p-5 sm:p-7">
+          <div key={faq.question} className="bg-muted rounded-2xl p-5 sm:p-7">
             <h3 className="text-base font-bold sm:text-lg">{faq.question}</h3>
             <p className="text-muted-foreground mt-2 text-sm leading-relaxed sm:text-[15px]">
               {faq.answer}

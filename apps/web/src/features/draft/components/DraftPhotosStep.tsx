@@ -339,7 +339,7 @@ export function DraftPhotosStep({
       </DraftEditorHeader>
 
       <DraftEditorBody className="gap-4">
-        <div className="flex flex-wrap items-center gap-4 rounded-xl border p-4">
+        <div className="bg-muted flex flex-wrap items-center gap-4 rounded-xl p-4">
           <div className="flex items-baseline gap-1.5">
             <span className="text-primary text-2xl font-bold tabular-nums">
               {photoCount}장
@@ -356,7 +356,7 @@ export function DraftPhotosStep({
               aria-valuemin={0}
               aria-valuemax={labelCount}
               aria-valuenow={photoCount}
-              className="bg-muted h-2 overflow-hidden rounded-full"
+              className="bg-background h-2 overflow-hidden rounded-full"
             >
               <div
                 className="bg-primary h-full rounded-full transition-[width]"

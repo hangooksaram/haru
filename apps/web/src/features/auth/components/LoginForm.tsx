@@ -38,7 +38,7 @@ export function LoginForm({ next }: Props) {
           required
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          className="h-12 rounded-xl border-transparent bg-muted px-4 text-base"
+          className="h-12 rounded-xl px-4 text-base"
         />
       </div>
       <div className="flex flex-col gap-1.5">
@@ -51,7 +51,7 @@ export function LoginForm({ next }: Props) {
           required
           value={password}
           onChange={(event) => setPassword(event.target.value)}
-          className="h-12 rounded-xl border-transparent bg-muted px-4 text-base"
+          className="h-12 rounded-xl px-4 text-base"
         />
       </div>
       {login.isError && (

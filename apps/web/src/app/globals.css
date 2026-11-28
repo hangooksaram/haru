@@ -23,6 +23,8 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
+  /* 입력창 경계: 흰 배경 대비 3:1 이상 (WCAG 1.4.11) */
+  --input-border: oklch(0.645 0 0);
   --ring: var(--color-sky-400);
   --brand: var(--color-sky-400);
   --brand-deep: var(--color-sky-700);
@@ -85,6 +87,7 @@ html.dark {
   --color-chart-1: var(--chart-1);
   --color-ring: var(--ring);
   --color-input: var(--input);
+  --color-input-border: var(--input-border);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
@@ -128,6 +131,7 @@ html.dark {
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
+  --input-border: oklch(1 0 0 / 35%);
   --ring: var(--color-sky-400);
   --brand: var(--color-sky-400);
   --brand-deep: var(--color-sky-300);

@@ -117,7 +117,7 @@ export function PaymentStep({ templateId }: Props) {
     validation.data?.passed === false ? validation.data.errors : null;
 
   return (
-    <div className="flex flex-col gap-4 py-4">
+    <div className="flex flex-col gap-4">
       <DraftStepBar
         current={3}
         templateId={templateId}

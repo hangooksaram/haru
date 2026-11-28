@@ -40,7 +40,9 @@ export function DraftSaveStatus({ status }: Props) {
 
 function StatusIcon({ status }: Props) {
   if (status === "saving") {
-    return <LoaderCircle className="size-3.5 animate-spin" aria-hidden="true" />;
+    return (
+      <LoaderCircle className="size-3.5 animate-spin" aria-hidden="true" />
+    );
   }
   if (status === "error") {
     return <CloudAlert className="size-3.5" aria-hidden="true" />;
