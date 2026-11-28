@@ -4,13 +4,16 @@ import { describe, expect, it, vi } from "vitest";
 
 import { DraftResumeDialog } from "./DraftResumeDialog";
 
-const { usePathname } = vi.hoisted(() => ({ usePathname: vi.fn() }));
+const { usePathname, useSearchParams } = vi.hoisted(() => ({
+  usePathname: vi.fn(),
+  useSearchParams: vi.fn(),
+}));
 const { useQueryClient } = vi.hoisted(() => ({ useQueryClient: vi.fn() }));
 const { useDraftId } = vi.hoisted(() => ({ useDraftId: vi.fn() }));
 const { useDraft } = vi.hoisted(() => ({ useDraft: vi.fn() }));
 const { useDeleteDraft } = vi.hoisted(() => ({ useDeleteDraft: vi.fn() }));
 
-vi.mock("next/navigation", () => ({ usePathname }));
+vi.mock("next/navigation", () => ({ usePathname, useSearchParams }));
 vi.mock("@tanstack/react-query", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@tanstack/react-query")>()),
   useQueryClient,
@@ -28,6 +31,7 @@ function setup({
   draft = { id: "draft-1", texts: [{ name: "신랑", text: "홍길동" }] },
   isFreshlyCreated = false,
   pathname = "/draft/template-1/photos",
+  search = "",
   mutate = vi.fn(),
   isPending = false,
   error = null,
@@ -36,6 +40,7 @@ function setup({
   draft: unknown;
   isFreshlyCreated: boolean;
   pathname: string;
+  search: string;
   mutate: ReturnType<typeof vi.fn>;
   isPending: boolean;
   error: Error | null;
@@ -45,6 +50,7 @@ function setup({
   const acknowledgeResume = vi.fn();
 
   usePathname.mockReturnValue(pathname);
+  useSearchParams.mockReturnValue(new URLSearchParams(search));
   useQueryClient.mockReturnValue({ removeQueries });
   useDraftId.mockReturnValue({
     draftId,
@@ -95,6 +101,15 @@ describe("DraftResumeDialog", () => {
     render(<DraftResumeDialog />);
 
     expect(screen.queryByText(TITLE)).not.toBeInTheDocument();
+  });
+
+  it("결제 페이지에서 수정으로 진입하면 모달을 보여주지 않고 확인 처리한다", () => {
+    const { acknowledgeResume } = setup({ search: "return=payment" });
+
+    render(<DraftResumeDialog />);
+
+    expect(screen.queryByText(TITLE)).not.toBeInTheDocument();
+    expect(acknowledgeResume).toHaveBeenCalled();
   });
 
   it("입력된 텍스트가 없는 시안이면 모달을 보여주지 않는다", () => {
