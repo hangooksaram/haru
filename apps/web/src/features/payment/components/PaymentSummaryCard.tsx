@@ -1,7 +1,8 @@
-import { Info } from "lucide-react";
+import { Info, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export type PaymentSummaryItem = {
   label: string;
@@ -18,6 +19,7 @@ type Props = {
   payLabel: string;
   onPayClick: () => void;
   isPayDisabled: boolean;
+  isValidating: boolean;
   showLoginNotice: boolean;
   message: string | null;
   validationErrors: string[] | null;
@@ -31,6 +33,7 @@ export function PaymentSummaryCard({
   payLabel,
   onPayClick,
   isPayDisabled,
+  isValidating,
   showLoginNotice,
   message,
   validationErrors,
@@ -120,7 +123,18 @@ export function PaymentSummaryCard({
           onClick={onPayClick}
           disabled={isPayDisabled}
         >
-          {payLabel}
+          {isValidating && (
+            <Loader2 aria-hidden="true" className="size-4 animate-spin" />
+          )}
+          {/* 결제할 수 없을 때(검증 중·실패, 주문 생성 중)는 반짝이지 않도록 문구 효과를 끈다. */}
+          <span
+            className={cn(
+              !isPayDisabled &&
+                "animate-[pay-text-sweep_3.2s_cubic-bezier(0.4,0,0.2,1)_infinite] bg-[linear-gradient(100deg,var(--primary-foreground)_38%,white_50%,var(--primary-foreground)_62%)] bg-size-[250%_100%] bg-clip-text text-transparent",
+            )}
+          >
+            {payLabel}
+          </span>
         </Button>
         <p className="text-muted-foreground text-center text-[11px]">
           결제 후 주문이 확정돼요

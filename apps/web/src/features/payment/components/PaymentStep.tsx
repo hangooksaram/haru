@@ -39,13 +39,9 @@ type PreviewProps = {
 };
 
 function PaymentPreview({ templateId, draft, isValidating }: PreviewProps) {
-  if (isValidating) {
-    return (
-      <p className="text-muted-foreground">영상 요청 내용을 확인하는 중...</p>
-    );
+  if (isValidating || !draft) {
+    return <Skeleton className="aspect-video w-full rounded-xl" />;
   }
-
-  if (!draft) return <Skeleton className="aspect-video w-full rounded-xl" />;
 
   return (
     <DraftVideoPreview
@@ -156,6 +152,7 @@ export function PaymentStep({ templateId }: Props) {
           isPayDisabled={
             isPending || validation.isPending || validationErrors !== null
           }
+          isValidating={validation.isPending}
           showLoginNotice={isAnonymous === true}
           message={message}
           validationErrors={validationErrors}

@@ -197,8 +197,20 @@ html.dark {
   }
 }
 
+/* 결제 버튼 문구 안에서 빛이 좌에서 우로 지나가는 애니메이션 */
+@keyframes pay-text-sweep {
+  0% {
+    background-position: 100% 0;
+  }
+  45%,
+  100% {
+    background-position: 0% 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  [class*="animate-[draft-preview-"] {
+  [class*="animate-[draft-preview-"],
+  [class*="animate-[pay-"] {
     animation: none !important;
   }
 }

@@ -133,7 +133,7 @@ describe("PaymentStep", () => {
     expect(useVideoRequestValidation).toHaveBeenCalledWith("draft-1");
   });
 
-  it("검증 중에는 결제 화면 대신 확인 중 문구를 보여주고 결제하기를 막는다", () => {
+  it("검증 중에는 미리보기 대신 스켈레톤을 보여주고 결제하기를 막는다", () => {
     setup();
     useVideoRequestValidation.mockReturnValue({
       data: undefined,
@@ -141,9 +141,11 @@ describe("PaymentStep", () => {
       isError: false,
     });
 
-    render(<PaymentStep templateId="template-1" />);
+    const { container } = render(<PaymentStep templateId="template-1" />);
 
-    expect(screen.getByText(/확인하는 중/)).toBeInTheDocument();
+    expect(
+      container.querySelector('[data-slot="skeleton"]'),
+    ).toBeInTheDocument();
     expect(screen.queryByTestId("video-preview")).not.toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "10,000원 결제하기" }),
