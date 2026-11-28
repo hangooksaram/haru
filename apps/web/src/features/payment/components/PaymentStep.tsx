@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { DraftStepBar } from "@/components/DraftStepBar";
+import { DraftStepTitle } from "@/components/DraftStepTitle";
 import {
   Dialog,
   DialogContent,
@@ -123,6 +124,11 @@ export function PaymentStep({ templateId }: Props) {
         templateId={templateId}
         templateName={templateName}
         prevHref={`/draft/${templateId}/subtitle`}
+      />
+
+      <DraftStepTitle
+        title="확인·결제"
+        description="미리보기로 영상을 끝까지 확인한 뒤 결제하세요"
       />
 
       <div className="grid items-start gap-6 md:grid-cols-[minmax(0,5.5fr)_minmax(0,4.5fr)]">

@@ -4,6 +4,7 @@ import { Eye } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { DraftStepBar } from "@/components/DraftStepBar";
+import { DraftStepTitle } from "@/components/DraftStepTitle";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -95,12 +96,17 @@ export function DraftSubtitleStep({ templateId, prevHref }: Props) {
       </DraftEditorHeader>
 
       <DraftEditorBody className="gap-8">
-        <p className="text-muted-foreground text-base">
-          {filledCount}/{subtitleElements.length} 채움
-        </p>
+        <div className="flex flex-col gap-3">
+          <DraftStepTitle
+            title="자막"
+            description="장면마다 보여줄 문구를 입력해 주세요"
+          />
+          <p className="text-muted-foreground text-base">
+            {filledCount}/{subtitleElements.length} 채움
+          </p>
+        </div>
 
         <section className="flex flex-col gap-4">
-          <h2 className="font-medium">자막</h2>
           {subtitleElements.map((element) => (
             <label
               key={elementKey(element)}

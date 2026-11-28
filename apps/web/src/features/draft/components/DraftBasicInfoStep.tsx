@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { DraftStepBar } from "@/components/DraftStepBar";
+import { DraftStepTitle } from "@/components/DraftStepTitle";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -119,9 +120,12 @@ export function DraftBasicInfoStep({
         />
       </DraftEditorHeader>
 
-      <DraftEditorBody className="gap-8">
+      <DraftEditorBody className="max-w-xl gap-8">
+        <DraftStepTitle
+          title="기본정보"
+          description="입력한 정보가 영상 속 문구로 들어가요"
+        />
         <section className="flex flex-col gap-4">
-          <h2 className="font-medium">기본정보</h2>
           {basicInfoElements.map((element) => (
             <label
               key={elementKey(element)}
@@ -131,24 +135,19 @@ export function DraftBasicInfoStep({
               }}
               className="flex flex-col gap-1.5 text-base font-medium"
             >
-              <div className="flex items-center gap-3">
-                <span className="w-fit shrink-0 whitespace-nowrap">
-                  {removeHyphens(element.name)}
-                </span>
-                <Input
-                  className="flex-1"
-                  value={getValue(element)}
-                  placeholder={element.text}
-                  onChange={(event) =>
-                    changeValue(elementKey(element), event.target.value)
-                  }
-                  onBlur={() =>
-                    setTouchedKeys((prev) =>
-                      new Set(prev).add(elementKey(element)),
-                    )
-                  }
-                />
-              </div>
+              {removeHyphens(element.name)}
+              <Input
+                value={getValue(element)}
+                placeholder={element.text}
+                onChange={(event) =>
+                  changeValue(elementKey(element), event.target.value)
+                }
+                onBlur={() =>
+                  setTouchedKeys((prev) =>
+                    new Set(prev).add(elementKey(element)),
+                  )
+                }
+              />
               {isEmpty(element) &&
                 (hasTriedNext || touchedKeys.has(elementKey(element))) && (
                   <p className="text-destructive text-sm font-normal">

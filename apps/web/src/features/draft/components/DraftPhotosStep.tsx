@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { DraftStepBar } from "@/components/DraftStepBar";
+import { DraftStepTitle } from "@/components/DraftStepTitle";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDraftId } from "@/features/draft/components/DraftIdProvider";
@@ -339,6 +340,10 @@ export function DraftPhotosStep({
       </DraftEditorHeader>
 
       <DraftEditorBody className="gap-4">
+        <DraftStepTitle
+          title="사진"
+          description="영상에 담을 사진을 올려 주세요"
+        />
         <div className="bg-muted flex flex-wrap items-center gap-4 rounded-xl p-4">
           <div className="flex items-baseline gap-1.5">
             <span className="text-primary text-2xl font-bold tabular-nums">
