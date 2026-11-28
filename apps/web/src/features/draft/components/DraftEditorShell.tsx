@@ -61,6 +61,7 @@ export function DraftEditorShell({ children }: Props) {
   // 않도록 DOM에는 남겨 두고 화면 밖에서 미리 로드한다. (언마운트·이동하면 iframe이 리로드된다)
   const isPreviewHidden = useSelectedLayoutSegment() === "basic-info";
 
+  // 열 비율은 미리보기 상태에 따라 바뀌어 인라인 style 변수로 준다. (디자인 시스템 허용 예외 4)
   return (
     <div
       className="grid gap-x-6 gap-y-4 pb-4 md:[grid-template-columns:var(--preview-cols)] md:transition-[grid-template-columns] md:duration-400 md:ease-in-out"

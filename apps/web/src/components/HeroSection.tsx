@@ -3,18 +3,14 @@ import { HERO_TITLE } from "@/lib/styles";
 // 데스크톱(sm 이상)은 DesktopHeroVideo가 대체하므로 이 컴포넌트는 모바일에서만 렌더링된다.
 export function HeroSection() {
   return (
-    <section
-      className="relative grid items-center gap-6 py-6 pb-10"
-      style={{
-        backgroundImage:
-          "radial-gradient(70% 70% at 75% 55%, var(--brand-soft) 0%, transparent 70%)",
-      }}
-    >
-      {/* 일러스트 애니메이션의 키프레임·반복 시간·지연 값은 디자인 시스템 허용 예외(3)다. */}
+    // radial 그라데이션 모양(크기·중심)은 디자인 시스템 허용 예외(3)다.
+    <section className="from-brand-soft relative grid bg-radial-[70%_70%_at_75%_55%] to-transparent to-70% items-center gap-6 py-6 pb-10">
+      {/* 일러스트 애니메이션의 키프레임·반복 시간·지연 값은 디자인 시스템 허용 예외(3)다.
+          지연은 클래스로 주므로 animation 축약형 대신 개별 속성을 써서 지연을 덮어쓰지 않는다. */}
       <style>{`
-        .hero-word{display:inline-block;animation:hero-rise .8s cubic-bezier(.2,.8,.2,1) both}
+        .hero-word{display:inline-block;animation-name:hero-rise;animation-duration:.8s;animation-timing-function:cubic-bezier(.2,.8,.2,1);animation-fill-mode:both}
         @keyframes hero-rise{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
-        .hero-mark{background-image:linear-gradient(var(--brand),var(--brand));background-repeat:no-repeat;background-position:0 88%;background-size:100% 42%;animation:hero-rise .8s cubic-bezier(.2,.8,.2,1) both,hero-mark-fill .9s cubic-bezier(.2,.8,.2,1) both}
+        .hero-mark{background-image:linear-gradient(var(--brand),var(--brand));background-repeat:no-repeat;background-position:0 88%;background-size:100% 42%;animation-name:hero-rise,hero-mark-fill;animation-duration:.8s,.9s;animation-timing-function:cubic-bezier(.2,.8,.2,1);animation-fill-mode:both}
         @keyframes hero-mark-fill{from{background-size:0% 42%}to{background-size:100% 42%}}
         .hero-float,.hero-twinkle,.hero-bar,.hero-blob,.hero-pulse{transform-box:fill-box;transform-origin:center}
         .hero-float-a{animation:hero-float 5s ease-in-out infinite}
@@ -23,7 +19,7 @@ export function HeroSection() {
         @keyframes hero-float{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-10px) rotate(2deg)}}
         .hero-dash{stroke-dasharray:6 9;animation:hero-flow 1.2s linear infinite}
         @keyframes hero-flow{to{stroke-dashoffset:-30}}
-        .hero-twinkle{animation:hero-twinkle 2.4s ease-in-out infinite}
+        .hero-twinkle{animation-name:hero-twinkle;animation-duration:2.4s;animation-timing-function:ease-in-out;animation-iteration-count:infinite}
         @keyframes hero-twinkle{0%,100%{transform:scale(.6);opacity:.5}50%{transform:scale(1.15);opacity:1}}
         .hero-bar{transform-origin:left center;animation:hero-bar 3.6s ease-in-out infinite}
         @keyframes hero-bar{0%{transform:scaleX(.04)}70%,100%{transform:scaleX(1)}}
@@ -38,20 +34,18 @@ export function HeroSection() {
 
       <div className="text-center">
         <h1 className={HERO_TITLE}>
-          <span className="hero-word" style={{ animationDelay: ".05s" }}>
+          <span className="hero-word [animation-delay:.05s]">
             영상 시안 제작,
           </span>
           <br />
           <span
-            className="hero-word hero-mark"
-            style={{ animationDelay: ".25s, .8s" }}
+            className="hero-word hero-mark [animation-delay:.25s,.8s]"
           >
             무제한 무료
           </span>
         </h1>
         <p
-          className="hero-word text-muted-foreground mt-3 text-base"
-          style={{ animationDelay: ".7s" }}
+          className="hero-word text-muted-foreground mt-3 text-base [animation-delay:.7s]"
         >
           마음에 들면 그때 주문하세요
         </p>
@@ -216,44 +210,39 @@ export function HeroSection() {
         </g>
         <g transform="translate(452 64)">
           <path
-            className="hero-twinkle fill-yellow-300 stroke-ink"
+            className="hero-twinkle fill-yellow-300 stroke-ink [animation-delay:.3s]"
             d="M0 -14 Q1 -1 14 0 Q1 1 0 14 Q-1 1 -14 0 Q-1 -1 0 -14Z"
             strokeWidth="2.5"
             strokeLinejoin="round"
-            style={{ animationDelay: ".3s" }}
           />
         </g>
         <g transform="translate(24 40)">
           <path
-            className="hero-twinkle fill-yellow-300 stroke-ink"
+            className="hero-twinkle fill-yellow-300 stroke-ink [animation-delay:1.1s]"
             d="M0 -10 Q1 -1 10 0 Q1 1 0 10 Q-1 1 -10 0 Q-1 -1 0 -10Z"
             strokeWidth="2.5"
             strokeLinejoin="round"
-            style={{ animationDelay: "1.1s" }}
           />
         </g>
         <g transform="translate(488 352)">
           <path
-            className="hero-twinkle fill-yellow-300 stroke-ink"
+            className="hero-twinkle fill-yellow-300 stroke-ink [animation-delay:.7s]"
             d="M0 -10 Q1 -1 10 0 Q1 1 0 10 Q-1 1 -10 0 Q-1 -1 0 -10Z"
             strokeWidth="2.5"
             strokeLinejoin="round"
-            style={{ animationDelay: ".7s" }}
           />
         </g>
         <circle
-          className="hero-twinkle fill-rose-400"
+          className="hero-twinkle fill-rose-400 [animation-delay:1.5s]"
           cx="214"
           cy="372"
           r="5"
-          style={{ animationDelay: "1.5s" }}
         />
         <circle
-          className="hero-twinkle fill-sky-400"
+          className="hero-twinkle fill-sky-400 [animation-delay:.9s]"
           cx="400"
           cy="150"
           r="4"
-          style={{ animationDelay: ".9s" }}
         />
       </svg>
     </section>

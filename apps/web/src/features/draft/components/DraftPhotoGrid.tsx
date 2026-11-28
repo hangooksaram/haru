@@ -177,6 +177,7 @@ export function DraftPhotoGrid({
       </div>
       <DragOverlay>
         {activePhoto && activeSize && (
+          // 드래그 중인 사진 크기는 런타임에 측정한 값이라 인라인 style로 준다. (디자인 시스템 허용 예외 4)
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={activePhoto.url}

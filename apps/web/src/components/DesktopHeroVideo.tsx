@@ -38,9 +38,10 @@ export function DesktopHeroVideo({ slides }: Props) {
 
   return (
     <div className="home-hero-video relative -mt-16 hidden bg-ink h-190 w-full overflow-hidden text-white/70 sm:block">
-      {/* 등장 애니메이션의 키프레임·지연 값은 디자인 시스템 허용 예외(3)다. */}
+      {/* 등장 애니메이션의 키프레임·지연 값은 디자인 시스템 허용 예외(3)다.
+          지연은 클래스로 주므로 animation 축약형 대신 개별 속성을 써서 지연을 덮어쓰지 않는다. */}
       <style>{`
-        .hero-vid-word{display:inline-block;animation:hero-vid-rise .8s cubic-bezier(.2,.8,.2,1) both}
+        .hero-vid-word{display:inline-block;animation-name:hero-vid-rise;animation-duration:.8s;animation-timing-function:cubic-bezier(.2,.8,.2,1);animation-fill-mode:both}
         @keyframes hero-vid-rise{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
         @media (prefers-reduced-motion: reduce){.hero-vid-word{animation:none !important}}
       `}</style>
@@ -55,14 +56,8 @@ export function DesktopHeroVideo({ slides }: Props) {
         playsInline
         className="absolute inset-0 size-full object-cover"
       />
-      {/* 그라데이션 위치값은 디자인 시스템 허용 예외(3)다. */}
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage:
-            "linear-gradient(90deg, color-mix(in oklch, var(--ink) 80%, transparent) 0%, color-mix(in oklch, var(--ink) 40%, transparent) 45%, transparent 72%), linear-gradient(0deg, color-mix(in oklch, var(--ink) 70%, transparent) 0%, transparent 40%)",
-        }}
-      />
+      <div className="from-ink/80 via-ink/40 absolute inset-0 bg-linear-to-r via-45% to-transparent to-70%" />
+      <div className="from-ink/70 absolute inset-0 bg-linear-to-t to-transparent to-40%" />
 
       <div className="relative mx-auto h-full max-w-7xl">
         <div
@@ -72,20 +67,18 @@ export function DesktopHeroVideo({ slides }: Props) {
           )}
         >
           <h1 className={cn(HERO_TITLE, "m-0 text-white")}>
-            <span className="hero-vid-word" style={{ animationDelay: ".05s" }}>
+            <span className="hero-vid-word [animation-delay:.05s]">
               영상 시안 제작,
             </span>
             <br />
             <span
-              className="hero-vid-word bg-primary text-primary-foreground mt-1.5 rounded-lg px-3"
-              style={{ animationDelay: ".25s" }}
+              className="hero-vid-word bg-primary text-primary-foreground mt-1.5 rounded-lg px-3 [animation-delay:.25s]"
             >
               무제한 무료
             </span>
           </h1>
           <p
-            className="hero-vid-word mt-4 text-lg font-normal text-white/90"
-            style={{ animationDelay: ".6s" }}
+            className="hero-vid-word mt-4 text-lg font-normal text-white/90 [animation-delay:.6s]"
           >
             마음에 들면 그때 주문하세요
           </p>

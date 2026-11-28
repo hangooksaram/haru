@@ -75,8 +75,7 @@ export function DraftPreviewPanel({
           type="button"
           onClick={handleShow}
           aria-label="미리보기 다시 열기"
-          style={{ transformOrigin: "bottom right" }}
-          className="bg-foreground text-background fixed right-8 bottom-8 z-10 flex animate-[draft-preview-pop_300ms_var(--ease-out)_both] items-center gap-2.5 rounded-full py-1.5 pr-4 pl-1.5 text-base font-medium shadow-lg"
+          className="bg-foreground text-background fixed right-8 bottom-8 z-10 flex origin-bottom-right animate-[draft-preview-pop_300ms_var(--ease-out)_both] items-center gap-2.5 rounded-full py-1.5 pr-4 pl-1.5 text-base font-medium shadow-lg"
         >
           <span className="bg-primary/60 flex h-8 w-14 items-center justify-center rounded-full">
             <Play className="h-3.5 w-3.5 fill-current" />
@@ -88,11 +87,10 @@ export function DraftPreviewPanel({
       {/* 숨긴 동안에도 DOM에서 제거하지 않는다. 언마운트하면 미리보기 영상이 다시 로드된다. */}
       <div
         aria-hidden={phase === "hidden"}
-        style={{ transformOrigin: "bottom right" }}
         className={cn(
-          "flex flex-col gap-3 rounded-2xl border p-4 transition-[transform,opacity] duration-400 ease-in-out",
+          "flex origin-bottom-right flex-col gap-3 rounded-2xl border p-4 transition-[transform,opacity] duration-400 ease-in-out",
           phase === "hiding" &&
-            "pointer-events-none translate-y-[55vh] scale-[0.12] opacity-0",
+            "pointer-events-none translate-y-[55dvh] scale-12 opacity-0",
           phase === "appearing" &&
             "animate-[draft-preview-grow_400ms_var(--ease-out)_both]",
           phase === "hidden" &&
