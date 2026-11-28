@@ -95,18 +95,15 @@ export function DraftSubtitleStep({ templateId, prevHref }: Props) {
         />
       </DraftEditorHeader>
 
-      <DraftEditorBody className="gap-8">
-        <div className="flex flex-col gap-3">
-          <DraftStepTitle
-            title="자막"
-            description="장면마다 보여줄 문구를 입력해 주세요"
-          />
-          <p className="text-muted-foreground text-base">
-            {filledCount}/{subtitleElements.length} 채움
-          </p>
-        </div>
+      <DraftEditorBody>
+        <DraftStepTitle
+          sticky
+          title="자막"
+          description="장면마다 보여줄 문구를 입력해 주세요"
+          progress={{ filled: filledCount, total: subtitleElements.length }}
+        />
 
-        <section className="flex flex-col gap-4">
+        <section className="mt-8 flex flex-col gap-4">
           {subtitleElements.map((element) => (
             <label
               key={elementKey(element)}

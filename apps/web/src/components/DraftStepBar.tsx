@@ -16,7 +16,6 @@ type Props = {
   primaryLabel?: string;
   onPrimaryClick?: () => void;
   primaryPending?: boolean;
-  remainingLabel?: string;
   guidanceText?: string;
   saveStatus?: ReactNode;
 };
@@ -44,7 +43,6 @@ export function DraftStepBar({
   primaryLabel,
   onPrimaryClick,
   primaryPending,
-  remainingLabel,
   guidanceText,
   saveStatus,
 }: Props) {
@@ -131,11 +129,6 @@ export function DraftStepBar({
           >
             {guidanceText}
           </p>
-        )}
-        {remainingLabel && (
-          <span className="text-muted-foreground shrink-0 text-xs font-medium whitespace-nowrap">
-            {remainingLabel}
-          </span>
         )}
         {primaryLabel && onPrimaryClick && (
           <Button

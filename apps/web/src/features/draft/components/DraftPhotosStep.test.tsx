@@ -216,7 +216,7 @@ describe("DraftPhotosStep", () => {
     expect(call.files).toEqual([file]);
   });
 
-  it("상단에 채운 사진 수와 전체 사진 수, 남은 사진 수를 보여준다", () => {
+  it("상단에 채운 사진 수와 전체 사진 수를 보여준다", () => {
     setup(createDraft(["1"]), ["1", "2", "3"]);
 
     render(
@@ -227,8 +227,7 @@ describe("DraftPhotosStep", () => {
       />,
     );
 
-    expect(screen.getByText("1장")).toBeInTheDocument();
-    expect(screen.getByText("/ 전체 3장")).toBeInTheDocument();
-    expect(screen.getByText("2장")).toBeInTheDocument();
+    const heading = screen.getByRole("heading", { name: "사진" });
+    expect(heading.nextElementSibling).toHaveTextContent("1 / 3");
   });
 });

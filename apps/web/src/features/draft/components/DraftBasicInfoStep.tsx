@@ -113,19 +113,21 @@ export function DraftBasicInfoStep({
           }
           onPrimaryClick={handlePrimaryClick}
           primaryPending={isSubmitting}
-          remainingLabel={
-            missingCount > 0 ? `기본정보 ${missingCount}개 남음` : undefined
-          }
           saveStatus={<DraftSaveStatus status={saveStatus} />}
         />
       </DraftEditorHeader>
 
-      <DraftEditorBody className="max-w-xl gap-8">
+      <DraftEditorBody className="max-w-xl">
         <DraftStepTitle
+          sticky
           title="기본정보"
           description="입력한 정보가 영상 속 문구로 들어가요"
+          progress={{
+            filled: basicInfoElements.length - missingCount,
+            total: basicInfoElements.length,
+          }}
         />
-        <section className="flex flex-col gap-4">
+        <section className="mt-8 flex flex-col gap-4">
           {basicInfoElements.map((element) => (
             <label
               key={elementKey(element)}

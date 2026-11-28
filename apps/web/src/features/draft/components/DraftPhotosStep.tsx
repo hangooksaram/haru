@@ -322,8 +322,6 @@ export function DraftPhotosStep({
     })),
   );
 
-  const remainingCount = labelCount - photoCount;
-
   return (
     <>
       <DraftEditorHeader>
@@ -335,89 +333,60 @@ export function DraftPhotosStep({
           primaryLabel={returnToPayment ? "결제로 돌아가기" : "다음: 자막 입력"}
           onPrimaryClick={handlePrimaryClick}
           primaryPending={isNavigating}
-          remainingLabel={
-            remainingCount > 0 ? `${remainingCount}장 남음` : undefined
-          }
           saveStatus={<DraftSaveStatus status={getPhotoSaveStatus()} />}
         />
       </DraftEditorHeader>
 
-      <DraftEditorBody className="gap-4">
+      <DraftEditorBody>
         <DraftStepTitle
+          sticky
           title="사진"
           description="영상에 담을 사진을 올려 주세요"
-        />
-        <div className="bg-muted flex flex-wrap items-center gap-4 rounded-xl p-4">
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-primary text-2xl font-bold tabular-nums">
-              {photoCount}장
-            </span>
-            <span className="text-base font-medium">완료</span>
-            <span className="text-muted-foreground text-base">
-              / 전체 {labelCount}장
-            </span>
-          </div>
-          <div className="flex min-w-[160px] flex-1 flex-col gap-1.5">
-            <div
-              role="progressbar"
-              aria-label="사진 입력 진행"
-              aria-valuemin={0}
-              aria-valuemax={labelCount}
-              aria-valuenow={photoCount}
-              className="bg-background h-2 overflow-hidden rounded-full"
-            >
-              <div
-                className="bg-primary h-full rounded-full transition-[width]"
-                style={{
-                  width: `${labelCount > 0 ? (photoCount / labelCount) * 100 : 0}%`,
+          progress={{ filled: photoCount, total: labelCount }}
+          action={
+            <>
+              <Button
+                type="button"
+                variant={photoCount === 0 ? "default" : "outline"}
+                size="sm"
+                className="h-8 text-[15px]"
+                disabled={upload.isPending}
+                onClick={() => batchFileInputRef.current?.click()}
+              >
+                한꺼번에 올리기
+              </Button>
+              <input
+                ref={batchFileInputRef}
+                type="file"
+                multiple
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={(event) => {
+                  const files = Array.from(event.target.files ?? []);
+                  if (files.length > 0) handleUpload(undefined, files);
+                  event.target.value = "";
                 }}
               />
-            </div>
-            <span className="text-muted-foreground text-base">
-              남은 사진{" "}
-              <strong className="text-foreground">
-                {Math.max(0, labelCount - photoCount)}장
-              </strong>
-            </span>
-          </div>
-          <Button
-            type="button"
-            variant={photoCount === 0 ? "default" : "outline"}
-            size="sm"
-            className="h-8 text-[15px]"
-            disabled={upload.isPending}
-            onClick={() => batchFileInputRef.current?.click()}
-          >
-            한꺼번에 올리기
-          </Button>
-          <input
-            ref={batchFileInputRef}
-            type="file"
-            multiple
-            accept="image/jpeg,image/png,image/webp"
-            className="hidden"
-            onChange={(event) => {
-              const files = Array.from(event.target.files ?? []);
-              if (files.length > 0) handleUpload(undefined, files);
-              event.target.value = "";
-            }}
+            </>
+          }
+        />
+        <div className="mt-4 flex flex-col gap-4">
+          {message && (
+            <p className="text-base font-medium text-amber-600">{message}</p>
+          )}
+          <DraftPhotoGrid
+            groups={groups}
+            activeElementName={activeElementName}
+            onSwap={handleSwap}
+            onUpload={handleUpload}
+            onReplace={handleReplace}
+            onSelect={selectElement}
+            replacingPhotoId={replacingPhotoId}
+            uploadDisabled={upload.isPending}
+            highlightSlotName={highlightSlotName}
+            highlightToken={highlightToken}
           />
         </div>
-        {message && (
-          <p className="text-base font-medium text-amber-600">{message}</p>
-        )}
-        <DraftPhotoGrid
-          groups={groups}
-          activeElementName={activeElementName}
-          onSwap={handleSwap}
-          onUpload={handleUpload}
-          onReplace={handleReplace}
-          onSelect={selectElement}
-          replacingPhotoId={replacingPhotoId}
-          uploadDisabled={upload.isPending}
-          highlightSlotName={highlightSlotName}
-          highlightToken={highlightToken}
-        />
       </DraftEditorBody>
 
       <DraftPreviewBinding segments={segments} />
