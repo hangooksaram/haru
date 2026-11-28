@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -118,7 +119,7 @@ export function DraftStepBar({
             asChild
             variant="ghost"
             size="sm"
-            className="text-muted-foreground shrink-0 text-[15px]"
+            className="text-muted-foreground shrink-0 cursor-pointer text-[15px]"
           >
             <Link href={prevHref}>← 이전</Link>
           </Button>
@@ -138,10 +139,13 @@ export function DraftStepBar({
         )}
         {primaryLabel && onPrimaryClick && (
           <Button
-            className="h-[42px] shrink-0 px-4 text-[15px] font-bold whitespace-nowrap"
+            className="h-[42px] shrink-0 cursor-pointer px-4 text-[15px] font-bold whitespace-nowrap"
             onClick={onPrimaryClick}
             disabled={primaryPending}
           >
+            {primaryPending && (
+              <Loader2 aria-hidden="true" className="size-4 animate-spin" />
+            )}
             {primaryLabel}
           </Button>
         )}

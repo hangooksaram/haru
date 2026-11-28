@@ -46,6 +46,7 @@ export function DraftPhotosStep({
   returnToPayment,
 }: Props) {
   const router = useRouter();
+  const [isNavigating, setIsNavigating] = useState(false);
   const { draftId } = useDraftId();
   const { data: draft, isLoading: isDraftLoading } = useDraft(draftId ?? null);
   const { data: template } = useTemplate(templateId);
@@ -289,6 +290,7 @@ export function DraftPhotosStep({
   function handlePrimaryClick() {
     if (!validatePhotoCount()) return;
 
+    setIsNavigating(true);
     router.push(returnToPayment ? `/draft/${templateId}/payment` : nextHref);
   }
 
@@ -332,6 +334,7 @@ export function DraftPhotosStep({
           prevHref={prevHref}
           primaryLabel={returnToPayment ? "결제로 돌아가기" : "다음: 자막 입력"}
           onPrimaryClick={handlePrimaryClick}
+          primaryPending={isNavigating}
           remainingLabel={
             remainingCount > 0 ? `${remainingCount}장 남음` : undefined
           }
