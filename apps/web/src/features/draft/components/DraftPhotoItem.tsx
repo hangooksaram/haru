@@ -94,27 +94,27 @@ export function DraftPhotoItem({
       <div
         {...draggable.attributes}
         {...draggable.listeners}
-        className="absolute inset-x-0 top-0 flex h-6 cursor-grab items-center justify-center bg-black/50 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 active:cursor-grabbing"
+        className="absolute inset-x-0 top-0 flex h-6 cursor-grab items-center justify-center bg-ink/50 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 active:cursor-grabbing"
       >
         ⠿
       </div>
       {isBlurry && (
         <span
           title="해상도가 낮아 화질이 흐릴 수 있습니다."
-          className="absolute top-1 left-1 rounded bg-amber-500 px-1 py-0.5 text-[10px] leading-none font-bold text-white"
+          className="absolute top-1 left-1 bg-warning text-warning-foreground rounded-sm px-1 py-0.5 text-xs leading-none font-bold"
         >
           저화질
         </span>
       )}
       <CheckCircle2
-        className="absolute right-1 bottom-1 h-5 w-5 rounded-full bg-emerald-500 text-white"
+        className="absolute right-1 bottom-1 h-5 w-5 bg-success text-success-foreground rounded-full"
         aria-hidden="true"
       />
       <button
         type="button"
         disabled={isReplacing}
         onClick={() => inputRef.current?.click()}
-        className="absolute inset-x-0 bottom-0 bg-black/60 py-1.5 text-xs font-medium text-white opacity-0 transition-opacity group-hover:opacity-100 disabled:opacity-100"
+        className="absolute inset-x-0 bottom-0 bg-ink/60 py-1.5 text-xs font-medium text-white opacity-0 transition-opacity group-hover:opacity-100 disabled:opacity-100"
       >
         {isReplacing ? "교체 중..." : "다시 올리기"}
       </button>

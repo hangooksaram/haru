@@ -37,8 +37,15 @@ export function DraftPreviewFrame({
       )}
 
       {isBuffering && !isLoading && !error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/10">
-          <Loader2 className="text-background h-8 w-8 animate-spin" />
+        <div
+          role="status"
+          className="bg-ink/10 absolute inset-0 flex items-center justify-center"
+        >
+          <Loader2
+            aria-hidden="true"
+            className="text-background h-8 w-8 animate-spin"
+          />
+          <span className="sr-only">영상을 불러오고 있어요</span>
         </div>
       )}
 

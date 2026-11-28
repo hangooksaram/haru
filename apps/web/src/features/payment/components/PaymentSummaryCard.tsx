@@ -2,6 +2,7 @@ import { Info, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { CTA_BUTTON } from "@/lib/styles";
 import { cn } from "@/lib/utils";
 
 export type PaymentSummaryItem = {
@@ -42,7 +43,7 @@ export function PaymentSummaryCard({
   return (
     <aside
       aria-label="주문 요약"
-      className="bg-card flex min-w-0 flex-col gap-5 rounded-2xl p-5 shadow-[0_0_0_1px_rgba(16,24,40,0.04),0_2px_4px_rgba(16,24,40,0.04),0_18px_44px_-10px_rgba(16,24,40,0.18)] md:sticky md:top-[144px]"
+      className="bg-card flex min-w-0 flex-col gap-5 rounded-2xl p-5 shadow-xl md:sticky md:top-36"
     >
       <div className="flex flex-col gap-1">
         <p className="text-muted-foreground text-sm font-bold">주문 확인</p>
@@ -55,10 +56,10 @@ export function PaymentSummaryCard({
             key={item.label}
             className="grid grid-cols-[72px_minmax(0,1fr)_auto] items-center gap-3 border-b py-3"
           >
-            <span className="text-[15px] font-semibold">{item.label}</span>
+            <span className="text-base font-semibold">{item.label}</span>
             <span
               title={item.value}
-              className="text-muted-foreground truncate text-[15px]"
+              className="text-muted-foreground truncate text-base"
             >
               {item.value}
             </span>
@@ -99,7 +100,7 @@ export function PaymentSummaryCard({
 
       {price != null && (
         <div className="flex items-baseline justify-between">
-          <span className="text-[15px] font-semibold">결제 금액</span>
+          <span className="text-base font-semibold">결제 금액</span>
           <span className="text-2xl font-extrabold tabular-nums">
             {price.toLocaleString("ko-KR")}원
           </span>
@@ -114,12 +115,12 @@ export function PaymentSummaryCard({
       )}
 
       {message && (
-        <p className="text-base font-medium text-amber-600">{message}</p>
+        <p className="text-warning-deep text-base font-medium">{message}</p>
       )}
 
       <div className="flex flex-col gap-2">
         <Button
-          className="h-[52px] w-full rounded-xl text-[17px] font-extrabold"
+          className={cn(CTA_BUTTON, "w-full")}
           onClick={onPayClick}
           disabled={isPayDisabled}
         >

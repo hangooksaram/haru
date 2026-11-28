@@ -55,7 +55,7 @@ export async function ProfileBadge() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="focus-visible:ring-ring/50 cursor-pointer rounded-full outline-none focus-visible:ring-3">
+      <DropdownMenuTrigger className="focus-visible:ring-ring rounded-full outline-none focus-visible:ring-3">
         <Avatar size="lg">
           {avatarUrl ? <AvatarImage src={avatarUrl} alt="프로필 사진" /> : null}
           <AvatarFallback>

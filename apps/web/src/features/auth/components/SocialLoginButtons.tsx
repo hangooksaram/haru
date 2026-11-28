@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { sanitizeNextPath } from "@/features/auth/lib/sanitizeNextPath";
 import { createClient } from "@/lib/supabase/client";
 
+// 소셜 로그인 아이콘 색은 각 사 브랜드 가이드를 따른다. (디자인 시스템 허용 예외 1)
 function GoogleIcon() {
   return (
     <svg viewBox="0 0 18 18" className="size-5" aria-hidden="true">

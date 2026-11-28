@@ -18,7 +18,7 @@ const STATUS_TEXT: Record<DraftTextSaveStatus, string> = {
 const STATUS_STYLE: Record<DraftTextSaveStatus, string> = {
   idle: "bg-muted text-muted-foreground",
   saving: "bg-muted text-muted-foreground",
-  saved: "bg-emerald-50 text-emerald-700",
+  saved: "bg-success-soft text-success-deep",
   error: "bg-destructive/10 text-destructive",
 };
 

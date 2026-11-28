@@ -349,7 +349,7 @@ export function DraftPhotosStep({
                 type="button"
                 variant={photoCount === 0 ? "default" : "outline"}
                 size="sm"
-                className="h-8 text-[15px]"
+                className="h-8 text-base"
                 disabled={upload.isPending}
                 onClick={() => batchFileInputRef.current?.click()}
               >
@@ -372,7 +372,7 @@ export function DraftPhotosStep({
         />
         <div className="mt-4 flex flex-col gap-4">
           {message && (
-            <p className="text-base font-medium text-amber-600">{message}</p>
+            <p className="text-warning-deep text-base font-medium">{message}</p>
           )}
           <DraftPhotoGrid
             groups={groups}

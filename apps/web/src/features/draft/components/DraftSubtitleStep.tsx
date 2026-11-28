@@ -31,7 +31,7 @@ type Props = {
 function PreviewingBadge() {
   return (
     <span className="bg-foreground text-background flex w-fit shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-sm font-medium">
-      <Eye className="h-3 w-3" />
+      <Eye className="size-3.5" />
       미리보기 중
     </span>
   );

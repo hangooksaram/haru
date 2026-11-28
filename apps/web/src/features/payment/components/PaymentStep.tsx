@@ -174,7 +174,7 @@ export function PaymentStep({ templateId }: Props) {
       >
         {/* 결제 중 실수로 닫히지 않도록 바깥 클릭·Esc로는 닫지 않고 닫기(X) 버튼으로만 닫는다. */}
         <DialogContent
-          className="max-h-[90vh] overflow-y-auto sm:max-w-xl"
+          className="max-h-[90dvh] overflow-y-auto sm:max-w-xl"
           onInteractOutside={(event) => event.preventDefault()}
           onEscapeKeyDown={(event) => event.preventDefault()}
         >

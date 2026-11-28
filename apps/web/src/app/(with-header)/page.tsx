@@ -24,15 +24,15 @@ export default async function HomePage() {
       <DesktopHeroVideo slides={slides} />
 
       <div className="sm:hidden">
-        <div className="mx-auto max-w-[1280px] px-5">
+        <div className="mx-auto max-w-7xl px-5">
           <HeroSection />
         </div>
-        <div className="mx-auto max-w-[1280px] px-5 py-2">
+        <div className="mx-auto max-w-7xl px-5 py-2">
           <VideoSlider slides={slides} />
         </div>
       </div>
 
-      <div className={cn("mx-auto max-w-[1280px]", CONTAINER_PADDING_X)}>
+      <div className={cn("mx-auto max-w-7xl", CONTAINER_PADDING_X)}>
         <VideoListSection templates={templates} />
         <FaqSection />
         <CtaSection />

@@ -1,4 +1,5 @@
-import { getPlaceholderColor } from "@/features/template/lib/getPlaceholderColor";
+import { getPlaceholderBgClass } from "@/features/template/lib/getPlaceholderBgClass";
+import { cn } from "@/lib/utils";
 
 type Props = {
   templateId: string;
@@ -8,8 +9,10 @@ type Props = {
 export function VideoThumbnail({ templateId, children }: Props) {
   return (
     <div
-      className="flex aspect-3/4 items-end overflow-hidden rounded-2xl"
-      style={{ backgroundColor: getPlaceholderColor(templateId) }}
+      className={cn(
+        "flex aspect-3/4 items-end overflow-hidden rounded-2xl",
+        getPlaceholderBgClass(templateId),
+      )}
     >
       {children}
     </div>

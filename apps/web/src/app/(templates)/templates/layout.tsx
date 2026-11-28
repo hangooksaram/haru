@@ -7,7 +7,7 @@ type Props = {
 
 export default function TemplatesLayout({ children }: Props) {
   return (
-    <main className={cn("mx-auto max-w-[1280px]", CONTAINER_PADDING_X)}>
+    <main className={cn("mx-auto max-w-7xl", CONTAINER_PADDING_X)}>
       {children}
     </main>
   );

@@ -1,3 +1,6 @@
+import { SECTION_TITLE } from "@/lib/styles";
+import { cn } from "@/lib/utils";
+
 const FAQS = [
   {
     question: "시안은 정말 무료인가요?",
@@ -12,14 +15,14 @@ export function FaqSection() {
   return (
     <section id="faq" className="py-10 sm:py-16">
       <span className="text-brand-deep text-sm font-bold">FAQ</span>
-      <h2 className="font-heading mt-3 mb-8 text-2xl font-black tracking-tight sm:text-[40px] sm:leading-[1.4] sm:font-bold sm:tracking-[-0.6px]">
+      <h2 className={cn(SECTION_TITLE, "mt-3 mb-8")}>
         자주 묻는 질문
       </h2>
       <div className="grid gap-5 sm:grid-cols-2">
         {FAQS.map((faq) => (
           <div key={faq.question} className="bg-muted rounded-2xl p-5 sm:p-7">
             <h3 className="text-base font-bold sm:text-lg">{faq.question}</h3>
-            <p className="text-muted-foreground mt-2 text-sm leading-relaxed sm:text-[15px]">
+            <p className="text-muted-foreground mt-2 text-sm leading-relaxed sm:text-base">
               {faq.answer}
             </p>
           </div>

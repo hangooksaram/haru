@@ -51,7 +51,7 @@ export function DraftStepBar({
       <div className="flex min-w-0 items-center gap-2">
         <span
           title={templateName}
-          className="max-w-40 shrink-0 truncate text-[15px] font-medium sm:max-w-60"
+          className="max-w-40 shrink-0 truncate text-base font-medium sm:max-w-60"
         >
           {templateName}
         </span>
@@ -117,7 +117,7 @@ export function DraftStepBar({
             asChild
             variant="ghost"
             size="sm"
-            className="text-muted-foreground shrink-0 cursor-pointer text-[15px]"
+            className="text-muted-foreground shrink-0 text-base"
           >
             <Link href={prevHref}>← 이전</Link>
           </Button>
@@ -132,7 +132,7 @@ export function DraftStepBar({
         )}
         {primaryLabel && onPrimaryClick && (
           <Button
-            className="h-[42px] shrink-0 cursor-pointer px-4 text-[15px] font-bold whitespace-nowrap"
+            className="h-11 shrink-0 px-4 text-base font-bold whitespace-nowrap"
             onClick={onPrimaryClick}
             disabled={primaryPending}
           >
@@ -167,7 +167,7 @@ function StepCircle({ index, isCompleted, isCurrent }: StepCircleProps) {
         <svg
           aria-hidden="true"
           viewBox="0 0 24 24"
-          className="size-3"
+          className="size-3.5"
           fill="none"
           stroke="currentColor"
           strokeWidth={3}
@@ -193,7 +193,7 @@ function StepLabel({ label, isCompleted, isCurrent }: StepLabelProps) {
   return (
     <span
       className={cn(
-        "text-[15px] whitespace-nowrap",
+        "text-base whitespace-nowrap",
         isCurrent
           ? "text-foreground font-semibold"
           : isCompleted

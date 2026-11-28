@@ -63,7 +63,7 @@ export function DraftEditorShell({ children }: Props) {
 
   return (
     <div
-      className="grid gap-x-6 gap-y-4 pb-4 md:[grid-template-columns:var(--preview-cols)] md:transition-[grid-template-columns] md:duration-[380ms] md:ease-[cubic-bezier(0.4,0,0.2,1)]"
+      className="grid gap-x-6 gap-y-4 pb-4 md:[grid-template-columns:var(--preview-cols)] md:transition-[grid-template-columns] md:duration-400 md:ease-in-out"
       style={
         {
           "--preview-cols": isPreviewHidden
@@ -81,10 +81,10 @@ export function DraftEditorShell({ children }: Props) {
         className={cn(
           "hidden min-w-0 md:col-start-2 md:row-start-2 md:block",
           isPreviewHidden &&
-            "md:pointer-events-none md:invisible md:fixed md:top-0 md:left-0 md:w-[560px]",
+            "md:pointer-events-none md:invisible md:fixed md:top-0 md:left-0 md:w-140",
         )}
       >
-        <div className="md:sticky md:top-[144px]">
+        <div className="md:sticky md:top-36">
           <DraftPreviewPanel
             containerRef={containerRef}
             isLoading={isLoading}

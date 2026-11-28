@@ -20,7 +20,7 @@ export function SiteHeader({ categories = [], variant = "full" }: Props) {
     >
       <style>{`
         .site-header{height:64px;padding:0;display:flex;align-items:center}
-        @keyframes site-header-shadow{from{box-shadow:0 0 0 rgba(11,18,32,0)}to{box-shadow:0 6px 24px rgba(11,18,32,.08)}}
+        @keyframes site-header-shadow{from{box-shadow:0 0 transparent,0 0 transparent}to{box-shadow:var(--shadow-lg)}}
         @supports (animation-timeline: scroll()) {
           .site-header{animation:site-header-shadow linear both;animation-timeline:scroll();animation-range:0 80px}
         }
@@ -29,6 +29,8 @@ export function SiteHeader({ categories = [], variant = "full" }: Props) {
           .site-header{animation:none !important}
         }
 
+        /* 스크롤 연동 구간(0–80px, 560–640px)은 레이아웃 높이에 묶인 값이다. (디자인 시스템 허용 예외 4) */
+
         /* 홈(풀블리드 영상 히어로) 전용: 영상 위에서는 투명/흰 글자로 시작해 스크롤 시 흰 배경으로 전환 */
         @supports (animation-timeline: scroll()) {
           body:has(.home-hero-video) .site-header{
@@ -36,21 +38,21 @@ export function SiteHeader({ categories = [], variant = "full" }: Props) {
             animation-timeline:scroll();
             animation-range:560px 640px;
             background-color:transparent;
-            color:#fff;
+            color:white;
             box-shadow:none;
           }
         }
         @keyframes site-header-overlay-fade{
-          from{background-color:transparent;color:#fff;box-shadow:0 0 0 rgba(11,18,32,0)}
-          to{background-color:rgba(255,255,255,.9);color:#111827;box-shadow:0 6px 24px rgba(11,18,32,.08)}
+          from{background-color:transparent;color:white;box-shadow:0 0 transparent,0 0 transparent}
+          to{background-color:color-mix(in oklch,var(--background) 90%,transparent);color:var(--foreground);box-shadow:var(--shadow-lg)}
         }
 
-        .nav-link{transition:opacity .2s}
+        .nav-link{transition:opacity 200ms}
         body:has(.home-hero-video) .nav-group:hover .nav-link{opacity:.5}
         body:has(.home-hero-video) .nav-group .nav-link:hover{opacity:1;font-weight:700}
 
         .cta-flip{display:block;height:1.2em;overflow:hidden}
-        .cta-flip-track{display:flex;flex-direction:column;transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+        .cta-flip-track{display:flex;flex-direction:column;transition:transform 300ms var(--ease-out)}
         body:has(.home-hero-video) .cta-flip-wrap:hover .cta-flip-track{transform:translateY(-50%)}
 
         @media (prefers-reduced-motion: reduce){
@@ -61,7 +63,7 @@ export function SiteHeader({ categories = [], variant = "full" }: Props) {
 
       <div
         className={cn(
-          "mx-auto flex min-h-11 w-full max-w-[1280px] flex-wrap items-center justify-between gap-4",
+          "mx-auto flex min-h-11 w-full max-w-7xl flex-wrap items-center justify-between gap-4",
           CONTAINER_PADDING_X,
         )}
       >
@@ -80,7 +82,7 @@ export function SiteHeader({ categories = [], variant = "full" }: Props) {
                 <Link
                   key={category}
                   href={`/templates?tag=${encodeURIComponent(category)}`}
-                  className="nav-link flex min-h-11 items-center text-[15px] font-bold"
+                  className="nav-link flex min-h-11 items-center text-base font-bold"
                 >
                   {category}
                 </Link>

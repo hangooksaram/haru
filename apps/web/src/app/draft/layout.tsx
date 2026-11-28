@@ -10,7 +10,7 @@ export default function DraftLayout({ children }: Props) {
   return (
     <>
       <SiteHeader variant="minimal" />
-      <main className={cn("mx-auto max-w-[1280px]", CONTAINER_PADDING_X)}>
+      <main className={cn("mx-auto max-w-7xl", CONTAINER_PADDING_X)}>
         {children}
       </main>
     </>

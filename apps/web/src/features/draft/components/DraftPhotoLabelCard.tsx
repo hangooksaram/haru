@@ -82,7 +82,7 @@ export function DraftPhotoLabelCard({
         </span>
         {isPreviewing && (
           <span className="bg-foreground text-background flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-sm font-medium">
-            <Eye className="h-3 w-3" />
+            <Eye className="size-3.5" />
             미리보기 중
           </span>
         )}
@@ -106,7 +106,7 @@ export function DraftPhotoLabelCard({
               registerNode={registerNode}
             />
             {slot.name === activeElementName && (
-              <span className="bg-primary text-primary-foreground pointer-events-none absolute bottom-[-10px] left-1/2 -translate-x-1/2 rounded-full px-2 py-0.5 text-[11px] font-bold whitespace-nowrap">
+              <span className="bg-primary text-primary-foreground pointer-events-none absolute -bottom-2.5 left-1/2 -translate-x-1/2 rounded-full px-2 py-0.5 text-xs font-bold whitespace-nowrap">
                 현재 장면
               </span>
             )}

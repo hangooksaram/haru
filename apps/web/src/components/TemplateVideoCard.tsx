@@ -49,7 +49,7 @@ export function TemplateVideoCard({ template, videoSrc }: Props) {
       onFocus={handlePreviewStart}
       onBlur={handlePreviewEnd}
     >
-      <div className="relative aspect-video overflow-hidden rounded-2xl bg-[#14151A]">
+      <div className="bg-ink relative aspect-video overflow-hidden rounded-2xl">
         <video
           ref={videoRef}
           src={videoSrc}
