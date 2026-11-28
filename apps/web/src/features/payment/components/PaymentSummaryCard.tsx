@@ -42,7 +42,7 @@ export function PaymentSummaryCard({
   return (
     <aside
       aria-label="주문 요약"
-      className="flex min-w-0 flex-col gap-5 rounded-2xl border p-5 md:sticky md:top-[136px]"
+      className="bg-card flex min-w-0 flex-col gap-5 rounded-2xl p-5 shadow-[0_0_0_1px_rgba(16,24,40,0.04),0_2px_4px_rgba(16,24,40,0.04),0_18px_44px_-10px_rgba(16,24,40,0.18)] md:sticky md:top-[144px]"
     >
       <div className="flex flex-col gap-1">
         <p className="text-muted-foreground text-sm font-bold">주문 확인</p>
