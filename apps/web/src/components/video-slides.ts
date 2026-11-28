@@ -1,9 +1,8 @@
 const R2_BASE_URL = "https://pub-9f7ce3750f70470ebab6603621ec2019.r2.dev";
 // 아직 확정된 대표 영상 4편이 없어 임시로 같은 영상을 공유. 실제 영상이 정해지면 교체한다.
-const TEMP_VIDEO_SRC_01 = `${R2_BASE_URL}/프러포즈 영상.mp4`;
-const TEMP_VIDEO_SRC_02 = `${R2_BASE_URL}/식전 영상.mp4`;
+const TEMP_VIDEO_SRC_01 = `${R2_BASE_URL}/retro.mp4`;
 
-const HERO_VIDEO_SRCS = [TEMP_VIDEO_SRC_01, TEMP_VIDEO_SRC_02];
+const HERO_VIDEO_SRCS = [TEMP_VIDEO_SRC_01];
 
 export type HeroSlide = {
   title: string;
