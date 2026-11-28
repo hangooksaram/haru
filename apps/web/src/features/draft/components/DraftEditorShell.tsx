@@ -22,7 +22,7 @@ export function DraftEditorHeader({ children, className }: SectionProps) {
   return (
     <div
       className={cn(
-        "flex flex-col gap-4 md:col-span-full md:row-start-1",
+        "sticky top-16 z-40 flex flex-col gap-4 md:col-span-full md:row-start-1",
         className,
       )}
     >
