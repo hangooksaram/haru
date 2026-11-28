@@ -29,7 +29,7 @@ type Props = {
 // 입력 폼에 미리보기가 보여주는 요소를 표시한다.
 function PreviewingBadge() {
   return (
-    <span className="bg-foreground text-background flex w-fit shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium">
+    <span className="bg-foreground text-background flex w-fit shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-sm font-medium">
       <Eye className="h-3 w-3" />
       미리보기 중
     </span>
@@ -95,7 +95,7 @@ export function DraftSubtitleStep({ templateId, prevHref }: Props) {
       </DraftEditorHeader>
 
       <DraftEditorBody className="gap-8">
-        <p className="text-muted-foreground text-sm">
+        <p className="text-muted-foreground text-base">
           {filledCount}/{subtitleElements.length} 채움
         </p>
 
@@ -104,7 +104,7 @@ export function DraftSubtitleStep({ templateId, prevHref }: Props) {
           {subtitleElements.map((element) => (
             <label
               key={elementKey(element)}
-              className="flex flex-col gap-1.5 text-sm font-medium"
+              className="flex flex-col gap-1.5 text-base font-medium"
             >
               <div className="flex items-start gap-3">
                 <Input

@@ -72,6 +72,7 @@ export function PaymentWidget({ orderId, templateId }: Props) {
       <div id="agreement" />
       <Button
         size="lg"
+        className="text-base"
         onClick={handlePayment}
         disabled={!widgets || isRequesting}
       >

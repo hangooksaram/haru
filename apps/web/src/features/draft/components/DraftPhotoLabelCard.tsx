@@ -69,19 +69,19 @@ export function DraftPhotoLabelCard({
   return (
     <div className="bg-muted/40 flex items-center justify-start gap-4 rounded-xl p-3">
       <div className="flex min-w-32 shrink-0 flex-col gap-1">
-        <span className="text-base font-semibold break-words">
+        <span className="text-lg font-semibold break-words">
           {removeHyphens(label)}
         </span>
         <span
           className={cn(
-            "text-sm",
+            "text-base",
             status.isFailed ? "text-destructive" : "text-muted-foreground",
           )}
         >
           {status.text}
         </span>
         {isPreviewing && (
-          <span className="bg-foreground text-background flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium">
+          <span className="bg-foreground text-background flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-sm font-medium">
             <Eye className="h-3 w-3" />
             미리보기 중
           </span>

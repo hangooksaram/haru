@@ -84,7 +84,7 @@ export function DraftEditorShell({ children }: Props) {
             "md:pointer-events-none md:invisible md:fixed md:top-0 md:left-0 md:w-[560px]",
         )}
       >
-        <div className="md:sticky md:top-[136px]">
+        <div className="md:sticky md:top-[144px]">
           <DraftPreviewPanel
             containerRef={containerRef}
             isLoading={isLoading}

@@ -129,7 +129,7 @@ export function DraftBasicInfoStep({
                 if (node) fieldNodesRef.current.set(elementKey(element), node);
                 else fieldNodesRef.current.delete(elementKey(element));
               }}
-              className="flex flex-col gap-1.5 text-sm font-medium"
+              className="flex flex-col gap-1.5 text-base font-medium"
             >
               <div className="flex items-start gap-3">
                 <span className="w-fit shrink-0 whitespace-nowrap">
@@ -151,7 +151,7 @@ export function DraftBasicInfoStep({
               </div>
               {isEmpty(element) &&
                 (hasTriedNext || touchedKeys.has(elementKey(element))) && (
-                  <p className="text-destructive text-xs font-normal">
+                  <p className="text-destructive text-sm font-normal">
                     필수 입력입니다.
                   </p>
                 )}

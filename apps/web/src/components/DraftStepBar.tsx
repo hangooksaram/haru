@@ -48,11 +48,11 @@ export function DraftStepBar({
   saveStatus,
 }: Props) {
   return (
-    <div className="bg-background sticky top-16 z-40 flex h-14 items-center gap-4 border-b lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
+    <div className="bg-background sticky top-16 z-40 flex h-16 items-center gap-4 border-b lg:grid lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
       <div className="flex min-w-0 items-center gap-2">
         <span
           title={templateName}
-          className="max-w-40 shrink-0 truncate text-[13px] font-medium sm:max-w-60"
+          className="max-w-40 shrink-0 truncate text-[15px] font-medium sm:max-w-60"
         >
           {templateName}
         </span>
@@ -118,7 +118,7 @@ export function DraftStepBar({
             asChild
             variant="ghost"
             size="sm"
-            className="text-muted-foreground shrink-0"
+            className="text-muted-foreground shrink-0 text-[15px]"
           >
             <Link href={prevHref}>← 이전</Link>
           </Button>
@@ -126,19 +126,19 @@ export function DraftStepBar({
         {guidanceText && (
           <p
             title={guidanceText}
-            className="text-muted-foreground hidden max-w-48 min-w-0 truncate text-[11px] lg:block"
+            className="text-muted-foreground hidden max-w-48 min-w-0 truncate text-xs lg:block"
           >
             {guidanceText}
           </p>
         )}
         {remainingLabel && (
-          <span className="text-muted-foreground shrink-0 text-[11px] font-medium whitespace-nowrap">
+          <span className="text-muted-foreground shrink-0 text-xs font-medium whitespace-nowrap">
             {remainingLabel}
           </span>
         )}
         {primaryLabel && onPrimaryClick && (
           <Button
-            className="h-[38px] shrink-0 px-4 text-[13px] font-bold whitespace-nowrap"
+            className="h-[42px] shrink-0 px-4 text-[15px] font-bold whitespace-nowrap"
             onClick={onPrimaryClick}
             disabled={primaryPending}
           >
@@ -160,7 +160,7 @@ function StepCircle({ index, isCompleted, isCurrent }: StepCircleProps) {
   return (
     <span
       className={cn(
-        "flex size-6 items-center justify-center rounded-full text-xs font-bold",
+        "flex size-6 items-center justify-center rounded-full text-sm font-bold",
         isCompleted || isCurrent
           ? "bg-primary text-primary-foreground"
           : "border-border text-muted-foreground border-2",
@@ -196,7 +196,7 @@ function StepLabel({ label, isCompleted, isCurrent }: StepLabelProps) {
   return (
     <span
       className={cn(
-        "text-[13px] whitespace-nowrap",
+        "text-[15px] whitespace-nowrap",
         isCurrent
           ? "text-foreground font-semibold"
           : isCompleted

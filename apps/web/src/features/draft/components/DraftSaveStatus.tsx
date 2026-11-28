@@ -28,7 +28,7 @@ export function DraftSaveStatus({ status }: Props) {
     <p
       aria-live="polite"
       className={cn(
-        "inline-flex h-6 shrink-0 items-center gap-1 rounded-full px-2 text-xs font-medium whitespace-nowrap",
+        "inline-flex h-7 shrink-0 items-center gap-1 rounded-full px-2 text-sm font-medium whitespace-nowrap",
         STATUS_STYLE[status],
       )}
     >

@@ -344,8 +344,8 @@ export function DraftPhotosStep({
             <span className="text-primary text-2xl font-bold tabular-nums">
               {photoCount}장
             </span>
-            <span className="text-sm font-medium">완료</span>
-            <span className="text-muted-foreground text-sm">
+            <span className="text-base font-medium">완료</span>
+            <span className="text-muted-foreground text-base">
               / 전체 {labelCount}장
             </span>
           </div>
@@ -365,7 +365,7 @@ export function DraftPhotosStep({
                 }}
               />
             </div>
-            <span className="text-muted-foreground text-sm">
+            <span className="text-muted-foreground text-base">
               남은 사진{" "}
               <strong className="text-foreground">
                 {Math.max(0, labelCount - photoCount)}장
@@ -376,6 +376,7 @@ export function DraftPhotosStep({
             type="button"
             variant={photoCount === 0 ? "default" : "outline"}
             size="sm"
+            className="h-8 text-[15px]"
             disabled={upload.isPending}
             onClick={() => batchFileInputRef.current?.click()}
           >
@@ -395,7 +396,7 @@ export function DraftPhotosStep({
           />
         </div>
         {message && (
-          <p className="text-sm font-medium text-amber-600">{message}</p>
+          <p className="text-base font-medium text-amber-600">{message}</p>
         )}
         <DraftPhotoGrid
           groups={groups}
@@ -415,7 +416,7 @@ export function DraftPhotosStep({
 
       {isDraggingFileOverWindow && (
         <div className="bg-primary/10 pointer-events-none fixed inset-0 z-50 hidden items-center justify-center md:flex">
-          <p className="bg-background rounded-lg px-6 py-4 text-lg font-medium shadow-lg">
+          <p className="bg-background rounded-lg px-6 py-4 text-xl font-medium shadow-lg">
             화면에 놓아서 한꺼번에 업로드
           </p>
         </div>

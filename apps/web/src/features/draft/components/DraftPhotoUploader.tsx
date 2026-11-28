@@ -47,7 +47,7 @@ export function DraftPhotoUploader({
         if (files.length > 0) onSelect(files);
       }}
       className={cn(
-        "absolute inset-0 flex flex-col items-center justify-center gap-1 rounded-xl text-sm font-medium transition-colors",
+        "absolute inset-0 flex flex-col items-center justify-center gap-1 rounded-xl text-base font-medium transition-colors",
         variant === "default" &&
           cn(
             "text-muted-foreground border-2 border-dashed",
@@ -59,9 +59,9 @@ export function DraftPhotoUploader({
               "border-primary text-primary bg-primary/5",
           ),
         variant === "uploading" &&
-          "bg-muted text-muted-foreground cursor-not-allowed text-xs",
+          "bg-muted text-muted-foreground cursor-not-allowed text-sm",
         variant === "failed" &&
-          "border-destructive bg-destructive/5 text-destructive border-2 text-xs",
+          "border-destructive bg-destructive/5 text-destructive border-2 text-sm",
       )}
     >
       {variant === "default" && <Plus className="h-5 w-5" aria-hidden="true" />}

@@ -30,7 +30,7 @@ export function DraftPreviewFrame({
             className="via-primary/30 absolute inset-0 animate-[draft-preview-shimmer_1.8s_ease-in-out_infinite] bg-linear-to-r from-transparent to-transparent"
           />
           <Loader2 className="text-primary relative h-8 w-8 animate-spin" />
-          <p className="text-background relative text-sm font-medium">
+          <p className="text-background relative text-base font-medium">
             미리보기를 준비하고 있어요
           </p>
         </div>
@@ -43,7 +43,7 @@ export function DraftPreviewFrame({
       )}
 
       {error && (
-        <div className="bg-muted text-muted-foreground absolute inset-0 flex items-center justify-center text-sm">
+        <div className="bg-muted text-muted-foreground absolute inset-0 flex items-center justify-center text-base">
           {error}
         </div>
       )}

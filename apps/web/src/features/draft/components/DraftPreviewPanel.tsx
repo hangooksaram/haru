@@ -76,7 +76,7 @@ export function DraftPreviewPanel({
           onClick={handleShow}
           aria-label="미리보기 다시 열기"
           style={{ transformOrigin: "bottom right" }}
-          className="bg-foreground text-background fixed right-8 bottom-8 z-10 flex animate-[draft-preview-pop_320ms_ease-out_both] items-center gap-2.5 rounded-full py-1.5 pr-4 pl-1.5 text-sm font-medium shadow-lg"
+          className="bg-foreground text-background fixed right-8 bottom-8 z-10 flex animate-[draft-preview-pop_320ms_ease-out_both] items-center gap-2.5 rounded-full py-1.5 pr-4 pl-1.5 text-base font-medium shadow-lg"
         >
           <span className="bg-primary/60 flex h-8 w-14 items-center justify-center rounded-full">
             <Play className="h-3.5 w-3.5 fill-current" />
@@ -102,17 +102,23 @@ export function DraftPreviewPanel({
         <div className="flex items-center justify-between gap-3">
           {activeSegment ? (
             <div className="flex min-w-0 items-center gap-2">
-              <Badge variant="secondary" className="shrink-0">
+              <Badge variant="secondary" className="h-6 shrink-0 text-sm">
                 {activeIndex + 1} / {segments.length}
               </Badge>
-              <span className="truncate text-sm font-medium">
+              <span className="truncate text-base font-medium">
                 {removeHyphens(activeSegment.name)}
               </span>
             </div>
           ) : (
-            <strong className="text-sm">내 영상</strong>
+            <strong className="text-base">내 영상</strong>
           )}
-          <Button type="button" variant="ghost" size="sm" onClick={handleHide}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="text-[15px]"
+            onClick={handleHide}
+          >
             <EyeOff />
             숨기기
           </Button>
